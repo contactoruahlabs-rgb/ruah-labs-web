@@ -259,7 +259,10 @@ var _sbClient = null;
 function getSbClient() {
   if (!_sbClient && SB_URL && SB_SVC) {
     var { createClient } = require('@supabase/supabase-js');
-    _sbClient = createClient(SB_URL, SB_SVC, { realtime: { params: { eventsPerSecond: 10 } } });
+    var ws = require('ws');
+    _sbClient = createClient(SB_URL, SB_SVC, {
+      realtime: { params: { eventsPerSecond: 10 }, transport: ws }
+    });
   }
   return _sbClient;
 }
