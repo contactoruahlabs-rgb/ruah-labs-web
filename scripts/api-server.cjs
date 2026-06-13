@@ -489,6 +489,34 @@ function sendEmail(to, subject, html) {
   }).then(function(r) { return r.json(); });
 }
 
+// Carga templates/welcome.html y reemplaza {{VARIABLES}} con los datos reales.
+// Si el archivo no existe, cae en buildWelcomeEmail (HTML hardcodeado de respaldo).
+var SITE_DOMAIN = process.env.NEXT_PUBLIC_APP_URL || 'https://ruahlabs.cl';
+function renderWelcomeTemplate(firstName, lastName, email, cart, password, orderId) {
+  var templatePath = path.join(__dirname, '..', 'templates', 'welcome.html');
+  if (!fs.existsSync(templatePath)) return null; // fallback al HTML hardcodeado
+  var html = fs.readFileSync(templatePath, 'utf8');
+  var firstItem = (cart && cart[0]) || {};
+  var firstPrice = parseInt(String(firstItem.price || '0').replace(/[^0-9]/g, ''), 10) || 0;
+  var itemsHtml = (cart || []).map(function(it) {
+    var p = parseInt(String(it.price || '0').replace(/[^0-9]/g, ''), 10) || 0;
+    return '<tr><td style="padding:8px 0;border-bottom:1px solid #333;color:#fff;font-size:14px;">' +
+      esc(it.name) + (it.verse ? ' · <em>' + esc(it.verse) + '</em>' : '') +
+      '</td><td style="padding:8px 0;border-bottom:1px solid #333;color:#ECA10C;text-align:right;font-size:14px;">CLP $' +
+      p.toLocaleString('es-CL') + '</td></tr>';
+  }).join('');
+  return html
+    .replace(/\{\{FIRST_NAME\}\}/g,      esc(firstName || ''))
+    .replace(/\{\{LAST_NAME\}\}/g,       esc(lastName || ''))
+    .replace(/\{\{EMAIL\}\}/g,           esc(email || ''))
+    .replace(/\{\{PASSWORD\}\}/g,        esc(password || ''))
+    .replace(/\{\{ORDER_ID\}\}/g,        esc(orderId || ''))
+    .replace(/\{\{PRODUCT_NAME\}\}/g,    esc(firstItem.name || ''))
+    .replace(/\{\{PRODUCT_PRICE\}\}/g,   'CLP $' + firstPrice.toLocaleString('es-CL'))
+    .replace(/\{\{ORDER_ITEMS\}\}/g,     itemsHtml)
+    .replace(/\{\{SITE_URL\}\}/g,        SITE_DOMAIN);
+}
+
 function buildWelcomeEmail(firstName, lastName, email, cart, password, orderId) {
   var items = (cart || []).map(function(it) {
     var price = parseInt(String(it.price).replace(/[^0-9]/g, ''), 10) || 0;
@@ -606,7 +634,7 @@ app.post('/api/checkout/welcome', rateLimit('welcome', 5, 60 * 1000), async func
 
       // Construir y enviar email
       var subject = '✓ RUAH LABS · Tu pedido está en camino + acceso al Club';
-      var html = buildWelcomeEmail(firstName, lastName, email, cart, passToSend || '(ya tienes acceso al club)', orderId);
+      var html = renderWelcomeTemplate(firstName, lastName, email, cart, passToSend || '(ya tienes acceso al club)', orderId) || buildWelcomeEmail(firstName, lastName, email, cart, passToSend || '(ya tienes acceso al club)', orderId);
 
       return sendEmail(email, subject, html).then(function(emailResult) {
         console.log('[Welcome]', email, '| Club:', created ? 'creado' : 'ya existía', '| Email:', RESEND_KEY ? 'enviado' : 'simulado');
@@ -667,7 +695,8 @@ app.post('/api/test/welcome-email', async function(req, res) {
       body: { name: 'Test RUAH', email: to, password_hash: hash, notes: 'Test manual', must_change_password: true },
     });
   } catch(e) { /* ya existe — no sobreescribir */ }
-  var html = buildWelcomeEmail('Test', 'RUAH', to, [{ name: 'Buzo Selah', verse: 'SAL. 46:10', price: '42990' }], rawPass, 'RUAH-TEST-001');
+  var testCart = [{ name: 'Buzo Selah', verse: 'SAL. 46:10', price: '42990' }];
+  var html = renderWelcomeTemplate('Test', 'RUAH', to, testCart, rawPass, 'RUAH-TEST-001') || buildWelcomeEmail('Test', 'RUAH', to, testCart, rawPass, 'RUAH-TEST-001');
   sendEmail(to, '✓ RUAH LABS · Tu pedido está en camino + acceso al Club', html)
     .then(function(r) { res.json({ ok: true, resend: r, password_preview: rawPass }); })
     .catch(function(e) { res.status(500).json({ error: e.message }); });

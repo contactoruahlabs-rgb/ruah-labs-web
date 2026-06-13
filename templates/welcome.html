@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bienvenido a RUAH LABS</title>
+</head>
+<body>
+  <!--
+  ═══════════════════════════════════════════════════════════════
+  TEMPLATE DE EMAIL — RUAH LABS
+  Diseño a cargo del equipo de diseño.
+
+  VARIABLES DISPONIBLES (el backend las reemplaza automáticamente):
+    {{FIRST_NAME}}    → Nombre del comprador (ej: "María")
+    {{LAST_NAME}}     → Apellido (ej: "González")
+    {{EMAIL}}         → Email del comprador
+    {{PASSWORD}}      → Contraseña temporal generada
+    {{ORDER_ID}}      → Número de pedido (ej: "RUAH-12345678")
+    {{PRODUCT_NAME}}  → Nombre del producto principal
+    {{PRODUCT_PRICE}} → Precio formateado (ej: "CLP $42.990")
+    {{ORDER_ITEMS}}   → Todos los productos del carrito (HTML ya formateado)
+    {{SITE_URL}}      → https://ruahlabs.cl
+
+  INSTRUCCIONES PARA LA DISEÑADORA:
+    1. Diseñar el email en Illustrator
+    2. Exportar imágenes/fondos → subir a Cloudinary → usar las URLs aquí
+    3. Reemplazar este contenido con el HTML del diseño
+    4. Donde quieras mostrar el nombre, poner {{FIRST_NAME}}
+    5. Donde quieras mostrar las credenciales, poner {{EMAIL}} y {{PASSWORD}}
+    6. Para el pedido: {{PRODUCT_NAME}}, {{PRODUCT_PRICE}}, {{ORDER_ID}}
+    7. Para el link al sitio: {{SITE_URL}}
+  ═══════════════════════════════════════════════════════════════
+  -->
+
+  <!-- ↓↓↓ REEMPLAZAR TODO LO DE ABAJO CON EL DISEÑO FINAL ↓↓↓ -->
+
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;font-family:Arial,sans-serif;">
+    <tr><td align="center" style="padding:40px 20px;">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;">
+
+        <!-- IMAGEN DE CABECERA: reemplazar src con imagen de Cloudinary -->
+        <!-- <tr><td><img src="https://res.cloudinary.com/dh05zwrbp/image/upload/v.../header.jpg" width="600" style="display:block;width:100%;"></td></tr> -->
+
+        <tr><td style="background:#111;padding:40px;border:1px solid #222;">
+
+          <p style="color:#ECA10C;font-size:11px;letter-spacing:4px;margin:0 0 8px;">RUAH LABS</p>
+          <h1 style="color:#fff;font-size:28px;margin:0 0 24px;">Hola, {{FIRST_NAME}}.</h1>
+
+          <p style="color:#aaa;font-size:15px;line-height:1.6;margin:0 0 24px;">
+            Tu pedido <strong style="color:#fff;">{{ORDER_ID}}</strong> fue recibido.<br>
+            Cada pieza de RUAH LABS lleva una historia — la tuya empieza hoy.
+          </p>
+
+          <!-- PEDIDO -->
+          <p style="color:#ECA10C;font-size:11px;letter-spacing:3px;margin:0 0 8px;">TU PEDIDO</p>
+          <p style="color:#fff;font-size:15px;margin:0 0 4px;">{{PRODUCT_NAME}}</p>
+          <p style="color:#ECA10C;font-size:18px;font-weight:bold;margin:0 0 32px;">{{PRODUCT_PRICE}}</p>
+
+          <!-- CREDENCIALES DEL CLUB -->
+          <div style="border:1px solid #ECA10C;padding:24px;margin:0 0 24px;">
+            <p style="color:#ECA10C;font-size:11px;letter-spacing:3px;margin:0 0 8px;">ACCESO AL CLUB</p>
+            <p style="color:#aaa;font-size:13px;margin:0 0 16px;">
+              Por comprar en RUAH LABS tienes acceso exclusivo al Club Secreto.
+            </p>
+            <p style="color:#aaa;font-size:13px;margin:0 0 4px;">
+              Email: <span style="color:#fff;">{{EMAIL}}</span>
+            </p>
+            <p style="color:#aaa;font-size:13px;margin:0 0 16px;">
+              Contraseña temporal: <strong style="color:#ECA10C;font-size:16px;letter-spacing:2px;">{{PASSWORD}}</strong>
+            </p>
+            <p style="color:#666;font-size:12px;margin:0;">
+              Te pediremos que la cambies la primera vez que ingreses.
+            </p>
+          </div>
+
+          <!-- LINK AL SITIO -->
+          <p style="text-align:center;margin:0;">
+            <a href="{{SITE_URL}}" style="background:#ECA10C;color:#000;padding:14px 32px;text-decoration:none;font-weight:bold;font-size:13px;letter-spacing:2px;display:inline-block;">
+              INGRESAR AL CLUB →
+            </a>
+          </p>
+
+        </td></tr>
+
+        <!-- FOOTER -->
+        <tr><td style="padding:16px 0;text-align:center;">
+          <p style="color:#444;font-size:11px;letter-spacing:2px;margin:0;">
+            RUAH LABS · FE PUESTA EN ACCIÓN · <a href="{{SITE_URL}}" style="color:#444;">{{SITE_URL}}</a>
+          </p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+
+  <!-- ↑↑↑ REEMPLAZAR TODO LO DE ARRIBA CON EL DISEÑO FINAL ↑↑↑ -->
+</body>
+</html>
