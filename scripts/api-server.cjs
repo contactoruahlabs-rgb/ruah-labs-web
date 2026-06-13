@@ -23,7 +23,6 @@ var MP_TOKEN   = process.env.MERCADOPAGO_ACCESS_TOKEN || '';
 var SITE_URL   = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:8000';
 var IS_DEV     = !MP_TOKEN.startsWith('APP_USR-');
 var ADMIN_KEY  = process.env.ADMIN_API_KEY || '';
-var ADMIN_EMAIL = 'contacto.ruahlabs@gmail.com';
 function isAdmin(token) {
   if (!token) return false;
   if (ADMIN_KEY && token === ADMIN_KEY) return true;
@@ -33,7 +32,7 @@ function isAdmin(token) {
     if (parts.length !== 3) return false;
     var payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
     var now = Math.floor(Date.now() / 1000);
-    return payload.email === ADMIN_EMAIL && payload.exp > now;
+    return payload.email === 'contacto.ruahlabs@gmail.com' && payload.exp > now;
   } catch(e) { console.error('[isAdmin] JWT decode error:', e.message); }
   return false;
 }
