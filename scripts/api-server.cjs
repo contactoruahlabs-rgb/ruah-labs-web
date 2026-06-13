@@ -79,9 +79,16 @@ app.use(express.json({ limit: '100kb' }));
 var ALLOWED_ORIGINS = [SITE_URL, 'http://localhost:8000', 'http://localhost:3000']
   .filter(function(o) { return !!o; });
 
+function isAllowedOrigin(origin) {
+  if (ALLOWED_ORIGINS.indexOf(origin) !== -1) return true;
+  // Permitir cualquier subdominio de workers.dev y pages.dev (Cloudflare)
+  if (/\.workers\.dev$/.test(origin) || /\.pages\.dev$/.test(origin)) return true;
+  return false;
+}
+
 app.use(function(req, res, next) {
   var origin = req.headers.origin || '';
-  if (ALLOWED_ORIGINS.indexOf(origin) !== -1) {
+  if (isAllowedOrigin(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Vary', 'Origin');
   } else if (!origin) {
