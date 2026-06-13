@@ -122,6 +122,9 @@ function App() {
         try {
           var order = JSON.parse(orderRaw);
           sessionStorage.removeItem('ruah-pending-order');
+          // payment_id lo agrega MercadoPago al redirigir (auto_return solo
+          // ocurre con pago aprobado). El servidor lo verifica contra MP.
+          order.payment_id = params.get('payment_id') || params.get('collection_id') || '';
           // Llamar API para crear cuenta club + enviar email
           fetch('' + window.RUAH_API + '/api/checkout/welcome', {
             method: 'POST',

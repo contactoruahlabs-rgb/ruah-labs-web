@@ -97,19 +97,36 @@ function mpPost(endpoint, body) {
   });
 }
 
+// Consulta un pago en MercadoPago (verifica que sea real y aprobado)
+function mpGetPayment(paymentId) {
+  return fetch('https://api.mercadopago.com/v1/payments/' + encodeURIComponent(paymentId), {
+    headers: { 'Authorization': 'Bearer ' + MP_TOKEN },
+  }).then(function(r) {
+    return r.json().then(function(b) { return { status: r.status, body: b }; });
+  });
+}
+
 // ─── Express ─────────────────────────────────────────────────────────────────
 var app = express();
 app.use(express.json({ limit: '4mb' })); // contenido del sitio (productos) puede ser grande
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
-var ALLOWED_ORIGINS = [SITE_URL, 'http://localhost:8000', 'http://localhost:3000']
-  .filter(function(o) { return !!o; });
+var ALLOWED_ORIGINS = [
+  SITE_URL,
+  'https://ruahlabs.cl',
+  'https://www.ruahlabs.cl',
+  'https://ruah-labs-web.contacto-ruahlabs.workers.dev',
+  'http://localhost:8000',
+  'http://localhost:3000',
+].filter(function(o) { return !!o; });
+
+// Orígenes extra desde env (coma-separados), por si cambia el subdominio de Cloudflare
+(process.env.EXTRA_ORIGINS || '').split(',').forEach(function(o) {
+  o = o.trim(); if (o) ALLOWED_ORIGINS.push(o);
+});
 
 function isAllowedOrigin(origin) {
-  if (ALLOWED_ORIGINS.indexOf(origin) !== -1) return true;
-  // Permitir cualquier subdominio de workers.dev y pages.dev (Cloudflare)
-  if (/\.workers\.dev$/.test(origin) || /\.pages\.dev$/.test(origin)) return true;
-  return false;
+  return ALLOWED_ORIGINS.indexOf(origin) !== -1;
 }
 
 app.use(function(req, res, next) {
@@ -373,7 +390,7 @@ app.post('/api/club/login', rateLimit('login', 5, 15 * 60 * 1000), function(req,
 });
 
 // ─── POST /api/club/change-password ──────────────────────────────────────────
-app.post('/api/club/change-password', function(req, res) {
+app.post('/api/club/change-password', rateLimit('chpwd', 10, 15 * 60 * 1000), function(req, res) {
   var email    = (req.body.email    || '').trim().toLowerCase();
   var oldPass  = req.body.oldPassword || '';
   var newPass  = req.body.newPassword || '';
@@ -540,14 +557,36 @@ function buildWelcomeEmail(firstName, lastName, email, cart, password, orderId) 
 }
 
 // ─── POST /api/checkout/welcome ───────────────────────────────────────────────
-app.post('/api/checkout/welcome', rateLimit('welcome', 5, 60 * 1000), function(req, res) {
+app.post('/api/checkout/welcome', rateLimit('welcome', 5, 60 * 1000), async function(req, res) {
   var email     = (req.body.email     || '').trim().toLowerCase();
   var firstName = (req.body.firstName || '').trim();
   var lastName  = (req.body.lastName  || '').trim();
   var cart      = req.body.cart || [];
   var orderId   = req.body.orderId || ('RUAH-' + Date.now().toString().slice(-8));
+  var paymentId = (req.body.payment_id || '').trim();
 
   if (!email) return res.status(400).json({ error: 'Email requerido' });
+
+  // Verificar que el pago existe y está aprobado en MercadoPago antes de enviar
+  // nada. Sin esto, el endpoint sería un emisor abierto de correo con tu dominio.
+  // En modo dev (token de prueba) se omite para poder testear.
+  if (!IS_DEV) {
+    if (!paymentId) return res.status(402).json({ error: 'Pago no verificado' });
+    try {
+      var pay = await mpGetPayment(paymentId);
+      var ok = pay.status === 200 && pay.body && pay.body.status === 'approved';
+      if (!ok) {
+        console.warn('[Welcome] pago no aprobado o inexistente:', paymentId, pay.body && pay.body.status);
+        return res.status(402).json({ error: 'Pago no aprobado' });
+      }
+      // Usar el email del pagador real cuando MP lo entrega (evita suplantación)
+      var payerEmail = pay.body.payer && pay.body.payer.email;
+      if (payerEmail) email = String(payerEmail).trim().toLowerCase();
+    } catch(e) {
+      console.error('[Welcome] error verificando pago:', e.message);
+      return res.status(502).json({ error: 'No se pudo verificar el pago' });
+    }
+  }
 
   var rawPass = generatePassword();
 
@@ -581,7 +620,7 @@ app.post('/api/checkout/welcome', rateLimit('welcome', 5, 60 * 1000), function(r
 });
 
 // ─── POST /api/club/signup ───────────────────────────────────────────────────
-app.post('/api/club/signup', function(req, res) {
+app.post('/api/club/signup', rateLimit('signup', 12, 60 * 1000), function(req, res) {
   var email      = (req.body.email      || '').trim().toLowerCase();
   var route_id   = (req.body.route_id   || '').trim();
   var route_name = (req.body.route_name || '').trim();
