@@ -661,6 +661,12 @@ app.post('/api/test/welcome-email', async function(req, res) {
   var to = (req.body.to || '').trim();
   if (!to) return res.status(400).json({ error: 'Falta campo to' });
   var rawPass = generatePassword();
+  try {
+    var hash = await bcrypt.hash(rawPass, 10);
+    await sbFetch('POST', 'club_credentials', {
+      body: { name: 'Test RUAH', email: to, password_hash: hash, notes: 'Test manual', must_change_password: true },
+    });
+  } catch(e) { /* ya existe — no sobreescribir */ }
   var html = buildWelcomeEmail('Test', 'RUAH', to, [{ name: 'Buzo Selah', verse: 'SAL. 46:10', price: '42990' }], rawPass, 'RUAH-TEST-001');
   sendEmail(to, '✓ RUAH LABS · Tu pedido está en camino + acceso al Club', html)
     .then(function(r) { res.json({ ok: true, resend: r, password_preview: rawPass }); })
