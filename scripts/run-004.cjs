@@ -7,9 +7,17 @@ const sql = fs.readFileSync(
   'utf8'
 );
 
-// Use connection string — pooler transaction mode port 6543
+// La contraseña va por entorno, nunca hardcodeada.
+if (!process.env.SUPABASE_DB_PASSWORD) {
+  console.error('Falta SUPABASE_DB_PASSWORD en el entorno.');
+  process.exit(1);
+}
 const client = new Client({
-  connectionString: 'postgresql://postgres.txrpxzsqqomdlnxmyvxn:Ru4hl4bs%21%21.@aws-0-us-east-1.pooler.supabase.com:6543/postgres',
+  host: 'aws-1-us-east-1.pooler.supabase.com',
+  port: 6543,
+  user: 'postgres.txrpxzsqqomdlnxmyvxn',
+  password: process.env.SUPABASE_DB_PASSWORD,
+  database: 'postgres',
   ssl: { rejectUnauthorized: false },
 });
 

@@ -8,11 +8,16 @@ const sql = fs.readFileSync(
   'utf8'
 );
 
+// La contraseña NUNCA va hardcodeada. Exporta SUPABASE_DB_PASSWORD antes de correr.
+if (!process.env.SUPABASE_DB_PASSWORD) {
+  console.error('Falta SUPABASE_DB_PASSWORD en el entorno.');
+  process.exit(1);
+}
 const client = new Client({
-  host: 'aws-0-us-east-1.pooler.supabase.com',
+  host: 'aws-1-us-east-1.pooler.supabase.com',
   port: 5432,
   user: 'postgres.txrpxzsqqomdlnxmyvxn',
-  password: 'Ru4hl4bs!!.',
+  password: process.env.SUPABASE_DB_PASSWORD,
   database: 'postgres',
   ssl: { rejectUnauthorized: false },
 });

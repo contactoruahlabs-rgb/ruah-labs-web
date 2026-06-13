@@ -95,7 +95,7 @@ function mpPost(endpoint, body) {
 
 // ─── Express ─────────────────────────────────────────────────────────────────
 var app = express();
-app.use(express.json({ limit: '100kb' }));
+app.use(express.json({ limit: '4mb' })); // contenido del sitio (productos) puede ser grande
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
 var ALLOWED_ORIGINS = [SITE_URL, 'http://localhost:8000', 'http://localhost:3000']
@@ -398,8 +398,8 @@ app.post('/api/club/change-password', function(req, res) {
 });
 
 // ─── POST /api/club/members (admin: crear miembro) ───────────────────────────
-app.post('/api/club/members', function(req, res) {
-  if (!ADMIN_KEY || req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(403).json({ error: 'No autorizado' });
+app.post('/api/club/members', async function(req, res) {
+  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
 
   var name  = (req.body.name  || '').trim();
   var email = (req.body.email || '').trim().toLowerCase();
@@ -419,8 +419,8 @@ app.post('/api/club/members', function(req, res) {
 });
 
 // ─── GET /api/club/members (admin: listar) ────────────────────────────────────
-app.get('/api/club/members', function(req, res) {
-  if (!ADMIN_KEY || req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(403).json({ error: 'No autorizado' });
+app.get('/api/club/members', async function(req, res) {
+  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
   sbFetch('GET', 'club_credentials', {
     query: 'select=id,name,email,is_active,must_change_password,created_at,last_login_at,notes&order=created_at.desc',
   }).then(function(r) { res.json(r.data); })
@@ -428,8 +428,8 @@ app.get('/api/club/members', function(req, res) {
 });
 
 // ─── GET /api/club/access-log (admin: ver log) ───────────────────────────────
-app.get('/api/club/access-log', function(req, res) {
-  if (!ADMIN_KEY || req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(403).json({ error: 'No autorizado' });
+app.get('/api/club/access-log', async function(req, res) {
+  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
   sbFetch('GET', 'club_access_log', {
     query: 'select=*&order=created_at.desc&limit=200',
   }).then(function(r) { res.json(r.data); })
@@ -437,8 +437,8 @@ app.get('/api/club/access-log', function(req, res) {
 });
 
 // ─── DELETE /api/club/members/:email (admin: desactivar) ─────────────────────
-app.delete('/api/club/members/:email', function(req, res) {
-  if (!ADMIN_KEY || req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(403).json({ error: 'No autorizado' });
+app.delete('/api/club/members/:email', async function(req, res) {
+  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
   var email = decodeURIComponent(req.params.email);
   sbFetch('PATCH', 'club_credentials', {
     query: 'email=eq.' + encodeURIComponent(email),
@@ -599,8 +599,8 @@ app.delete('/api/club/signup', function(req, res) {
 });
 
 // ─── GET /api/club/signups (admin) ───────────────────────────────────────────
-app.get('/api/club/signups', function(req, res) {
-  if (!ADMIN_KEY || req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(403).json({ error: 'No autorizado' });
+app.get('/api/club/signups', async function(req, res) {
+  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
   sbFetch('GET', 'club_signups', { query: 'select=*&order=created_at.desc' })
     .then(function(r) { res.json(r.data); })
     .catch(function(err) { res.status(500).json({ error: err.message }); });
@@ -660,24 +660,6 @@ app.post('/api/club/verify-password', rateLimit('club-verify', 8, 15 * 60 * 1000
 // ─── Health ──────────────────────────────────────────────────────────────────
 app.get('/api/health', function(_req, res) {
   res.json({ ok: true, mp_configured: !!(MP_TOKEN && MP_TOKEN !== 'YOUR_MERCADOPAGO_ACCESS_TOKEN'), sandbox: IS_DEV });
-});
-
-// ─── Diagnóstico (temporal) ───────────────────────────────────────────────────
-app.get('/api/diag', async function(_req, res) {
-  var result = { sb_url: !!SB_URL, sb_svc: !!SB_SVC, admin_key: !!ADMIN_KEY, cld_key: !!CLD_KEY };
-  try {
-    var testR = await sbRequest('GET', SB_URL + '/rest/v1/content?key=eq.main&select=data&limit=1', {
-      'apikey': SB_SVC, 'Authorization': 'Bearer ' + SB_SVC
-    });
-    result.sb_read_status = testR.status;
-    result.sb_rows = Array.isArray(testR.data) ? testR.data.length : 'not array';
-    if (Array.isArray(testR.data) && testR.data[0]) {
-      var h = testR.data[0].data && testR.data[0].data.brand && testR.data[0].data.brand.adminPasswordHash;
-      result.has_admin_hash = !!h;
-      result.hash_preview = h ? h.slice(0,12) + '...' : null;
-    }
-  } catch(e) { result.sb_error = e.message; }
-  res.json(result);
 });
 
 app.listen(3001, function() {
