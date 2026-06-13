@@ -27,21 +27,19 @@ var _adminHashCache = null;
 async function isAdmin(key) {
   if (!key) return false;
   if (ADMIN_KEY && key === ADMIN_KEY) return true;
-  // Acepta también la contraseña del panel admin (SHA-256 comparado contra el hash guardado)
   try {
     if (!_adminHashCache) {
-      var r = await fetch(SB_URL + '/rest/v1/content?key=eq.main&select=data&limit=1', {
-        headers: { 'apikey': SB_SVC, 'Authorization': 'Bearer ' + SB_SVC }
+      var r = await sbRequest('GET', SB_URL + '/rest/v1/content?key=eq.main&select=data&limit=1', {
+        'apikey': SB_SVC, 'Authorization': 'Bearer ' + SB_SVC
       });
-      var rows = await r.json();
-      var row = Array.isArray(rows) ? rows[0] : null;
+      var row = Array.isArray(r.data) ? r.data[0] : null;
       _adminHashCache = row && row.data && row.data.brand && row.data.brand.adminPasswordHash;
     }
     if (_adminHashCache) {
       var hash = require('crypto').createHash('sha256').update(key).digest('hex');
       if (hash === _adminHashCache) return true;
     }
-  } catch(e) {}
+  } catch(e) { console.error('[isAdmin] error:', e.message); }
   return false;
 }
 
