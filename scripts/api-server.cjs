@@ -655,6 +655,18 @@ app.get('/api/club/signups', async function(req, res) {
 // ─── GET /api/v (version check) ─────────────────────────────────────────────
 app.get('/api/v', function(req, res) { res.json({ v: 4, auth: 'jwt-local' }); });
 
+// ─── POST /api/test/welcome-email (solo admin, para verificar Resend) ────────
+app.post('/api/test/welcome-email', async function(req, res) {
+  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
+  var to = (req.body.to || '').trim();
+  if (!to) return res.status(400).json({ error: 'Falta campo to' });
+  var rawPass = generatePassword();
+  var html = buildWelcomeEmail('Test', 'RUAH', to, [{ name: 'Buzo Selah', verse: 'SAL. 46:10', price: '42990' }], rawPass, 'RUAH-TEST-001');
+  sendEmail(to, '✓ RUAH LABS · Tu pedido está en camino + acceso al Club', html)
+    .then(function(r) { res.json({ ok: true, resend: r, password_preview: rawPass }); })
+    .catch(function(e) { res.status(500).json({ error: e.message }); });
+});
+
 // ─── GET /api/content ────────────────────────────────────────────────────────
 app.get('/api/content', function(req, res) {
   sbFetch('GET', 'content', { query: 'key=eq.main&limit=1' })
