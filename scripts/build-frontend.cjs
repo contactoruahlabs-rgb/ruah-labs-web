@@ -21,6 +21,10 @@ fs.mkdirSync(OUT, { recursive: true });
 let compiled = 0;
 let copied   = 0;
 
+// Versión de build para cache-busting (?v=...). Cambia en cada deploy,
+// así el navegador re-descarga JS/CSS aunque tenga una versión vieja en caché.
+const BUILD_VERSION = Date.now().toString(36);
+
 function processDir(srcDir, outDir) {
   fs.mkdirSync(outDir, { recursive: true });
 
@@ -53,6 +57,10 @@ function processDir(srcDir, outDir) {
       // Cambiar type="text/babel" src="xxx.jsx" → src="xxx.js"
       html = html.replace(/type="text\/babel"\s+src="([^"]+)\.jsx"/g, 'src="$1.js"');
       html = html.replace(/type="text\/babel"\s*/g, '');
+
+      // Cache-busting: añadir ?v=BUILD a los .js/.css LOCALES (no a CDNs con //).
+      html = html.replace(/(src|href)="(?!https?:|\/\/)([^"]+\.(?:js|css))"/g,
+        '$1="$2?v=' + BUILD_VERSION + '"');
 
       fs.writeFileSync(outPath, html);
       copied++;
