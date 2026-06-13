@@ -1659,9 +1659,19 @@ function useContentStore() {
       var client = window.supabase.createClient(SUPABASE_URL, ANON);
       window._ruahSbClient = client;
 
-      // Carga inicial
+      // Initialize from localStorage so remote never overwrites newer local data
+      var localContent = loadContent();
+      var lastSavedAt = localContent._savedAt || 0;
+
+      // Carga inicial — solo aplica si Supabase es MÁS NUEVO que localStorage
       client.from('content').select('data').eq('key', 'main').limit(1).single().then(function (res) {
-        if (res.data && res.data.data) applyRemote(res.data.data);
+        if (res.data && res.data.data) {
+          var remote = res.data.data;
+          if ((remote._savedAt || 0) > lastSavedAt) {
+            lastSavedAt = remote._savedAt;
+            applyRemote(remote);
+          }
+        }
       }).catch(function () {}).finally(function () {
         syncedRef.current = true;
       });
@@ -1670,11 +1680,16 @@ function useContentStore() {
       var channel = client.channel('content-main').on('broadcast', {
         event: 'content-updated'
       }, function (payload) {
-        if (payload.payload && payload.payload.data) applyRemote(payload.payload.data);
+        if (payload.payload && payload.payload.data) {
+          var bd = payload.payload.data;
+          if ((bd._savedAt || 0) > lastSavedAt) {
+            lastSavedAt = bd._savedAt || 0;
+            applyRemote(bd);
+          }
+        }
       }).subscribe();
 
       // Polling de respaldo cada 30s — garantiza sync aunque el Realtime falle
-      var lastSavedAt = 0;
       function pollSupabase() {
         client.from('content').select('data').eq('key', 'main').limit(1).single().then(function (res) {
           if (res.data && res.data.data) {
