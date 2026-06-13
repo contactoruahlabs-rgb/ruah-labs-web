@@ -23,25 +23,24 @@ var MP_TOKEN   = process.env.MERCADOPAGO_ACCESS_TOKEN || '';
 var SITE_URL   = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:8000';
 var IS_DEV     = !MP_TOKEN.startsWith('APP_USR-');
 var ADMIN_KEY  = process.env.ADMIN_API_KEY || '';
-// Default hash: SHA-256 of the default admin password (mirrors DEFAULT_CONTENT in data.jsx)
-var DEFAULT_ADMIN_HASH = '765dad31d1a783887b6ba0933852f9234778ae0e6d0ba34a648f76e08ef0c2fe';
-var _adminHashCache = null; // null = not fetched yet
-async function isAdmin(key) {
-  if (!key) return false;
-  if (ADMIN_KEY && key === ADMIN_KEY) return true;
+var ADMIN_EMAIL = 'contacto.ruahlabs@gmail.com';
+// Cache last validated JWT for 2 min to avoid hammering Supabase Auth
+var _adminTokenCache = { token: null, validUntil: 0 };
+async function isAdmin(token) {
+  if (!token) return false;
+  if (ADMIN_KEY && token === ADMIN_KEY) return true;
   try {
-    if (_adminHashCache === null) {
-      var r = await sbRequest('GET', SB_URL + '/rest/v1/content?key=eq.main&select=data&limit=1', {
-        'apikey': SB_SVC, 'Authorization': 'Bearer ' + SB_SVC
-      });
-      var row = Array.isArray(r.data) ? r.data[0] : null;
-      var stored = row && row.data && row.data.brand && row.data.brand.adminPasswordHash;
-      // fall back to default hash when Supabase row doesn't exist yet
-      _adminHashCache = stored || DEFAULT_ADMIN_HASH;
+    var now = Date.now();
+    if (_adminTokenCache.token === token && now < _adminTokenCache.validUntil) return true;
+    // Validate JWT via Supabase Auth
+    var r = await sbRequest('GET', SB_URL + '/auth/v1/user', {
+      'apikey': SB_SVC,
+      'Authorization': 'Bearer ' + token,
+    });
+    if (r.status === 200 && r.data && r.data.email === ADMIN_EMAIL) {
+      _adminTokenCache = { token, validUntil: now + 2 * 60 * 1000 };
+      return true;
     }
-    // frontend hashes with trim+toLowerCase — backend must match exactly
-    var hash = require('crypto').createHash('sha256').update(key.trim().toLowerCase()).digest('hex');
-    return hash === _adminHashCache;
   } catch(e) { console.error('[isAdmin] error:', e.message); }
   return false;
 }
@@ -634,7 +633,7 @@ app.post('/api/content', async function(req, res) {
   .then(function(r) {
     if (r.status >= 300) { res.status(r.status).json({ error: r.data }); return; }
     broadcastContent(data);
-    if (data.brand && data.brand.adminPasswordHash) _adminHashCache = null;
+    if (data.brand) _adminTokenCache = { token: null, validUntil: 0 };
     res.json({ ok: true });
   }).catch(function(err) { res.status(500).json({ error: err.message }); });
 });

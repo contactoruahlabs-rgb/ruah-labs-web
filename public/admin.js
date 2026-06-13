@@ -592,14 +592,15 @@ function ViewBrand({
     className: "card__head"
   }, /*#__PURE__*/React.createElement("h3", null, "Accesos"), /*#__PURE__*/React.createElement("span", {
     className: "meta"
-  }, "Sensibles")), /*#__PURE__*/React.createElement(ChangePasswordField, {
-    label: "Contrase\xF1a admin",
-    hint: "Para el panel de administraci\xF3n",
-    onSave: async newPwd => {
-      const h = await hashPwd(newPwd);
-      update('brand.adminPasswordHash', h);
+  }, "Sensibles")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: 'var(--mono)',
+      fontSize: 12,
+      color: 'var(--gray)',
+      lineHeight: 1.6,
+      padding: '8px 0'
     }
-  }), /*#__PURE__*/React.createElement(ChangePasswordField, {
+  }, "La contrase\xF1a de admin se gestiona en Supabase Auth. Para cambiarla, ve al dashboard de Supabase \u2192 Authentication \u2192 Users."), /*#__PURE__*/React.createElement(ChangePasswordField, {
     label: "Contrase\xF1a Club",
     hint: "Acceso al \xE1rea secreta RUAH Club",
     onSave: async newPwd => {
@@ -6188,18 +6189,36 @@ function Admin({
   }, [open]);
   async function authenticate(e) {
     e && e.preventDefault();
-    const hash = await hashPwd(pwd);
-    if (hash === content.brand.adminPasswordHash) {
-      setAuthed(true);
+    if (!pwd.trim()) return;
+    setErr('');
+    try {
+      var SB_URL = 'https://txrpxzsqqomdlnxmyvxn.supabase.co';
+      var SB_ANON = 'sb_publishable_ZLrj11-7GjIE8gEiwybtvQ_6e4NZ07p';
+      var sbClient = window._ruahSbClient || window.supabase && window.supabase.createClient(SB_URL, SB_ANON);
+      if (!sbClient) {
+        setErr('SDK no cargado — recarga la página');
+        return;
+      }
+      var result = await sbClient.auth.signInWithPassword({
+        email: 'contacto.ruahlabs@gmail.com',
+        password: pwd
+      });
+      if (result.error || !result.data || !result.data.session) {
+        setErr('CONTRASEÑA INCORRECTA');
+        return;
+      }
       sessionStorage.setItem('ruah-admin-auth', '1');
-      sessionStorage.setItem('ruah-admin-session', pwd);
+      sessionStorage.setItem('ruah-admin-session', result.data.session.access_token);
+      setAuthed(true);
       setErr('');
       setPwd('');
-    } else {
-      setErr('CONTRASEÑA INCORRECTA');
+    } catch (ex) {
+      setErr('ERROR DE CONEXIÓN');
     }
   }
   function logout() {
+    var sbClient = window._ruahSbClient;
+    if (sbClient) sbClient.auth.signOut().catch(function () {});
     sessionStorage.removeItem('ruah-admin-auth');
     sessionStorage.removeItem('ruah-admin-session');
     setAuthed(false);
