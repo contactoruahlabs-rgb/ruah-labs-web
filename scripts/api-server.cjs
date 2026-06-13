@@ -23,6 +23,27 @@ var MP_TOKEN   = process.env.MERCADOPAGO_ACCESS_TOKEN || '';
 var SITE_URL   = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:8000';
 var IS_DEV     = !MP_TOKEN.startsWith('APP_USR-');
 var ADMIN_KEY  = process.env.ADMIN_API_KEY || '';
+var _adminHashCache = null;
+async function isAdmin(key) {
+  if (!key) return false;
+  if (ADMIN_KEY && key === ADMIN_KEY) return true;
+  // Acepta también la contraseña del panel admin (SHA-256 comparado contra el hash guardado)
+  try {
+    if (!_adminHashCache) {
+      var r = await fetch(SB_URL + '/rest/v1/content?key=eq.main&select=data&limit=1', {
+        headers: { 'apikey': SB_SVC, 'Authorization': 'Bearer ' + SB_SVC }
+      });
+      var rows = await r.json();
+      var row = Array.isArray(rows) ? rows[0] : null;
+      _adminHashCache = row && row.data && row.data.brand && row.data.brand.adminPasswordHash;
+    }
+    if (_adminHashCache) {
+      var hash = require('crypto').createHash('sha256').update(key).digest('hex');
+      if (hash === _adminHashCache) return true;
+    }
+  } catch(e) {}
+  return false;
+}
 
 // Cloudinary — CLOUDINARY_URL siempre tiene prioridad sobre vars separadas
 var CLD_CLOUD  = process.env.CLOUDINARY_CLOUD_NAME  || 'dh05zwrbp';
@@ -229,8 +250,8 @@ app.post('/api/checkout/create-preference', rateLimit('checkout', 10, 60 * 1000)
 });
 
 // ─── Supabase REST helper (service role — bypass RLS) ────────────────────────
-var SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-var SB_SVC = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+var SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://txrpxzsqqomdlnxmyvxn.supabase.co';
+var SB_SVC = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || '';
 
 // Cliente Supabase para Realtime Broadcast (cambios en vivo para todos)
 var _sbClient = null;
@@ -573,8 +594,8 @@ app.get('/api/content', function(req, res) {
 });
 
 // ─── POST /api/content ───────────────────────────────────────────────────────
-app.post('/api/content', function(req, res) {
-  if (!ADMIN_KEY || req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(403).json({ error: 'No autorizado' });
+app.post('/api/content', async function(req, res) {
+  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
   var data = req.body.data;
   if (!data || typeof data !== 'object') return res.status(400).json({ error: 'data requerida' });
   fetch(SB_URL + '/rest/v1/content', {
@@ -584,17 +605,17 @@ app.post('/api/content', function(req, res) {
       'Content-Type': 'application/json',
       'Prefer': 'return=minimal,resolution=merge-duplicates',
     },
-    body: JSON.stringify({ key: 'main', data: data, updated_at: new Date().toISOString() }),
+    body: JSON.stringify({ key: 'main', data: data }),
   }).then(function(r) {
     if (!r.ok) return r.json().then(function(e) { res.status(r.status).json({ error: e }); });
-    broadcastContent(data); // Notifica a todos los visitantes al instante
+    broadcastContent(data);
     res.json({ ok: true });
   }).catch(function(err) { res.status(500).json({ error: err.message }); });
 });
 
 // ─── POST /api/images/sign — Firma para upload seguro a Cloudinary ───────────
-app.post('/api/images/sign', rateLimit('cld-sign', 30, 60 * 1000), function(req, res) {
-  if (!ADMIN_KEY || req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(403).json({ error: 'No autorizado' });
+app.post('/api/images/sign', rateLimit('cld-sign', 30, 60 * 1000), async function(req, res) {
+  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
   if (!CLD_KEY || !CLD_SECRET) return res.status(500).json({ error: 'Cloudinary no configurado en el servidor' });
 
   var timestamp = Math.round(Date.now() / 1000);
