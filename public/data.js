@@ -1516,7 +1516,7 @@ function saveContent(c) {
   // a escribir en Supabase tras cerrar el RLS). Autentica con la contraseña admin.
   var api = (window.RUAH_API || '') + '/api/content';
   var adminKey = sessionStorage.getItem('ruah-admin-session') || '';
-  fetch(api, {
+  return fetch(api, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -1528,15 +1528,13 @@ function saveContent(c) {
   }).then(function (r) {
     if (!r.ok) {
       r.json().then(function (e) {
-        console.error('[RUAH] saveContent error', r.status, e);
-        showSaveToast(false, r.status + (r.status === 403 ? ' — sesión admin inválida' : ' — ' + (e && e.error || 'ver consola')));
+        showSaveToast(false, r.status + (r.status === 403 ? ' — sesión inválida' : ' — ' + (e && e.error || 'error')));
       }).catch(function () {
         showSaveToast(false, 'HTTP ' + r.status);
       });
-      return;
+      throw new Error('save_failed');
     }
     showSaveToast(true);
-    // Broadcast en tiempo real — todos los dispositivos reciben el cambio al instante
     if (window._ruahSbClient) {
       window._ruahSbClient.channel('content-main').send({
         type: 'broadcast',
@@ -1547,8 +1545,8 @@ function saveContent(c) {
       }).catch(function () {});
     }
   }).catch(function (e) {
-    console.error('[RUAH] saveContent error', e);
-    showSaveToast(false, 'Sin conexión con el servidor');
+    if (e.message !== 'save_failed') showSaveToast(false, 'Sin conexión con el servidor');
+    throw e;
   });
 }
 
@@ -1756,14 +1754,11 @@ function useContentStore() {
     applyTypography(content.typography);
     applyColors(content.colors || {});
     applyCheckoutStyle(content.checkout && content.checkout.style || {});
-    if (syncedRef.current && !remoteRef.current) {
-      // Solo guardar si el cambio lo inició el admin (no si vino de Realtime)
-      saveContent(content);
-    } else {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(content));
-      } catch (e) {}
-    }
+    // Solo guarda en localStorage (instantáneo, sin red).
+    // El guardado en la nube ocurre solo cuando el admin hace clic en "Guardar cambios".
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(content));
+    } catch (e) {}
     remoteRef.current = false;
   }, [content]);
   const update = React.useCallback((path, value) => {
@@ -1815,6 +1810,9 @@ function useContentStore() {
     };
     reader.readAsText(file);
   }, []);
+  const save = React.useCallback(() => {
+    saveContent(content);
+  }, [content]);
   return {
     content,
     setContent,
@@ -1822,7 +1820,8 @@ function useContentStore() {
     updateList,
     reset,
     exportJSON,
-    importJSON
+    importJSON,
+    save
   };
 }
 Object.assign(window, {

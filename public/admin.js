@@ -6160,6 +6160,29 @@ function Admin({
   const [pwd, setPwd] = React.useState('');
   const [err, setErr] = React.useState('');
   const [view, setView] = React.useState('dash');
+  const [dirty, setDirty] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+  const isFirstRender = React.useRef(true);
+
+  // Marca como "hay cambios" cada vez que el contenido cambia (excepto la carga inicial)
+  React.useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (authed) setDirty(true);
+  }, [content]);
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await store.save();
+      setDirty(false);
+    } catch (e) {
+      // el toast de error ya lo muestra saveContent
+    } finally {
+      setSaving(false);
+    }
+  }
   React.useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
   }, [open]);
@@ -6258,11 +6281,21 @@ function Admin({
     className: "sub"
   }, "RUAH LABS \xB7 ADMIN \xB7 LIVE")), /*#__PURE__*/React.createElement("div", {
     className: "admin__top__actions"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "pulse"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "d"
-  }), " guardado autom\xE1ticamente"), /*#__PURE__*/React.createElement("button", {
+  }, dirty && !saving && /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '12px',
+      color: 'var(--amber)',
+      fontWeight: 700,
+      letterSpacing: '0.05em'
+    }
+  }, "\u25CF CAMBIOS SIN GUARDAR"), /*#__PURE__*/React.createElement("button", {
+    className: 'abtn' + (dirty ? '' : ' ghost'),
+    onClick: handleSave,
+    disabled: saving || !dirty,
+    style: {
+      minWidth: '160px'
+    }
+  }, saving ? 'GUARDANDO…' : 'GUARDAR CAMBIOS'), /*#__PURE__*/React.createElement("button", {
     className: "abtn ghost",
     onClick: onClose
   }, "\u2190 Volver al sitio"))), /*#__PURE__*/React.createElement("div", {

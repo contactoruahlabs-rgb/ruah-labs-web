@@ -2744,10 +2744,31 @@ const ADMIN_VIEWS = [
 ];
 
 function Admin({ open, content, store, onClose }) {
-  const [authed, setAuthed] = React.useState(() => sessionStorage.getItem('ruah-admin-auth') === '1');
-  const [pwd, setPwd]       = React.useState('');
-  const [err, setErr]       = React.useState('');
-  const [view, setView]     = React.useState('dash');
+  const [authed, setAuthed]   = React.useState(() => sessionStorage.getItem('ruah-admin-auth') === '1');
+  const [pwd, setPwd]         = React.useState('');
+  const [err, setErr]         = React.useState('');
+  const [view, setView]       = React.useState('dash');
+  const [dirty, setDirty]     = React.useState(false);
+  const [saving, setSaving]   = React.useState(false);
+  const isFirstRender         = React.useRef(true);
+
+  // Marca como "hay cambios" cada vez que el contenido cambia (excepto la carga inicial)
+  React.useEffect(() => {
+    if (isFirstRender.current) { isFirstRender.current = false; return; }
+    if (authed) setDirty(true);
+  }, [content]);
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await store.save();
+      setDirty(false);
+    } catch(e) {
+      // el toast de error ya lo muestra saveContent
+    } finally {
+      setSaving(false);
+    }
+  }
 
   React.useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
@@ -2828,7 +2849,19 @@ function Admin({ open, content, store, onClose }) {
                   <div className="sub">RUAH LABS · ADMIN · LIVE</div>
                 </div>
                 <div className="admin__top__actions">
-                  <span className="pulse"><span className="d"></span> guardado automáticamente</span>
+                  {dirty && !saving && (
+                    <span style={{ fontSize: '12px', color: 'var(--amber)', fontWeight: 700, letterSpacing: '0.05em' }}>
+                      ● CAMBIOS SIN GUARDAR
+                    </span>
+                  )}
+                  <button
+                    className={'abtn' + (dirty ? '' : ' ghost')}
+                    onClick={handleSave}
+                    disabled={saving || !dirty}
+                    style={{ minWidth: '160px' }}
+                  >
+                    {saving ? 'GUARDANDO…' : 'GUARDAR CAMBIOS'}
+                  </button>
                   <button className="abtn ghost" onClick={onClose}>← Volver al sitio</button>
                 </div>
               </header>
