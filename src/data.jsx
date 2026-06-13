@@ -831,7 +831,9 @@ function saveContent(c) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
     body: JSON.stringify({ data: c })
-  }).catch(function(){});
+  }).then(function(r) {
+    if (!r.ok) r.json().then(function(e) { console.error('[RUAH] saveContent error', r.status, e); }).catch(function(){});
+  }).catch(function(e) { console.error('[RUAH] saveContent fetch error', e); });
 }
 
 // Apply font-size tokens to :root as CSS vars

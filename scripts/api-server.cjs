@@ -625,4 +625,8 @@ app.listen(3001, function() {
   console.log('   MP configurado:', !!(MP_TOKEN && MP_TOKEN !== 'YOUR_MERCADOPAGO_ACCESS_TOKEN'));
   console.log('   Modo:', IS_DEV ? 'SANDBOX (TEST)' : 'PRODUCCIÓN');
   console.log('   Site URL:', SITE_URL);
+  console.log('   Supabase URL:', SB_URL ? '✅ ' + SB_URL : '❌ NO CONFIGURADO');
+  console.log('   Supabase SVC key:', SB_SVC ? '✅ configurada (' + SB_SVC.slice(0,12) + '...)' : '❌ NO CONFIGURADA');
+  console.log('   Admin key:', ADMIN_KEY ? '✅ configurada' : '❌ NO CONFIGURADA');
+  console.log('   Cloudinary key:', CLD_KEY ? '✅ ' + CLD_KEY : '❌ NO CONFIGURADA');
 });
