@@ -1,16 +1,28 @@
-## RUAH LABS — Cache headers para Netlify
+## RUAH LABS — Cache headers (Cloudflare Pages)
 
 # HTML: siempre fresco
 /*.html
   Cache-Control: no-cache, must-revalidate
 
-# JS y CSS: caché 1 año (Netlify invalida automáticamente en cada deploy)
+# JS y CSS: los archivos NO tienen hash en el nombre (data.js, app.js...),
+# así que NO pueden ser "immutable". Revalidar en cada carga con ETag:
+# el navegador manda If-None-Match y recibe 304 si no cambió (barato),
+# o el archivo nuevo si hubo deploy. Esto garantiza que un cambio de código
+# llegue a TODOS los dispositivos sin quedar atrapado en caché vieja.
 /*.js
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: no-cache, must-revalidate
 
 /*.css
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: no-cache, must-revalidate
 
-# Assets (imágenes, video, fuentes)
+# Assets (imágenes, video, fuentes) sí pueden cachearse fuerte:
+# viven en Cloudinary con URLs versionadas.
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+# Headers de seguridad para todo el sitio
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
