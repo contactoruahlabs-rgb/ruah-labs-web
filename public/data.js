@@ -1511,29 +1511,44 @@ function saveContent(c) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(c));
   } catch (e) {}
-  var api = (window.RUAH_API || '') + '/api/content';
-  var adminKey = sessionStorage.getItem('ruah-admin-session') || '';
-  fetch(api, {
-    method: 'POST',
+
+  // Guardar directo en Supabase desde el browser (sin pasar por Railway)
+  var SB_URL = 'https://txrpxzsqqomdlnxmyvxn.supabase.co';
+  var SB_ANON = 'sb_publishable_ZLrj11-7GjIE8gEiwybtvQ_6e4NZ07p';
+  fetch(SB_URL + '/rest/v1/content?key=eq.main', {
+    method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      'x-admin-key': adminKey
+      'apikey': SB_ANON,
+      'Authorization': 'Bearer ' + SB_ANON,
+      'Prefer': 'return=minimal'
     },
     body: JSON.stringify({
       data: c
     })
   }).then(function (r) {
     if (!r.ok) {
-      r.json().then(function (e) {
-        console.error('[RUAH] saveContent error', r.status, e);
-        showSaveToast(false, r.status + ' - ' + (e && e.error ? e.error : 'ver consola'));
-      }).catch(function () {
-        showSaveToast(false, 'HTTP ' + r.status);
-      });
+      // Si el row no existe, intentar INSERT
+      if (r.status === 404 || r.status === 406) {
+        return fetch(SB_URL + '/rest/v1/content', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SB_ANON,
+            'Authorization': 'Bearer ' + SB_ANON,
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({
+            key: 'main',
+            data: c
+          })
+        });
+      }
+      showSaveToast(false, 'HTTP ' + r.status);
       return;
     }
     showSaveToast(true);
-    // Broadcast desde el browser — no depende de Railway para llegar a Supabase
+    // Broadcast en tiempo real — todos los dispositivos reciben el cambio instantáneo
     if (window._ruahSbClient) {
       window._ruahSbClient.channel('content-main').send({
         type: 'broadcast',
@@ -1543,9 +1558,24 @@ function saveContent(c) {
         }
       }).catch(function () {});
     }
+  }).then(function (r2) {
+    if (r2 && r2.ok) {
+      showSaveToast(true);
+      if (window._ruahSbClient) {
+        window._ruahSbClient.channel('content-main').send({
+          type: 'broadcast',
+          event: 'content-updated',
+          payload: {
+            data: c
+          }
+        }).catch(function () {});
+      }
+    } else if (r2 && !r2.ok) {
+      showSaveToast(false, 'HTTP ' + r2.status);
+    }
   }).catch(function (e) {
-    console.error('[RUAH] saveContent fetch error', e);
-    showSaveToast(false, 'Sin conexión con el servidor');
+    console.error('[RUAH] saveContent error', e);
+    showSaveToast(false, 'Sin conexión');
   });
 }
 
