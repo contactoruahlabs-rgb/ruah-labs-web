@@ -1506,9 +1506,22 @@ function saveContent(c) {
       data: c
     })
   }).then(function (r) {
-    if (!r.ok) r.json().then(function (e) {
-      console.error('[RUAH] saveContent error', r.status, e);
-    }).catch(function () {});
+    if (!r.ok) {
+      r.json().then(function (e) {
+        console.error('[RUAH] saveContent error', r.status, e);
+      }).catch(function () {});
+      return;
+    }
+    // Broadcast desde el browser — no depende de Railway para llegar a Supabase
+    if (window._ruahSbClient) {
+      window._ruahSbClient.channel('content-main').send({
+        type: 'broadcast',
+        event: 'content-updated',
+        payload: {
+          data: c
+        }
+      }).catch(function () {});
+    }
   }).catch(function (e) {
     console.error('[RUAH] saveContent fetch error', e);
   });
@@ -1643,6 +1656,7 @@ function useContentStore() {
     // Si el SDK de Supabase está cargado, usarlo (habilita Realtime)
     if (window.supabase && window.supabase.createClient) {
       var client = window.supabase.createClient(SUPABASE_URL, ANON);
+      window._ruahSbClient = client;
 
       // Carga inicial
       client.from('content').select('data').eq('key', 'main').limit(1).single().then(function (res) {
