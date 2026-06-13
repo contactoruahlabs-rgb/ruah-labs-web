@@ -1490,6 +1490,22 @@ function deepMerge(base, over) {
   }
   return out;
 }
+function showSaveToast(ok, msg) {
+  var el = document.getElementById('ruah-save-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'ruah-save-toast';
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);' + 'padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;z-index:99999;' + 'color:#fff;transition:opacity .3s;pointer-events:none;white-space:nowrap';
+    document.body.appendChild(el);
+  }
+  el.textContent = ok ? '✓ Guardado en la nube' : '✗ Error: ' + msg;
+  el.style.background = ok ? '#16a34a' : '#dc2626';
+  el.style.opacity = '1';
+  clearTimeout(el._t);
+  el._t = setTimeout(function () {
+    el.style.opacity = '0';
+  }, 3500);
+}
 function saveContent(c) {
   c._savedAt = Date.now();
   try {
@@ -1510,9 +1526,13 @@ function saveContent(c) {
     if (!r.ok) {
       r.json().then(function (e) {
         console.error('[RUAH] saveContent error', r.status, e);
-      }).catch(function () {});
+        showSaveToast(false, r.status + ' - ' + (e && e.error ? e.error : 'ver consola'));
+      }).catch(function () {
+        showSaveToast(false, 'HTTP ' + r.status);
+      });
       return;
     }
+    showSaveToast(true);
     // Broadcast desde el browser — no depende de Railway para llegar a Supabase
     if (window._ruahSbClient) {
       window._ruahSbClient.channel('content-main').send({
@@ -1525,6 +1545,7 @@ function saveContent(c) {
     }
   }).catch(function (e) {
     console.error('[RUAH] saveContent fetch error', e);
+    showSaveToast(false, 'Sin conexión con el servidor');
   });
 }
 
