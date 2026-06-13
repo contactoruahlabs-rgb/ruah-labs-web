@@ -24,11 +24,11 @@ var SITE_URL   = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:8000';
 var IS_DEV     = !MP_TOKEN.startsWith('APP_USR-');
 var ADMIN_KEY  = process.env.ADMIN_API_KEY || '';
 
-// Cloudinary — soporta CLOUDINARY_URL=cloudinary://key:secret@cloud o vars separadas
+// Cloudinary — CLOUDINARY_URL siempre tiene prioridad sobre vars separadas
 var CLD_CLOUD  = process.env.CLOUDINARY_CLOUD_NAME  || 'dh05zwrbp';
 var CLD_KEY    = process.env.CLOUDINARY_API_KEY      || '';
 var CLD_SECRET = process.env.CLOUDINARY_API_SECRET   || '';
-if (process.env.CLOUDINARY_URL && (!CLD_KEY || !CLD_SECRET)) {
+if (process.env.CLOUDINARY_URL) {
   var _cldUrl = process.env.CLOUDINARY_URL.replace('cloudinary://', '');
   var _cldAt  = _cldUrl.indexOf('@');
   if (_cldAt > 0) {
