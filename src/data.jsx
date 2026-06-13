@@ -824,6 +824,7 @@ function deepMerge(base, over) {
 }
 
 function saveContent(c) {
+  c._savedAt = Date.now();
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(c)); } catch (e) {}
   var api = (window.RUAH_API || '') + '/api/content';
   var adminKey = sessionStorage.getItem('ruah-admin-session') || '';
@@ -980,15 +981,31 @@ function useContentStore() {
         .catch(function(){})
         .finally(function() { syncedRef.current = true; });
 
-      // Suscripción Realtime Broadcast — todos los visitantes ven los cambios al instante
-      // El backend emite el broadcast cuando el admin guarda (no requiere configurar la BD)
+      // Realtime Broadcast — actualización inmediata cuando el admin guarda
       var channel = client.channel('content-main')
         .on('broadcast', { event: 'content-updated' }, function(payload) {
           if (payload.payload && payload.payload.data) applyRemote(payload.payload.data);
         })
         .subscribe();
 
-      return function() { client.removeChannel(channel); };
+      // Polling de respaldo cada 30s — garantiza sync aunque el Realtime falle
+      var lastSavedAt = 0;
+      function pollSupabase() {
+        client.from('content').select('data').eq('key', 'main').limit(1).single()
+          .then(function(res) {
+            if (res.data && res.data.data) {
+              var remote = res.data.data;
+              var remoteTs = remote._savedAt || 0;
+              if (remoteTs > lastSavedAt) {
+                lastSavedAt = remoteTs;
+                applyRemote(remote);
+              }
+            }
+          }).catch(function(){});
+      }
+      var pollInterval = setInterval(pollSupabase, 30000);
+
+      return function() { client.removeChannel(channel); clearInterval(pollInterval); };
     }
 
     // Fallback sin SDK: carga una vez con fetch
