@@ -621,14 +621,16 @@ app.post('/api/content', async function(req, res) {
   if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
   var data = req.body.data;
   if (!data || typeof data !== 'object') return res.status(400).json({ error: 'data requerida' });
-  sbRequest('POST', SB_URL + '/rest/v1/content', {
+  // PATCH actualiza el row existente (nunca conflictúa).
+  // Si no existiera el row, el PATCH afecta 0 filas y retorna 204 igual —
+  // en ese caso hacemos POST para insertarlo.
+  sbRequest('PATCH', SB_URL + '/rest/v1/content?key=eq.main', {
     'apikey': SB_SVC, 'Authorization': 'Bearer ' + SB_SVC,
-    'Prefer': 'return=minimal,resolution=merge-duplicates',
-  }, { key: 'main', data: data })
+    'Prefer': 'return=minimal',
+  }, { data: data })
   .then(function(r) {
     if (r.status >= 300) { res.status(r.status).json({ error: r.data }); return; }
     broadcastContent(data);
-    // reset hash cache so password changes take effect immediately
     if (data.brand && data.brand.adminPasswordHash) _adminHashCache = null;
     res.json({ ok: true });
   }).catch(function(err) { res.status(500).json({ error: err.message }); });
