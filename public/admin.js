@@ -257,7 +257,7 @@ function Toggle({
 // Subir imagen a Cloudinary con firma del servidor (signed upload)
 async function uploadToCloudinary(file) {
   var api = (window.RUAH_API || '') + '/api/images/sign';
-  var adminKey = sessionStorage.getItem('ruah-admin-session') || '';
+  var adminKey = typeof getAdminToken === 'function' ? await getAdminToken() : sessionStorage.getItem('ruah-admin-session') || '';
   var signRes = await fetch(api, {
     method: 'POST',
     headers: {

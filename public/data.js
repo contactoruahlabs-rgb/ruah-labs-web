@@ -1506,48 +1506,62 @@ function showSaveToast(ok, msg) {
     el.style.opacity = '0';
   }, 3500);
 }
+
+// JWT del admin vigente — usa getSession() para refrescar si expiró (1h).
+function getAdminToken() {
+  var stored = sessionStorage.getItem('ruah-admin-session') || '';
+  if (!window._ruahSbClient) return Promise.resolve(stored);
+  return window._ruahSbClient.auth.getSession().then(function (s) {
+    var tok = s && s.data && s.data.session && s.data.session.access_token;
+    if (tok) {
+      sessionStorage.setItem('ruah-admin-session', tok);
+      return tok;
+    }
+    return stored;
+  }).catch(function () {
+    return stored;
+  });
+}
 function saveContent(c) {
   c._savedAt = Date.now();
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(c));
   } catch (e) {}
-
-  // Guardar vía Railway: el backend usa la service-role key (única autorizada
-  // a escribir en Supabase tras cerrar el RLS). Autentica con la contraseña admin.
   var api = (window.RUAH_API || '') + '/api/content';
-  var adminKey = sessionStorage.getItem('ruah-admin-session') || '';
-  return fetch(api, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-admin-key': adminKey
-    },
-    body: JSON.stringify({
-      data: c
-    })
-  }).then(function (r) {
-    if (!r.ok) {
-      r.json().then(function (e) {
-        showSaveToast(false, r.status + (r.status === 403 ? ' — sesión inválida' : ' — ' + (e && e.error || 'error')));
-      }).catch(function () {
-        showSaveToast(false, 'HTTP ' + r.status);
-      });
-      throw new Error('save_failed');
-    }
-    showSaveToast(true);
-    if (window._ruahSbClient) {
-      window._ruahSbClient.channel('content-main').send({
-        type: 'broadcast',
-        event: 'content-updated',
-        payload: {
-          data: c
-        }
-      }).catch(function () {});
-    }
-  }).catch(function (e) {
-    if (e.message !== 'save_failed') showSaveToast(false, 'Sin conexión con el servidor');
-    throw e;
-  });
+  return getAdminToken().then(function (adminKey) {
+    return fetch(api, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-key': adminKey
+      },
+      body: JSON.stringify({
+        data: c
+      })
+    }).then(function (r) {
+      if (!r.ok) {
+        r.json().then(function (e) {
+          showSaveToast(false, r.status + (r.status === 403 ? ' — sesión inválida' : ' — ' + (e && e.error || 'error')));
+        }).catch(function () {
+          showSaveToast(false, 'HTTP ' + r.status);
+        });
+        throw new Error('save_failed');
+      }
+      showSaveToast(true);
+      if (window._ruahSbClient) {
+        window._ruahSbClient.channel('content-main').send({
+          type: 'broadcast',
+          event: 'content-updated',
+          payload: {
+            data: c
+          }
+        }).catch(function () {});
+      }
+    }).catch(function (e) {
+      if (e.message !== 'save_failed') showSaveToast(false, 'Sin conexión con el servidor');
+      throw e;
+    });
+  }); // cierra getAdminToken().then
 }
 
 // Apply font-size tokens to :root as CSS vars
