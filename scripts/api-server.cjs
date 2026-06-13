@@ -641,6 +641,20 @@ app.get('/api/health', function(_req, res) {
   res.json({ ok: true, mp_configured: !!(MP_TOKEN && MP_TOKEN !== 'YOUR_MERCADOPAGO_ACCESS_TOKEN'), sandbox: IS_DEV });
 });
 
+// ─── Diagnóstico (temporal) ───────────────────────────────────────────────────
+app.get('/api/diag', async function(_req, res) {
+  var result = { sb_url: !!SB_URL, sb_svc: !!SB_SVC, admin_key: !!ADMIN_KEY, cld_key: !!CLD_KEY };
+  // Probar escritura en Supabase
+  try {
+    var testFetch = await fetch(SB_URL + '/rest/v1/content?key=eq.main&select=key&limit=1', {
+      headers: { 'apikey': SB_SVC, 'Authorization': 'Bearer ' + SB_SVC }
+    });
+    result.sb_read_status = testFetch.status;
+    result.sb_read_ok = testFetch.ok;
+  } catch(e) { result.sb_read_error = e.message; }
+  res.json(result);
+});
+
 app.listen(3001, function() {
   console.log('✅ API Server corriendo en http://localhost:3001');
   console.log('   MP configurado:', !!(MP_TOKEN && MP_TOKEN !== 'YOUR_MERCADOPAGO_ACCESS_TOKEN'));
