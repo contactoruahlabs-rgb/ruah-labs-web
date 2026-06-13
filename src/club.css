@@ -15,7 +15,7 @@
 .club-overlay::before {
   content: '';
   position: absolute; inset: 0;
-  background-image: url('assets/texture-black.jpg');
+  background-image: url('https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323743/ruahlabs/mincsrbjmuyscwkjdja1.jpg');
   background-size: cover;
   opacity: 0.35;
   mix-blend-mode: screen;

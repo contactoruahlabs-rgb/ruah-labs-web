@@ -492,7 +492,7 @@ section { padding-block: var(--section-pad-y); position: relative; }
 .hero__texture {
   position: absolute;
   inset: 0;
-  background-image: url('assets/texture-hero.jpg');
+  background-image: url('https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323748/ruahlabs/d7tkaq7nlbzcof3ptgxk.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -594,7 +594,7 @@ section { padding-block: var(--section-pad-y); position: relative; }
 .about::before {
   content: '';
   position: absolute; inset: 0;
-  background-image: url('assets/texture-about.jpg');
+  background-image: url('https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323742/ruahlabs/o5bze7qyocfdiqjp3gci.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -1280,7 +1280,7 @@ section { padding-block: var(--section-pad-y); position: relative; }
 .testi-section::before {
   content: '';
   position: absolute; inset: 0;
-  background-image: url('assets/texture-testimonios.jpg');
+  background-image: url('https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323749/ruahlabs/baxdomnjwjuhubo7kjdd.jpg');
   background-size: cover;
   background-position: center;
   opacity: 1;
@@ -1413,7 +1413,7 @@ section { padding-block: var(--section-pad-y); position: relative; }
 .footer::before {
   content: '';
   position: absolute; inset: 0;
-  background-image: url('assets/texture-black.jpg');
+  background-image: url('https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323743/ruahlabs/mincsrbjmuyscwkjdja1.jpg');
   background-size: cover;
   opacity: 1;
   pointer-events: none;

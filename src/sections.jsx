@@ -149,7 +149,7 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
           aria-label={content.brand.name}
           title="·">
 
-          <img src={(window.__resources && window.__resources.logoWordmark) || "assets/ruah-logo-wordmark.png"} alt="RUAH LABS" className="nav__brand-img" />
+          <img src={(window.__resources && window.__resources.logoWordmark) || "https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323723/ruahlabs/s0c7jhjeiwvrjclesxmj.png"} alt="RUAH LABS" className="nav__brand-img" />
         </a>
 
         <div className="nav__links">
@@ -203,7 +203,7 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
           aria-label={'Carrito (' + cartCount + ')'}
           title="Ir a pagar"
         >
-          <img src={(window.__resources && window.__resources.cartIcon) || "assets/cart-carrito.png"} alt="" className="nav__cart__img" aria-hidden="true" />
+          <img src={(window.__resources && window.__resources.cartIcon) || "https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323690/ruahlabs/lmlhjytfctlr3apdcebc.png"} alt="" className="nav__cart__img" aria-hidden="true" />
           {cartCount > 0 && <span className="nav__cart__b">{cartCount}</span>}
         </button>
 
@@ -269,8 +269,8 @@ function Hero({ content }) {
   const { hero } = content;
   return (
     <section className="hero" id="top">
-      <video className="hero__video-bg hero__video-bg--desktop" src="assets/hero-bg.mp4" autoPlay muted loop playsInline preload="metadata" aria-hidden="true" />
-      <video className="hero__video-bg hero__video-bg--mobile" src="assets/hero-bg-mobile.mp4" autoPlay muted loop playsInline preload="metadata" aria-hidden="true" />
+      <video className="hero__video-bg hero__video-bg--desktop" src="https://res.cloudinary.com/dh05zwrbp/video/upload/v1781323721/ruahlabs/dk5p5bmllg4bzap3kovl.mp4" autoPlay muted loop playsInline preload="metadata" aria-hidden="true" />
+      <video className="hero__video-bg hero__video-bg--mobile" src="https://res.cloudinary.com/dh05zwrbp/video/upload/v1781323714/ruahlabs/kv8jqlkslwzfedpjcjia.mp4" autoPlay muted loop playsInline preload="metadata" aria-hidden="true" />
       <div className="hero__texture" aria-hidden="true"></div>
       <div className="shell">
         <div className="hero__eyebrow">

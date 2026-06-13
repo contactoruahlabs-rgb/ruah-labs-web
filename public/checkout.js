@@ -276,7 +276,7 @@ function Checkout({
   }, /*#__PURE__*/React.createElement("div", {
     className: "ck-top__brand"
   }, /*#__PURE__*/React.createElement("img", {
-    src: window.__resources && window.__resources.logoWhite || "assets/ruah-logo-white.png",
+    src: window.__resources && window.__resources.logoWhite || "https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323723/ruahlabs/s6aaamzrfbcwd46icjxu.png",
     alt: "RUAH LABS",
     className: "ck-top__logo"
   }), /*#__PURE__*/React.createElement("span", {

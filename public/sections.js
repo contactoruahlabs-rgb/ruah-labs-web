@@ -188,7 +188,7 @@ function Nav({
     "aria-label": content.brand.name,
     title: "\xB7"
   }, /*#__PURE__*/React.createElement("img", {
-    src: window.__resources && window.__resources.logoWordmark || "assets/ruah-logo-wordmark.png",
+    src: window.__resources && window.__resources.logoWordmark || "https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323723/ruahlabs/s0c7jhjeiwvrjclesxmj.png",
     alt: "RUAH LABS",
     className: "nav__brand-img"
   })), /*#__PURE__*/React.createElement("div", {
@@ -232,7 +232,7 @@ function Nav({
     "aria-label": 'Carrito (' + cartCount + ')',
     title: "Ir a pagar"
   }, /*#__PURE__*/React.createElement("img", {
-    src: window.__resources && window.__resources.cartIcon || "assets/cart-carrito.png",
+    src: window.__resources && window.__resources.cartIcon || "https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323690/ruahlabs/lmlhjytfctlr3apdcebc.png",
     alt: "",
     className: "nav__cart__img",
     "aria-hidden": "true"
@@ -306,7 +306,7 @@ function Hero({
     id: "top"
   }, /*#__PURE__*/React.createElement("video", {
     className: "hero__video-bg hero__video-bg--desktop",
-    src: "assets/hero-bg.mp4",
+    src: "https://res.cloudinary.com/dh05zwrbp/video/upload/v1781323721/ruahlabs/dk5p5bmllg4bzap3kovl.mp4",
     autoPlay: true,
     muted: true,
     loop: true,
@@ -315,7 +315,7 @@ function Hero({
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("video", {
     className: "hero__video-bg hero__video-bg--mobile",
-    src: "assets/hero-bg-mobile.mp4",
+    src: "https://res.cloudinary.com/dh05zwrbp/video/upload/v1781323714/ruahlabs/kv8jqlkslwzfedpjcjia.mp4",
     autoPlay: true,
     muted: true,
     loop: true,

@@ -200,7 +200,7 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
       <div className="ck-shell">
         <header className="ck-top">
           <div className="ck-top__brand">
-            <img src={(window.__resources && window.__resources.logoWhite) || "assets/ruah-logo-white.png"} alt="RUAH LABS" className="ck-top__logo" />
+            <img src={(window.__resources && window.__resources.logoWhite) || "https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323723/ruahlabs/s6aaamzrfbcwd46icjxu.png"} alt="RUAH LABS" className="ck-top__logo" />
             <span className="ck-top__tag">{ck.topTag || 'CHECKOUT · ACTIVA PROTOCOLO 1×1'}</span>
           </div>
           <button className="ck-close" onClick={onClose} aria-label="Cerrar">×</button>
