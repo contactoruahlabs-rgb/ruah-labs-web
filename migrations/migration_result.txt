@@ -1,0 +1,6 @@
+Conectando a Supabase...
+❌ Error: Tenant or user not found
+============================================
+ Revisa migration_result.txt para detalles
+============================================
+ERROR (codigo 1

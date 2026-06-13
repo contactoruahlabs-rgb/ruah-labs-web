@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RUAH LABS — Estampado y Sublimación Profesional · Santiago, Chile</title>
+  <meta name="description" content="Estampado y sublimación profesional para iglesias, marcas y eventos en Santiago, Chile. Cada compra activa el Protocolo 1×1: una prenda vendida, una prenda donada." />
+  <meta name="keywords" content="estampado Santiago, sublimación Chile, ropa cristiana, merch iglesias, poleras personalizadas Santiago, RUAH LABS" />
+  <meta name="author" content="RUAH LABS" />
+  <link rel="canonical" href="https://www.ruahlabs.cl/" />
+
+  <!-- Open Graph (WhatsApp, redes sociales) -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://www.ruahlabs.cl/" />
+  <meta property="og:title"       content="RUAH LABS — Fe puesta en acción" />
+  <meta property="og:description" content="Estampado y sublimación profesional para iglesias, marcas y eventos. Cada compra activa el Protocolo 1×1." />
+  <meta property="og:locale"      content="es_CL" />
+
+  <!-- Datos estructurados para Google (negocio local) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "RUAH LABS",
+    "description": "Estampado y sublimación profesional para iglesias, marcas y eventos en Santiago, Chile.",
+    "url": "https://www.ruahlabs.cl",
+    "email": "contacto@ruahlabs.cl",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Santiago",
+      "addressCountry": "CL"
+    },
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+56926237239",
+      "contactType": "customer service",
+      "availableLanguage": "Spanish"
+    },
+    "sameAs": []
+  }
+  </script>
+
+  <script src="config.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="admin.css" />
+  <link rel="stylesheet" href="club.css" />
+  <link rel="stylesheet" href="extras.css" />
+  <link rel="stylesheet" href="eventos.css" />
+  <link rel="stylesheet" href="checkout.css" />
+  <link rel="stylesheet" href="secret.css" />
+
+  <!-- Preconectar CDNs para resolver DNS antes de descargar -->
+  <link rel="preconnect" href="https://unpkg.com" crossorigin />
+  <link rel="dns-prefetch" href="https://unpkg.com" />
+
+  <!-- Supabase JS (Realtime — cambios en vivo para todos los visitantes) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" crossorigin="anonymous"></script>
+  <!-- Sanitización XSS -->
+  <script src="https://unpkg.com/dompurify@3.1.6/dist/purify.min.js" crossorigin="anonymous"></script>
+  <!-- React producción: ~620KB en vez de ~5.4MB -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+  <!-- Babel standalone: compila JSX en el navegador (~900KB) -->
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="data.js"></script>
+  <script src="sections.js"></script>
+  <script src="extras.js"></script>
+  <script src="eventos.js"></script>
+  <script src="club.js"></script>
+  <script src="admin.js"></script>
+  <script src="checkout.js"></script>
+  <script src="secret.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+## RUAH LABS — Cache headers para Netlify
+
+# HTML: siempre fresco
+/*.html
+  Cache-Control: no-cache, must-revalidate
+
+# JS y CSS: caché 1 año (Netlify invalida automáticamente en cada deploy)
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+
+# Assets (imágenes, video, fuentes)
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

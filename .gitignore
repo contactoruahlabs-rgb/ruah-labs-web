@@ -1,0 +1,20 @@
+# Secretos — NUNCA subir a GitHub
+.env.local
+.env
+.env*.local
+scripts/create-admin.cjs
+
+# Dependencias
+node_modules/
+
+# Assets — van en Cloudinary, no en el repo
+public/assets/
+src/assets/
+
+# Railway / Netlify / deploy
+.railwayignore
+
+# Sistema
+.DS_Store
+Thumbs.db
+*.log
