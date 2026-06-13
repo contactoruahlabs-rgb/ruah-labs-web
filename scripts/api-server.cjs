@@ -273,20 +273,42 @@ function broadcastContent(data) {
   }).catch(function(){});
 }
 
+function sbRequest(method, path, headers, body) {
+  return new Promise(function(resolve, reject) {
+    var https = require('https');
+    var url   = new URL(path);
+    var data  = body ? JSON.stringify(body) : null;
+    var opts  = {
+      hostname: url.hostname,
+      port:     443,
+      path:     url.pathname + (url.search || ''),
+      method:   method,
+      headers:  Object.assign({ 'Content-Type': 'application/json' }, headers),
+    };
+    if (data) opts.headers['Content-Length'] = Buffer.byteLength(data);
+    var req = https.request(opts, function(res) {
+      var chunks = [];
+      res.on('data', function(c) { chunks.push(c); });
+      res.on('end', function() {
+        try { resolve({ status: res.statusCode, data: JSON.parse(Buffer.concat(chunks).toString()) }); }
+        catch(e) { resolve({ status: res.statusCode, data: null }); }
+      });
+    });
+    req.on('error', reject);
+    if (data) req.write(data);
+    req.end();
+  });
+}
+
 function sbFetch(method, table, opts) {
-  // opts: { body, query, select }
   var url = SB_URL + '/rest/v1/' + table;
   if (opts && opts.query) url += '?' + opts.query;
-  return fetch(url, {
-    method: method,
-    headers: {
-      'apikey':        SB_SVC,
-      'Authorization': 'Bearer ' + SB_SVC,
-      'Content-Type':  'application/json',
-      'Prefer':        method === 'POST' ? 'return=representation' : '',
-    },
-    body: opts && opts.body ? JSON.stringify(opts.body) : undefined,
-  }).then(function(r) { return r.json().then(function(d) { return { status: r.status, data: d }; }); });
+  var headers = {
+    'apikey':        SB_SVC,
+    'Authorization': 'Bearer ' + SB_SVC,
+    'Prefer':        method === 'POST' ? 'return=representation' : '',
+  };
+  return sbRequest(method, url, headers, opts && opts.body ? opts.body : undefined);
 }
 
 // Generador de contraseña segura
@@ -598,16 +620,12 @@ app.post('/api/content', async function(req, res) {
   if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
   var data = req.body.data;
   if (!data || typeof data !== 'object') return res.status(400).json({ error: 'data requerida' });
-  fetch(SB_URL + '/rest/v1/content', {
-    method: 'POST',
-    headers: {
-      'apikey': SB_SVC, 'Authorization': 'Bearer ' + SB_SVC,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=minimal,resolution=merge-duplicates',
-    },
-    body: JSON.stringify({ key: 'main', data: data }),
-  }).then(function(r) {
-    if (!r.ok) return r.json().then(function(e) { res.status(r.status).json({ error: e }); });
+  sbRequest('POST', SB_URL + '/rest/v1/content', {
+    'apikey': SB_SVC, 'Authorization': 'Bearer ' + SB_SVC,
+    'Prefer': 'return=minimal,resolution=merge-duplicates',
+  }, { key: 'main', data: data })
+  .then(function(r) {
+    if (r.status >= 300) { res.status(r.status).json({ error: r.data }); return; }
     broadcastContent(data);
     res.json({ ok: true });
   }).catch(function(err) { res.status(500).json({ error: err.message }); });
@@ -644,13 +662,13 @@ app.get('/api/health', function(_req, res) {
 // ─── Diagnóstico (temporal) ───────────────────────────────────────────────────
 app.get('/api/diag', async function(_req, res) {
   var result = { sb_url: !!SB_URL, sb_svc: !!SB_SVC, admin_key: !!ADMIN_KEY, cld_key: !!CLD_KEY };
-  // Probar escritura en Supabase
+  // Probar conexión a Supabase con https nativo
   try {
-    var testFetch = await fetch(SB_URL + '/rest/v1/content?key=eq.main&select=key&limit=1', {
-      headers: { 'apikey': SB_SVC, 'Authorization': 'Bearer ' + SB_SVC }
+    var testR = await sbRequest('GET', SB_URL + '/rest/v1/content?key=eq.main&select=key&limit=1', {
+      'apikey': SB_SVC, 'Authorization': 'Bearer ' + SB_SVC
     });
-    result.sb_read_status = testFetch.status;
-    result.sb_read_ok = testFetch.ok;
+    result.sb_read_status = testR.status;
+    result.sb_read_ok = testR.status < 300;
   } catch(e) { result.sb_read_error = e.message; }
   res.json(result);
 });
