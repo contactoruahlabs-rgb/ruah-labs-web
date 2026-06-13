@@ -24,24 +24,17 @@ var SITE_URL   = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:8000';
 var IS_DEV     = !MP_TOKEN.startsWith('APP_USR-');
 var ADMIN_KEY  = process.env.ADMIN_API_KEY || '';
 var ADMIN_EMAIL = 'contacto.ruahlabs@gmail.com';
-// Cache last validated JWT for 2 min to avoid hammering Supabase Auth
-var _adminTokenCache = { token: null, validUntil: 0 };
-async function isAdmin(token) {
+function isAdmin(token) {
   if (!token) return false;
   if (ADMIN_KEY && token === ADMIN_KEY) return true;
   try {
-    var now = Date.now();
-    if (_adminTokenCache.token === token && now < _adminTokenCache.validUntil) return true;
-    // Validate JWT via Supabase Auth
-    var r = await sbRequest('GET', SB_URL + '/auth/v1/user', {
-      'apikey': SB_SVC,
-      'Authorization': 'Bearer ' + token,
-    });
-    if (r.status === 200 && r.data && r.data.email === ADMIN_EMAIL) {
-      _adminTokenCache = { token, validUntil: now + 2 * 60 * 1000 };
-      return true;
-    }
-  } catch(e) { console.error('[isAdmin] error:', e.message); }
+    // Decode JWT payload (no network call — fast, no SB_SVC dependency)
+    var parts = token.split('.');
+    if (parts.length !== 3) return false;
+    var payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
+    var now = Math.floor(Date.now() / 1000);
+    return payload.email === ADMIN_EMAIL && payload.exp > now;
+  } catch(e) { console.error('[isAdmin] JWT decode error:', e.message); }
   return false;
 }
 
@@ -401,7 +394,7 @@ app.post('/api/club/change-password', function(req, res) {
 
 // ─── POST /api/club/members (admin: crear miembro) ───────────────────────────
 app.post('/api/club/members', async function(req, res) {
-  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
+  if (!isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
 
   var name  = (req.body.name  || '').trim();
   var email = (req.body.email || '').trim().toLowerCase();
@@ -422,7 +415,7 @@ app.post('/api/club/members', async function(req, res) {
 
 // ─── GET /api/club/members (admin: listar) ────────────────────────────────────
 app.get('/api/club/members', async function(req, res) {
-  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
+  if (!isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
   sbFetch('GET', 'club_credentials', {
     query: 'select=id,name,email,is_active,must_change_password,created_at,last_login_at,notes&order=created_at.desc',
   }).then(function(r) { res.json(r.data); })
@@ -431,7 +424,7 @@ app.get('/api/club/members', async function(req, res) {
 
 // ─── GET /api/club/access-log (admin: ver log) ───────────────────────────────
 app.get('/api/club/access-log', async function(req, res) {
-  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
+  if (!isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
   sbFetch('GET', 'club_access_log', {
     query: 'select=*&order=created_at.desc&limit=200',
   }).then(function(r) { res.json(r.data); })
@@ -440,7 +433,7 @@ app.get('/api/club/access-log', async function(req, res) {
 
 // ─── DELETE /api/club/members/:email (admin: desactivar) ─────────────────────
 app.delete('/api/club/members/:email', async function(req, res) {
-  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
+  if (!isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
   var email = decodeURIComponent(req.params.email);
   sbFetch('PATCH', 'club_credentials', {
     query: 'email=eq.' + encodeURIComponent(email),
@@ -602,7 +595,7 @@ app.delete('/api/club/signup', function(req, res) {
 
 // ─── GET /api/club/signups (admin) ───────────────────────────────────────────
 app.get('/api/club/signups', async function(req, res) {
-  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
+  if (!isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
   sbFetch('GET', 'club_signups', { query: 'select=*&order=created_at.desc' })
     .then(function(r) { res.json(r.data); })
     .catch(function(err) { res.status(500).json({ error: err.message }); });
@@ -620,7 +613,7 @@ app.get('/api/content', function(req, res) {
 
 // ─── POST /api/content ───────────────────────────────────────────────────────
 app.post('/api/content', async function(req, res) {
-  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
+  if (!isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
   var data = req.body.data;
   if (!data || typeof data !== 'object') return res.status(400).json({ error: 'data requerida' });
   // PATCH actualiza el row existente (nunca conflictúa).
@@ -633,14 +626,13 @@ app.post('/api/content', async function(req, res) {
   .then(function(r) {
     if (r.status >= 300) { res.status(r.status).json({ error: r.data }); return; }
     broadcastContent(data);
-    if (data.brand) _adminTokenCache = { token: null, validUntil: 0 };
     res.json({ ok: true });
   }).catch(function(err) { res.status(500).json({ error: err.message }); });
 });
 
 // ─── POST /api/images/sign — Firma para upload seguro a Cloudinary ───────────
 app.post('/api/images/sign', rateLimit('cld-sign', 30, 60 * 1000), async function(req, res) {
-  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
+  if (!isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
   if (!CLD_KEY || !CLD_SECRET) return res.status(500).json({ error: 'Cloudinary no configurado en el servidor' });
 
   var timestamp = Math.round(Date.now() / 1000);
