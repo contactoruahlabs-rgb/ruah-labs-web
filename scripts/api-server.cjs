@@ -601,6 +601,9 @@ app.get('/api/club/signups', async function(req, res) {
     .catch(function(err) { res.status(500).json({ error: err.message }); });
 });
 
+// ─── GET /api/v (version check) ─────────────────────────────────────────────
+app.get('/api/v', function(req, res) { res.json({ v: 4, auth: 'jwt-local' }); });
+
 // ─── GET /api/content ────────────────────────────────────────────────────────
 app.get('/api/content', function(req, res) {
   sbFetch('GET', 'content', { query: 'key=eq.main&limit=1' })
