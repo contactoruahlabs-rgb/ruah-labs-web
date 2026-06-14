@@ -600,14 +600,15 @@ function ViewBrand({
       lineHeight: 1.6,
       padding: '8px 0'
     }
-  }, "La contrase\xF1a de admin se gestiona en Supabase Auth. Para cambiarla, ve al dashboard de Supabase \u2192 Authentication \u2192 Users."), /*#__PURE__*/React.createElement(ChangePasswordField, {
-    label: "Contrase\xF1a Club",
-    hint: "Acceso al \xE1rea secreta RUAH Club",
-    onSave: async newPwd => {
-      const h = await hashPwd(newPwd);
-      update('brand.clubPasswordHash', h);
+  }, "La contrase\xF1a de admin se gestiona en Supabase Auth. Para cambiarla, ve al dashboard de Supabase \u2192 Authentication \u2192 Users."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: 'var(--mono)',
+      fontSize: 12,
+      color: 'var(--gray)',
+      lineHeight: 1.6,
+      padding: '8px 0'
     }
-  })));
+  }, "La contrase\xF1a global del Club se gestiona en el servidor (Railway \u2192 variable ", /*#__PURE__*/React.createElement("strong", null, "CLUB_PASSWORD_HASH"), "). Por seguridad ya no se guarda ning\xFAn hash en el contenido p\xFAblico.")));
 }
 
 // ----- View: Home (Inicio) -----

@@ -362,7 +362,9 @@ function ViewBrand({ content, store }) {
         <div style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--gray)', lineHeight: 1.6, padding: '8px 0' }}>
           La contraseña de admin se gestiona en Supabase Auth. Para cambiarla, ve al dashboard de Supabase → Authentication → Users.
         </div>
-        <ChangePasswordField label="Contraseña Club" hint="Acceso al área secreta RUAH Club" onSave={async (newPwd) => { const h = await hashPwd(newPwd); update('brand.clubPasswordHash', h); }} />
+        <div style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--gray)', lineHeight: 1.6, padding: '8px 0' }}>
+          La contraseña global del Club se gestiona en el servidor (Railway → variable <strong>CLUB_PASSWORD_HASH</strong>). Por seguridad ya no se guarda ningún hash en el contenido público.
+        </div>
       </div>
     </div>
   );

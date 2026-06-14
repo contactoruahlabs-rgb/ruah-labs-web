@@ -31,9 +31,10 @@ function Club({ open, content, onClose, store }) {
       var data = await r.json();
       ok = !!data.ok;
     } catch (_) {
-      // API no disponible: fallback a comparación SHA-256 local
-      var hash = await hashPwd(pwd);
-      ok = (hash === content.brand.clubPasswordHash);
+      // Sin fallback local: la verificación es solo server-side (bcrypt).
+      // Comparar contra un hash público sería falsificable/craqueable offline.
+      setErr('NO SE PUDO CONECTAR CON EL SERVIDOR. INTENTA DE NUEVO.');
+      return;
     }
     if (ok) {
       setAuthed(true);

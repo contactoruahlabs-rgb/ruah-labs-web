@@ -74,6 +74,18 @@ if (!CLUB_PWD_HASH && process.env.CLUB_PASSWORD) {
   });
 }
 
+// Respuesta de error genérica: registra el detalle real en el log del servidor
+// pero NUNCA lo expone al cliente (evita fuga de errores internos / DB).
+function srvErr(res, err, code) {
+  console.error('[srv-error]', (err && err.message) || err);
+  if (!res.headersSent) res.status(code || 500).json({ error: 'Error del servidor. Intenta más tarde.' });
+}
+
+// Validación básica de formato de email
+function isValidEmail(e) {
+  return typeof e === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) && e.length <= 254;
+}
+
 // Escape HTML para emails (evita inyección en plantillas HTML)
 function esc(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -108,6 +120,9 @@ function mpGetPayment(paymentId) {
 
 // ─── Express ─────────────────────────────────────────────────────────────────
 var app = express();
+// Railway pone exactamente 1 proxy delante. Con esto req.ip es la IP real del
+// cliente (el último hop de confianza) y NO un X-Forwarded-For falsificable.
+app.set('trust proxy', 1);
 app.use(express.json({ limit: '4mb' })); // contenido del sitio (productos) puede ser grande
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
@@ -153,7 +168,8 @@ setInterval(function() {
 
 function rateLimit(key, maxReqs, windowMs) {
   return function(req, res, next) {
-    var ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'anon';
+    // req.ip viene de Express con trust proxy=1 → IP real, no spoofeable vía XFF.
+    var ip = req.ip || req.socket.remoteAddress || 'anon';
     var k  = key + ':' + ip;
     var now = Date.now();
     if (!_rlStore[k] || now - _rlStore[k].start > windowMs) {
@@ -267,7 +283,7 @@ app.post('/api/checkout/create-preference', rateLimit('checkout', 10, 60 * 1000)
     });
   }).catch(function(err) {
     console.error('[MP Network Error]', err.message);
-    res.status(500).json({ error: err.message });
+    srvErr(res, err);
   });
 });
 
@@ -386,7 +402,7 @@ app.post('/api/club/login', rateLimit('login', 5, 15 * 60 * 1000), function(req,
         });
       });
     })
-    .catch(function(err) { res.status(500).json({ error: err.message }); });
+    .catch(function(err) { srvErr(res, err); });
 });
 
 // ─── POST /api/club/change-password ──────────────────────────────────────────
@@ -418,7 +434,7 @@ app.post('/api/club/change-password', rateLimit('chpwd', 10, 15 * 60 * 1000), fu
         });
       });
     })
-    .catch(function(err) { res.status(500).json({ error: err.message }); });
+    .catch(function(err) { srvErr(res, err); });
 });
 
 // ─── POST /api/club/members (admin: crear miembro) ───────────────────────────
@@ -436,10 +452,10 @@ app.post('/api/club/members', async function(req, res) {
     return sbFetch('POST', 'club_credentials', {
       body: { name: name, email: email, password_hash: hash, notes: notes, must_change_password: true },
     }).then(function(r) {
-      if (r.status >= 400) return res.status(r.status).json({ error: r.data });
+      if (r.status >= 400) { console.error('[sb-error]', r.status, r.data); return res.status(r.status >= 500 ? 502 : 400).json({ error: 'No se pudo completar la operación.' }); }
       res.json({ ok: true, email: email, password: rawPass, name: name });
     });
-  }).catch(function(err) { res.status(500).json({ error: err.message }); });
+  }).catch(function(err) { srvErr(res, err); });
 });
 
 // ─── GET /api/club/members (admin: listar) ────────────────────────────────────
@@ -448,7 +464,7 @@ app.get('/api/club/members', async function(req, res) {
   sbFetch('GET', 'club_credentials', {
     query: 'select=id,name,email,is_active,must_change_password,created_at,last_login_at,notes&order=created_at.desc',
   }).then(function(r) { res.json(r.data); })
-    .catch(function(err) { res.status(500).json({ error: err.message }); });
+    .catch(function(err) { srvErr(res, err); });
 });
 
 // ─── GET /api/club/access-log (admin: ver log) ───────────────────────────────
@@ -457,7 +473,7 @@ app.get('/api/club/access-log', async function(req, res) {
   sbFetch('GET', 'club_access_log', {
     query: 'select=*&order=created_at.desc&limit=200',
   }).then(function(r) { res.json(r.data); })
-    .catch(function(err) { res.status(500).json({ error: err.message }); });
+    .catch(function(err) { srvErr(res, err); });
 });
 
 // ─── DELETE /api/club/members/:email (admin: desactivar) ─────────────────────
@@ -468,7 +484,7 @@ app.delete('/api/club/members/:email', async function(req, res) {
     query: 'email=eq.' + encodeURIComponent(email),
     body:  { is_active: false },
   }).then(function() { res.json({ ok: true }); })
-    .catch(function(err) { res.status(500).json({ error: err.message }); });
+    .catch(function(err) { srvErr(res, err); });
 });
 
 // ─── Email via Resend ─────────────────────────────────────────────────────────
@@ -643,7 +659,7 @@ app.post('/api/checkout/welcome', rateLimit('welcome', 5, 60 * 1000), async func
     });
   }).catch(function(err) {
     console.error('[Welcome Error]', err.message);
-    res.status(500).json({ error: err.message });
+    srvErr(res, err);
   });
 });
 
@@ -653,23 +669,25 @@ app.post('/api/club/signup', rateLimit('signup', 12, 60 * 1000), function(req, r
   var route_id   = (req.body.route_id   || '').trim();
   var route_name = (req.body.route_name || '').trim();
   if (!email || !route_id) return res.status(400).json({ error: 'Faltan datos' });
+  if (!isValidEmail(email)) return res.status(400).json({ error: 'Email inválido' });
   sbFetch('POST', 'club_signups', { body: { email, route_id, route_name } })
     .then(function(r) {
-      if (r.status >= 400) return res.status(r.status).json({ error: r.data });
+      if (r.status >= 400) { console.error('[sb-error]', r.status, r.data); return res.status(r.status >= 500 ? 502 : 400).json({ error: 'No se pudo completar la operación.' }); }
       res.json({ ok: true });
-    }).catch(function(err) { res.status(500).json({ error: err.message }); });
+    }).catch(function(err) { srvErr(res, err); });
 });
 
 // ─── DELETE /api/club/signup ─────────────────────────────────────────────────
-app.delete('/api/club/signup', function(req, res) {
+app.delete('/api/club/signup', rateLimit('signup-del', 12, 60 * 1000), function(req, res) {
   var email    = (req.body.email    || '').trim().toLowerCase();
   var route_id = (req.body.route_id || '').trim();
   if (!email || !route_id) return res.status(400).json({ error: 'Faltan datos' });
+  if (!isValidEmail(email)) return res.status(400).json({ error: 'Email inválido' });
   fetch(SB_URL + '/rest/v1/club_signups?email=eq.' + encodeURIComponent(email) + '&route_id=eq.' + encodeURIComponent(route_id), {
     method: 'DELETE',
     headers: { 'apikey': SB_SVC, 'Authorization': 'Bearer ' + SB_SVC },
   }).then(function() { res.json({ ok: true }); })
-    .catch(function(err) { res.status(500).json({ error: err.message }); });
+    .catch(function(err) { srvErr(res, err); });
 });
 
 // ─── GET /api/club/signups (admin) ───────────────────────────────────────────
@@ -677,7 +695,7 @@ app.get('/api/club/signups', async function(req, res) {
   if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
   sbFetch('GET', 'club_signups', { query: 'select=*&order=created_at.desc' })
     .then(function(r) { res.json(r.data); })
-    .catch(function(err) { res.status(500).json({ error: err.message }); });
+    .catch(function(err) { srvErr(res, err); });
 });
 
 // ─── GET /api/v (version check) ─────────────────────────────────────────────
@@ -709,7 +727,7 @@ app.get('/api/content', function(req, res) {
       var row = Array.isArray(r.data) ? r.data[0] : null;
       res.json({ data: row ? row.data : null });
     })
-    .catch(function(err) { res.status(500).json({ error: err.message }); });
+    .catch(function(err) { srvErr(res, err); });
 });
 
 // ─── POST /api/content ───────────────────────────────────────────────────────
@@ -717,6 +735,8 @@ app.post('/api/content', async function(req, res) {
   if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
   var data = req.body.data;
   if (!data || typeof data !== 'object') return res.status(400).json({ error: 'data requerida' });
+  // SEGURIDAD: el blob de contenido se sirve público. Nunca persistir secretos.
+  if (data.brand) { delete data.brand.adminPasswordHash; delete data.brand.clubPasswordHash; }
   // PATCH actualiza el row existente (nunca conflictúa).
   // Si no existiera el row, el PATCH afecta 0 filas y retorna 204 igual —
   // en ese caso hacemos POST para insertarlo.
@@ -725,10 +745,10 @@ app.post('/api/content', async function(req, res) {
     'Prefer': 'return=minimal',
   }, { data: data })
   .then(function(r) {
-    if (r.status >= 300) { res.status(r.status).json({ error: r.data }); return; }
+    if (r.status >= 300) { console.error('[sb-error] content save', r.status, r.data); res.status(r.status >= 500 ? 502 : 400).json({ error: 'No se pudo guardar el contenido.' }); return; }
     broadcastContent(data);
     res.json({ ok: true });
-  }).catch(function(err) { res.status(500).json({ error: err.message }); });
+  }).catch(function(err) { srvErr(res, err); });
 });
 
 // ─── POST /api/images/sign — Firma para upload seguro a Cloudinary ───────────

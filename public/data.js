@@ -18,9 +18,10 @@ const DEFAULT_CONTENT = {
     name: 'RUAH LABS',
     tagline: 'LABORATORIO CREATIVO',
     instagram: '@ruahlabs',
-    location: 'Santiago, Chile · Envíos a todo Chile',
-    adminPasswordHash: '765dad31d1a783887b6ba0933852f9234778ae0e6d0ba34a648f76e08ef0c2fe',
-    clubPasswordHash: '7fcd3df7dc2fff173c22ea6450ede4f11b3e27c7923816aab660d474e27df8c2'
+    location: 'Santiago, Chile · Envíos a todo Chile'
+    // NOTA SEGURIDAD: las contraseñas (admin y club) viven en el servidor.
+    // Admin = Supabase Auth (JWT). Club = bcrypt en Railway (CLUB_PASSWORD_HASH).
+    // NUNCA volver a guardar hashes aquí: este objeto se sirve público.
   },
   theme: {
     ivory: '#f5f1e8',
@@ -1333,6 +1334,14 @@ function loadContent() {
 
 // Append any DEFAULT_CONTENT entries (by id) that the user's saved content is missing.
 function migrateContent(c) {
+  // SEGURIDAD: eliminar hashes de contraseña heredados del blob almacenado.
+  // El blob de contenido se sirve público (anon read), así que nunca debe
+  // contener secretos. Al borrarlos aquí, el próximo "Guardar" del admin
+  // los purga también de Supabase.
+  if (c.brand) {
+    delete c.brand.adminPasswordHash;
+    delete c.brand.clubPasswordHash;
+  }
   if (!c.home) c.home = DEFAULT_CONTENT.home;
   if (!c.home.intro) c.home.intro = DEFAULT_CONTENT.home.intro;
   if (!c.home.featured) c.home.featured = DEFAULT_CONTENT.home.featured;
