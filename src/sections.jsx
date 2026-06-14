@@ -420,7 +420,7 @@ function HomeCategoryCarousel({ content, onOpenProduct }) {
     const featured = catItems.find(it => it.featuredInCarousel && it.img);
     const withImg = catItems.find(it => it.img);
     const pick = featured || withImg || catItems[0];
-    return pick ? { ...pick, catName: cat.name } : null;
+    return pick ? { ...pick, catName: cat.name, catSlug: cat.slug } : null;
   }).filter(Boolean);
 
   const total = carouselItems.length;
@@ -453,7 +453,7 @@ function HomeCategoryCarousel({ content, onOpenProduct }) {
                 key={item.id}
                 className={'c3d__card c3d__card--' + pos}
                 onClick={() => {
-                  if (pos === 'center') { onOpenProduct && onOpenProduct(item.id); }
+                  if (pos === 'center') { window.dispatchEvent(new CustomEvent('ruah:navigateTo', { detail: { page: 'productos', category: item.catSlug } })); }
                   else if (pos === 'left') prev();
                   else if (pos === 'right') next();
                 }}
@@ -477,7 +477,7 @@ function HomeCategoryCarousel({ content, onOpenProduct }) {
         <h3 className="c3d__info-name">{current.name}</h3>
         {current.description && <p className="c3d__info-desc">{current.description}</p>}
         <div className="c3d__info-price"><span className="clp">CLP</span> ${current.price}</div>
-        <button type="button" className="c3d__info-btn" onClick={() => onOpenProduct && onOpenProduct(current.id)}>Ver detalle &#8594;</button>
+        <button type="button" className="c3d__info-btn" onClick={() => window.dispatchEvent(new CustomEvent('ruah:navigateTo', { detail: { page: 'productos', category: current.catSlug } }))}>Ver categoría &#8594;</button>
       </div>
 
       <div className="c3d__dots">
@@ -1243,7 +1243,7 @@ function CTABlock({ content }) {
 }
 
 // --- Footer ---
-function Footer({ content, onOpenAdmin }) {
+function Footer({ content, onOpenAdmin, onNavigate }) {
   const f = content.footer;
   const clicksRef = React.useRef([]);
 
@@ -1296,14 +1296,18 @@ function Footer({ content, onOpenAdmin }) {
           {f.cols.map((c) =>
           <div className="footer__col" key={c.id}>
               <h4>{c.title}</h4>
-              {c.items.map((i) =>
+              {c.items.map((i) => {
+              var PAGE_MAP = { '#nosotros': 'nosotros', '#servicios': 'servicios', '#productos': 'productos', '#protocolo': 'protocolo', '#comunidad': 'comunidad', '#cuadros': 'cuadros', '#iglesias': 'iglesias', '#evento': 'evento', '#design': 'design' };
+              var spaPage = i.href && PAGE_MAP[i.href];
+              return (
             <a key={i.id} href={i.href}
-               onClick={i.href && i.href.startsWith('#') ? (e) => { e.preventDefault(); var el = document.querySelector(i.href); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } : undefined}
+               onClick={i.href && i.href.startsWith('#') ? (e) => { e.preventDefault(); if (spaPage) { onNavigate && onNavigate(spaPage); } else { var el = document.querySelector(i.href); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } } : undefined}
                target={i.href && i.href.startsWith('http') ? '_blank' : undefined}
                rel={i.href && i.href.startsWith('http') ? 'noreferrer' : undefined}>
               {i.label}
             </a>
-            )}
+              );
+            })}
             </div>
           )}
         </div>

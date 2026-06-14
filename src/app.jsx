@@ -85,7 +85,7 @@ function App() {
 
   // Navigate to a page from any component
   React.useEffect(() => {
-    const onNav = (e) => { if (e.detail && e.detail.page) openPage(e.detail.page); };
+    const onNav = (e) => { if (e.detail && e.detail.page) openPage(e.detail.page, e.detail.category || null); };
     window.addEventListener('ruah:navigateTo', onNav);
     return () => window.removeEventListener('ruah:navigateTo', onNav);
   }, []);
@@ -141,16 +141,6 @@ function App() {
     }
   }, []);
 
-  // First-time toast
-  React.useEffect(() => {
-    if (!sessionStorage.getItem('ruah-toasted')) {
-      setTimeout(() => {
-        setToast({ msg: 'TRIPLE-CLICK EN EL LOGO PARA UN SECRETO' });
-        sessionStorage.setItem('ruah-toasted', '1');
-        setTimeout(() => setToast(null), 6500);
-      }, 1500);
-    }
-  }, []);
 
   const cartCount = cart.reduce((s, it) => s + (it.qty || 1), 0);
 

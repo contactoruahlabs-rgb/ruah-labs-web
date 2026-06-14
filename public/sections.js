@@ -515,7 +515,8 @@ function HomeCategoryCarousel({
     const pick = featured || withImg || catItems[0];
     return pick ? {
       ...pick,
-      catName: cat.name
+      catName: cat.name,
+      catSlug: cat.slug
     } : null;
   }).filter(Boolean);
   const total = carouselItems.length;
@@ -555,7 +556,12 @@ function HomeCategoryCarousel({
       className: 'c3d__card c3d__card--' + pos,
       onClick: () => {
         if (pos === 'center') {
-          onOpenProduct && onOpenProduct(item.id);
+          window.dispatchEvent(new CustomEvent('ruah:navigateTo', {
+            detail: {
+              page: 'productos',
+              category: item.catSlug
+            }
+          }));
         } else if (pos === 'left') prev();else if (pos === 'right') next();
       }
     }, /*#__PURE__*/React.createElement("div", {
@@ -589,8 +595,13 @@ function HomeCategoryCarousel({
   }, "CLP"), " $", current.price), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "c3d__info-btn",
-    onClick: () => onOpenProduct && onOpenProduct(current.id)
-  }, "Ver detalle \u2192")), /*#__PURE__*/React.createElement("div", {
+    onClick: () => window.dispatchEvent(new CustomEvent('ruah:navigateTo', {
+      detail: {
+        page: 'productos',
+        category: current.catSlug
+      }
+    }))
+  }, "Ver categor\xEDa \u2192")), /*#__PURE__*/React.createElement("div", {
     className: "c3d__dots"
   }, carouselItems.map((_, i) => /*#__PURE__*/React.createElement("button", {
     key: i,
@@ -1419,7 +1430,8 @@ function CTABlock({
 // --- Footer ---
 function Footer({
   content,
-  onOpenAdmin
+  onOpenAdmin,
+  onNavigate
 }) {
   const f = content.footer;
   const clicksRef = React.useRef([]);
@@ -1475,20 +1487,38 @@ function Footer({
   }, content.brand.location)), f.cols.map(c => /*#__PURE__*/React.createElement("div", {
     className: "footer__col",
     key: c.id
-  }, /*#__PURE__*/React.createElement("h4", null, c.title), c.items.map(i => /*#__PURE__*/React.createElement("a", {
-    key: i.id,
-    href: i.href,
-    onClick: i.href && i.href.startsWith('#') ? e => {
-      e.preventDefault();
-      var el = document.querySelector(i.href);
-      if (el) el.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
-    } : undefined,
-    target: i.href && i.href.startsWith('http') ? '_blank' : undefined,
-    rel: i.href && i.href.startsWith('http') ? 'noreferrer' : undefined
-  }, i.label))))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h4", null, c.title), c.items.map(i => {
+    var PAGE_MAP = {
+      '#nosotros': 'nosotros',
+      '#servicios': 'servicios',
+      '#productos': 'productos',
+      '#protocolo': 'protocolo',
+      '#comunidad': 'comunidad',
+      '#cuadros': 'cuadros',
+      '#iglesias': 'iglesias',
+      '#evento': 'evento',
+      '#design': 'design'
+    };
+    var spaPage = i.href && PAGE_MAP[i.href];
+    return /*#__PURE__*/React.createElement("a", {
+      key: i.id,
+      href: i.href,
+      onClick: i.href && i.href.startsWith('#') ? e => {
+        e.preventDefault();
+        if (spaPage) {
+          onNavigate && onNavigate(spaPage);
+        } else {
+          var el = document.querySelector(i.href);
+          if (el) el.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      } : undefined,
+      target: i.href && i.href.startsWith('http') ? '_blank' : undefined,
+      rel: i.href && i.href.startsWith('http') ? 'noreferrer' : undefined
+    }, i.label);
+  })))), /*#__PURE__*/React.createElement("div", {
     className: "footer__bottom"
   }, /*#__PURE__*/React.createElement("span", null, renderBottomLeft()), /*#__PURE__*/React.createElement("span", null, f.bottomRight))));
 }
