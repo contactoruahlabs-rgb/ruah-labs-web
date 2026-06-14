@@ -223,7 +223,7 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
           title="Ir a pagar"
         >
           <img
-            src={(window.__resources && window.__resources.cartIcon) || 'https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323690/ruahlabs/lmlhjytfctlr3apdcebc.png'}
+            src={(window.__resources && window.__resources.cartIcon) || 'https://res.cloudinary.com/dh05zwrbp/image/upload/v1781467794/ruahlabs/zeqg1q9s5ezkcyyo3vc5.webp'}
             alt=""
             className="nav__cart__img"
             aria-hidden="true"
