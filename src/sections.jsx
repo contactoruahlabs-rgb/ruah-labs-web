@@ -57,13 +57,13 @@ function SectionHeader({ index, title, right, amberTitle = false }) {
 }
 
 // --- Nav ---
-function MobileDropdown({ label, num, children }) {
+function MobileDropdown({ label, children }) {
   var [open, setOpen] = React.useState(false);
   return (
     <div className={'m-drop' + (open ? ' open' : '')}>
       <button className="m-link m-drop__head" type="button" onClick={() => setOpen(o => !o)}>
         <span>{label}</span>
-        <span className="m-link__num">{open ? '−' : '+'}</span>
+        <span className="m-link__arr">{open ? '↑' : '↓'}</span>
       </button>
       <div className="m-drop__list">{children}</div>
     </div>
@@ -216,7 +216,19 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
           aria-label={'Carrito (' + cartCount + ')'}
           title="Ir a pagar"
         >
-          <img src={(window.__resources && window.__resources.cartIcon) || "https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323690/ruahlabs/lmlhjytfctlr3apdcebc.png"} alt="" className="nav__cart__img" aria-hidden="true" />
+          <svg className="nav__cart__img" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            {/* Asa / manubrio */}
+            <path d="M9 5.5 C9 3.5 13 3.5 13 5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" fill="none"/>
+            {/* Cuerpo de la bolsa */}
+            <rect x="6" y="5.5" width="10" height="10" rx="1.2" fill="currentColor" opacity="0.15"/>
+            <rect x="6" y="5.5" width="10" height="10" rx="1.2" stroke="currentColor" strokeWidth="1.6"/>
+            {/* Patas del carrito */}
+            <line x1="8" y1="15.5" x2="7.5" y2="18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+            <line x1="14" y1="15.5" x2="14.5" y2="18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+            {/* Ruedas */}
+            <circle cx="7" cy="18.8" r="1.2" fill="currentColor"/>
+            <circle cx="15" cy="18.8" r="1.2" fill="currentColor"/>
+          </svg>
           {cartCount > 0 && <span className="nav__cart__b">{cartCount}</span>}
         </button>
 
@@ -236,38 +248,33 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
         </button>
       </nav>
 
-      <div className={'mobile-menu' + (mobileOpen ? ' open' : '')} onClick={() => setMobileOpen(false)}>
-        <div className="mobile-menu__inner" onClick={e => e.stopPropagation()}>
-          <button className="mobile-menu__x" onClick={() => setMobileOpen(false)} aria-label="Cerrar menú">×</button>
+      <div className={'mobile-menu' + (mobileOpen ? ' open' : '')}>
+        <div className="mobile-menu__inner">
+          <div className="mobile-menu__head">
+            <span className="mobile-menu__logo">RUAH LABS</span>
+            <button className="mobile-menu__x" onClick={() => setMobileOpen(false)} aria-label="Cerrar menú">×</button>
+          </div>
           <nav className="mobile-menu__nav">
-            {nav.links.map((l, i) =>
+            {nav.links.map((l) =>
             l.dropdown ?
-            <MobileDropdown key={l.id} label={l.label} num={String(i + 1).padStart(2, '0')}>
-                  {products.categories.map((c) =>
-              <a
-                key={c.id}
-                href="#productos"
-                className="m-sub__link"
-                onClick={(e) => {e.preventDefault();navigateCategory(c.slug);}}>
-
-                      {c.name}
-                    </a>
-              )}
-                </MobileDropdown> :
-
-            <a key={l.id} href={l.href} className="m-link" onClick={(e) => {e.preventDefault();navigate(l.href);}}>
-                  <span>{l.label}</span>
-                  <span className="m-link__num">{String(i + 1).padStart(2, '0')}</span>
+            <MobileDropdown key={l.id} label={l.label}>
+              {products.categories.map((c) =>
+                <a key={c.id} href="#productos" className="m-sub__link"
+                   onClick={(e) => { e.preventDefault(); navigateCategory(c.slug); setMobileOpen(false); }}>
+                  {c.name}
                 </a>
-
+              )}
+            </MobileDropdown> :
+            <a key={l.id} href={l.href} className="m-link"
+               onClick={(e) => { e.preventDefault(); navigate(l.href); }}>
+              <span>{l.label}</span>
+              <span className="m-link__arr">→</span>
+            </a>
             )}
-            <a
-              href={nav.cta.href}
-              className="m-link m-link--cta"
-              onClick={(e) => {e.preventDefault();navigate(nav.cta.href);}}>
-
+            <a href={nav.cta.href} className="m-link m-link--cta"
+               onClick={(e) => { e.preventDefault(); navigate(nav.cta.href); }}>
               <span>{nav.cta.label}</span>
-              <span className="m-link__num">→</span>
+              <span className="m-link__arr">→</span>
             </a>
           </nav>
         </div>

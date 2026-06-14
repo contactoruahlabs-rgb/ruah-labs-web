@@ -5818,7 +5818,7 @@ function PiezaEditor({
   }, [1, 2, 3, 4, 5].map(t => /*#__PURE__*/React.createElement("button", {
     key: t,
     type: "button",
-    className: 'abtn' + (p.tipo_marco === t ? '' : ' ghost'),
+    className: 'abtn' + (Number(p.tipo_marco) === t ? '' : ' ghost'),
     onClick: () => set('tipo_marco', t),
     style: {
       fontSize: 12

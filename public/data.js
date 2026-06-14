@@ -653,7 +653,7 @@ const DEFAULT_CONTENT = {
       img: ''
     }],
     briefEyebrow: '[ ENCARGO PERSONALIZADO ]',
-    briefTitle: 'BRIEF EN 5 PASOS',
+    briefTitle: 'BRIEF EN 4 PASOS',
     briefSub: 'Cuéntanos qué pieza quieres. Cotizamos en menos de 48h. Producción 7–14 días.',
     steps: [{
       id: 'st1',
@@ -670,10 +670,6 @@ const DEFAULT_CONTENT = {
     }, {
       id: 'st4',
       num: '04',
-      name: 'ACABADO'
-    }, {
-      id: 'st5',
-      num: '05',
       name: 'ENVIAR'
     }],
     // Step 01 - EXPLORAR
@@ -735,42 +731,7 @@ const DEFAULT_CONTENT = {
       size: 'MURAL',
       price: 'COTIZAR'
     }],
-    // Step 04 - ACABADO
-    maderas: [{
-      id: 'cm1',
-      name: 'PINO NATURAL',
-      desc: 'Claro · liviano · contemporáneo'
-    }, {
-      id: 'cm2',
-      name: 'ROBLE',
-      desc: 'Grano fino · cálido · premium'
-    }, {
-      id: 'cm3',
-      name: 'NOGAL',
-      desc: 'Oscuro · robusto · artesanal'
-    }, {
-      id: 'cm4',
-      name: 'MDF PINTADO',
-      desc: 'Blanco o negro · liso · minimalista'
-    }],
-    marcos: [{
-      id: 'mk1',
-      name: 'LAMINADO',
-      desc: 'Sin marco · papel a la vista'
-    }, {
-      id: 'mk2',
-      name: 'MARCO SIMPLE',
-      desc: 'Perfil fino 2 cm · clásico'
-    }, {
-      id: 'mk3',
-      name: 'MARCO ANCHO',
-      desc: 'Perfil 5 cm · robusto · galería'
-    }, {
-      id: 'mk4',
-      name: 'CAJA SHADOW',
-      desc: 'Marco flotante · profundidad 3 cm'
-    }],
-    // Step 05 - ENVIAR
+    // Step 04 - ENVIAR
     sendFields: [{
       id: 'cf1',
       label: 'NOMBRE',
@@ -1407,8 +1368,6 @@ function migrateContent(c) {
   if (c.cuadros) {
     if (!c.cuadros.estilos) c.cuadros.estilos = DEFAULT_CONTENT.cuadros.estilos;
     if (!c.cuadros.formatos) c.cuadros.formatos = DEFAULT_CONTENT.cuadros.formatos;
-    if (!c.cuadros.maderas) c.cuadros.maderas = DEFAULT_CONTENT.cuadros.maderas;
-    if (!c.cuadros.marcos) c.cuadros.marcos = DEFAULT_CONTENT.cuadros.marcos;
     if (!c.cuadros.sendFields) c.cuadros.sendFields = DEFAULT_CONTENT.cuadros.sendFields;
     if (!c.cuadros.sendSubmit) c.cuadros.sendSubmit = DEFAULT_CONTENT.cuadros.sendSubmit;
     if (!c.cuadros.step1Body) c.cuadros.step1Body = DEFAULT_CONTENT.cuadros.step1Body;

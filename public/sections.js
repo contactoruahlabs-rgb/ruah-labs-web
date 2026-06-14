@@ -85,7 +85,6 @@ function SectionHeader({
 // --- Nav ---
 function MobileDropdown({
   label,
-  num,
   children
 }) {
   var [open, setOpen] = React.useState(false);
@@ -96,8 +95,8 @@ function MobileDropdown({
     type: "button",
     onClick: () => setOpen(o => !o)
   }, /*#__PURE__*/React.createElement("span", null, label), /*#__PURE__*/React.createElement("span", {
-    className: "m-link__num"
-  }, open ? '−' : '+')), /*#__PURE__*/React.createElement("div", {
+    className: "m-link__arr"
+  }, open ? '↑' : '↓')), /*#__PURE__*/React.createElement("div", {
     className: "m-drop__list"
   }, children));
 }
@@ -249,12 +248,61 @@ function Nav({
     onClick: onOpenCheckout,
     "aria-label": 'Carrito (' + cartCount + ')',
     title: "Ir a pagar"
-  }, /*#__PURE__*/React.createElement("img", {
-    src: window.__resources && window.__resources.cartIcon || "https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323690/ruahlabs/lmlhjytfctlr3apdcebc.png",
-    alt: "",
+  }, /*#__PURE__*/React.createElement("svg", {
     className: "nav__cart__img",
+    viewBox: "0 0 22 22",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg",
     "aria-hidden": "true"
-  }), cartCount > 0 && /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M9 5.5 C9 3.5 13 3.5 13 5.5",
+    stroke: "currentColor",
+    strokeWidth: "1.6",
+    strokeLinecap: "round",
+    fill: "none"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "6",
+    y: "5.5",
+    width: "10",
+    height: "10",
+    rx: "1.2",
+    fill: "currentColor",
+    opacity: "0.15"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "6",
+    y: "5.5",
+    width: "10",
+    height: "10",
+    rx: "1.2",
+    stroke: "currentColor",
+    strokeWidth: "1.6"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "8",
+    y1: "15.5",
+    x2: "7.5",
+    y2: "18",
+    stroke: "currentColor",
+    strokeWidth: "1.6",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "14",
+    y1: "15.5",
+    x2: "14.5",
+    y2: "18",
+    stroke: "currentColor",
+    strokeWidth: "1.6",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "7",
+    cy: "18.8",
+    r: "1.2",
+    fill: "currentColor"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "15",
+    cy: "18.8",
+    r: "1.2",
+    fill: "currentColor"
+  })), cartCount > 0 && /*#__PURE__*/React.createElement("span", {
     className: "nav__cart__b"
   }, cartCount)), /*#__PURE__*/React.createElement("a", {
     className: "nav__cta",
@@ -272,21 +320,22 @@ function Nav({
   }, /*#__PURE__*/React.createElement("span", {
     className: "hamb__bars"
   }))), /*#__PURE__*/React.createElement("div", {
-    className: 'mobile-menu' + (mobileOpen ? ' open' : ''),
-    onClick: () => setMobileOpen(false)
+    className: 'mobile-menu' + (mobileOpen ? ' open' : '')
   }, /*#__PURE__*/React.createElement("div", {
-    className: "mobile-menu__inner",
-    onClick: e => e.stopPropagation()
-  }, /*#__PURE__*/React.createElement("button", {
+    className: "mobile-menu__inner"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mobile-menu__head"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "mobile-menu__logo"
+  }, "RUAH LABS"), /*#__PURE__*/React.createElement("button", {
     className: "mobile-menu__x",
     onClick: () => setMobileOpen(false),
     "aria-label": "Cerrar men\xFA"
-  }, "\xD7"), /*#__PURE__*/React.createElement("nav", {
+  }, "\xD7")), /*#__PURE__*/React.createElement("nav", {
     className: "mobile-menu__nav"
-  }, nav.links.map((l, i) => l.dropdown ? /*#__PURE__*/React.createElement(MobileDropdown, {
+  }, nav.links.map(l => l.dropdown ? /*#__PURE__*/React.createElement(MobileDropdown, {
     key: l.id,
-    label: l.label,
-    num: String(i + 1).padStart(2, '0')
+    label: l.label
   }, products.categories.map(c => /*#__PURE__*/React.createElement("a", {
     key: c.id,
     href: "#productos",
@@ -294,6 +343,7 @@ function Nav({
     onClick: e => {
       e.preventDefault();
       navigateCategory(c.slug);
+      setMobileOpen(false);
     }
   }, c.name))) : /*#__PURE__*/React.createElement("a", {
     key: l.id,
@@ -304,8 +354,8 @@ function Nav({
       navigate(l.href);
     }
   }, /*#__PURE__*/React.createElement("span", null, l.label), /*#__PURE__*/React.createElement("span", {
-    className: "m-link__num"
-  }, String(i + 1).padStart(2, '0')))), /*#__PURE__*/React.createElement("a", {
+    className: "m-link__arr"
+  }, "\u2192"))), /*#__PURE__*/React.createElement("a", {
     href: nav.cta.href,
     className: "m-link m-link--cta",
     onClick: e => {
@@ -313,7 +363,7 @@ function Nav({
       navigate(nav.cta.href);
     }
   }, /*#__PURE__*/React.createElement("span", null, nav.cta.label), /*#__PURE__*/React.createElement("span", {
-    className: "m-link__num"
+    className: "m-link__arr"
   }, "\u2192"))))));
 }
 

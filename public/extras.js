@@ -242,8 +242,6 @@ function Cuadros({
   };
   const [selectedEstilo, setSelectedEstilo] = React.useState(null);
   const [selectedFormato, setSelectedFormato] = React.useState(null);
-  const [selectedMadera, setSelectedMadera] = React.useState(null);
-  const [selectedMarco, setSelectedMarco] = React.useState(null);
   return /*#__PURE__*/React.createElement("section", {
     className: "cuadros",
     id: "cuadros"
@@ -372,7 +370,7 @@ function Cuadros({
     className: "cu-panel"
   }, /*#__PURE__*/React.createElement("div", {
     className: "cu-panel__hd"
-  }, "PASO ", c.steps[activeStep]?.num || '01', " ", activeStep === 4 ? '· ENVIAR BRIEF' : '· ' + (c.steps[activeStep]?.name || '')), activeStep === 0 && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+  }, "PASO ", c.steps[activeStep]?.num || '01', " ", activeStep === 3 ? '· ENVIAR BRIEF' : '· ' + (c.steps[activeStep]?.name || '')), activeStep === 0 && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "cu-panel__lead"
   }, c.step1Body), /*#__PURE__*/React.createElement("div", {
     className: "cu-refs"
@@ -423,58 +421,18 @@ function Cuadros({
     className: "cu-formato__size"
   }, f.size), /*#__PURE__*/React.createElement("span", {
     className: "cu-formato__price"
-  }, f.price)))), activeStep === 3 && /*#__PURE__*/React.createElement("div", {
-    className: "cu-acabado"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "cu-acabado__group"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "cu-acabado__label"
-  }, "MADERA"), /*#__PURE__*/React.createElement("div", {
-    className: "cu-acabado__opts"
-  }, (c.maderas || []).map(m => /*#__PURE__*/React.createElement("button", {
-    key: m.id,
-    className: 'cu-acab-opt' + (selectedMadera === m.id ? ' selected' : ''),
-    type: "button",
-    onClick: () => setSelectedMadera(m.id)
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "cu-acab-opt__name"
-  }, m.name), /*#__PURE__*/React.createElement("span", {
-    className: "cu-acab-opt__desc"
-  }, m.desc))))), /*#__PURE__*/React.createElement("div", {
-    className: "cu-acabado__group"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "cu-acabado__label"
-  }, "MARCO"), /*#__PURE__*/React.createElement("div", {
-    className: "cu-acabado__opts"
-  }, (c.marcos || []).map(m => /*#__PURE__*/React.createElement("button", {
-    key: m.id,
-    className: 'cu-acab-opt' + (selectedMarco === m.id ? ' selected' : ''),
-    type: "button",
-    onClick: () => setSelectedMarco(m.id)
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "cu-acab-opt__name"
-  }, m.name), /*#__PURE__*/React.createElement("span", {
-    className: "cu-acab-opt__desc"
-  }, m.desc))))), /*#__PURE__*/React.createElement("button", {
-    className: "cu-acabado__next",
-    type: "button",
-    onClick: () => setActiveStep(4)
-  }, "CONTINUAR \u2192 ENVIAR BRIEF")), activeStep === 4 && /*#__PURE__*/React.createElement(CuadrosSendForm, {
+  }, f.price)))), activeStep === 3 && /*#__PURE__*/React.createElement(CuadrosSendForm, {
     fields: c.sendFields || [],
     submitLabel: c.sendSubmit || 'ENVIAR BRIEF',
     selectedEstilo: selectedEstilo ? (c.estilos || []).find(e => e.id === selectedEstilo)?.name : null,
-    selectedFormato: selectedFormato ? (c.formatos || []).find(f => f.id === selectedFormato)?.size : null,
-    selectedMadera: selectedMadera ? (c.maderas || []).find(m => m.id === selectedMadera)?.name : null,
-    selectedMarco: selectedMarco ? (c.marcos || []).find(m => m.id === selectedMarco)?.name : null
+    selectedFormato: selectedFormato ? (c.formatos || []).find(f => f.id === selectedFormato)?.size : null
   }))))));
 }
 function CuadrosSendForm({
   fields,
   submitLabel,
   selectedEstilo,
-  selectedFormato,
-  selectedMadera,
-  selectedMarco
+  selectedFormato
 }) {
   const [status, setStatus] = React.useState('idle'); // idle | sending | ok | err-NNN | net-err
   function onSubmit(e) {
@@ -486,9 +444,7 @@ function CuadrosSendForm({
       versiculo: '',
       notas: '',
       estilo: selectedEstilo || '',
-      formato: selectedFormato || '',
-      madera: selectedMadera || '',
-      marco: selectedMarco || ''
+      formato: selectedFormato || ''
     };
     fields.forEach(function (f) {
       var val = (fd.get(f.id) || '').trim();

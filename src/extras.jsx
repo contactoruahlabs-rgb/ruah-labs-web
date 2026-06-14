@@ -197,8 +197,6 @@ function Cuadros({ content, onAddToCart, onBuyNow, onOpenCuadro }) {
   const openCuadro = (id) => { if (onOpenCuadro) onOpenCuadro(id); };
   const [selectedEstilo, setSelectedEstilo] = React.useState(null);
   const [selectedFormato, setSelectedFormato] = React.useState(null);
-  const [selectedMadera, setSelectedMadera] = React.useState(null);
-  const [selectedMarco, setSelectedMarco] = React.useState(null);
 
   return (
     <section className="cuadros" id="cuadros">
@@ -287,7 +285,7 @@ function Cuadros({ content, onAddToCart, onBuyNow, onOpenCuadro }) {
             </div>
             <div className="cu-panel">
               <div className="cu-panel__hd">
-                PASO {c.steps[activeStep]?.num || '01'} {activeStep === 4 ? '· ENVIAR BRIEF' : '· ' + (c.steps[activeStep]?.name || '')}
+                PASO {c.steps[activeStep]?.num || '01'} {activeStep === 3 ? '· ENVIAR BRIEF' : '· ' + (c.steps[activeStep]?.name || '')}
               </div>
 
               {activeStep === 0 && (
@@ -341,50 +339,11 @@ function Cuadros({ content, onAddToCart, onBuyNow, onOpenCuadro }) {
               )}
 
               {activeStep === 3 && (
-                <div className="cu-acabado">
-                  <div className="cu-acabado__group">
-                    <div className="cu-acabado__label">MADERA</div>
-                    <div className="cu-acabado__opts">
-                      {(c.maderas || []).map(m => (
-                        <button key={m.id}
-                          className={'cu-acab-opt' + (selectedMadera === m.id ? ' selected' : '')}
-                          type="button"
-                          onClick={() => setSelectedMadera(m.id)}>
-                          <span className="cu-acab-opt__name">{m.name}</span>
-                          <span className="cu-acab-opt__desc">{m.desc}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="cu-acabado__group">
-                    <div className="cu-acabado__label">MARCO</div>
-                    <div className="cu-acabado__opts">
-                      {(c.marcos || []).map(m => (
-                        <button key={m.id}
-                          className={'cu-acab-opt' + (selectedMarco === m.id ? ' selected' : '')}
-                          type="button"
-                          onClick={() => setSelectedMarco(m.id)}>
-                          <span className="cu-acab-opt__name">{m.name}</span>
-                          <span className="cu-acab-opt__desc">{m.desc}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <button className="cu-acabado__next" type="button"
-                    onClick={() => setActiveStep(4)}>
-                    CONTINUAR → ENVIAR BRIEF
-                  </button>
-                </div>
-              )}
-
-              {activeStep === 4 && (
                 <CuadrosSendForm
                   fields={c.sendFields || []}
                   submitLabel={c.sendSubmit || 'ENVIAR BRIEF'}
                   selectedEstilo={selectedEstilo ? (c.estilos || []).find(e => e.id === selectedEstilo)?.name : null}
                   selectedFormato={selectedFormato ? (c.formatos || []).find(f => f.id === selectedFormato)?.size : null}
-                  selectedMadera={selectedMadera ? (c.maderas || []).find(m => m.id === selectedMadera)?.name : null}
-                  selectedMarco={selectedMarco ? (c.marcos || []).find(m => m.id === selectedMarco)?.name : null}
                 />
               )}
             </div>
@@ -396,12 +355,12 @@ function Cuadros({ content, onAddToCart, onBuyNow, onOpenCuadro }) {
   );
 }
 
-function CuadrosSendForm({ fields, submitLabel, selectedEstilo, selectedFormato, selectedMadera, selectedMarco }) {
+function CuadrosSendForm({ fields, submitLabel, selectedEstilo, selectedFormato }) {
   const [status, setStatus] = React.useState('idle'); // idle | sending | ok | err-NNN | net-err
   function onSubmit(e) {
     e.preventDefault();
     var fd  = new FormData(e.target);
-    var row = { name: '', email: '', versiculo: '', notas: '', estilo: selectedEstilo || '', formato: selectedFormato || '', madera: selectedMadera || '', marco: selectedMarco || '' };
+    var row = { name: '', email: '', versiculo: '', notas: '', estilo: selectedEstilo || '', formato: selectedFormato || '' };
     fields.forEach(function(f) {
       var val = (fd.get(f.id) || '').trim();
       var lbl = (f.label || '').toUpperCase();

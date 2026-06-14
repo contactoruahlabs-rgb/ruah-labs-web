@@ -2607,7 +2607,7 @@ function PiezaEditor({ pieza: initial, onSave, onCancel }) {
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {[1,2,3,4,5].map(t => (
             <button key={t} type="button"
-              className={'abtn' + (p.tipo_marco === t ? '' : ' ghost')}
+              className={'abtn' + (Number(p.tipo_marco) === t ? '' : ' ghost')}
               onClick={() => set('tipo_marco', t)}
               style={{ fontSize: 12 }}
             >{t}. {FRAMES[t]}</button>
