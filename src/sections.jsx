@@ -209,6 +209,11 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
           )}
         </div>
 
+        <a className="nav__cta" href={nav.cta.href} onClick={(e) => {e.preventDefault();navigate(nav.cta.href);}}>
+          {nav.cta.label}
+          <span className="arrow">→</span>
+        </a>
+
         <button
           className="nav__cart"
           type="button"
@@ -216,34 +221,20 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
           aria-label={'Carrito (' + cartCount + ')'}
           title="Ir a pagar"
         >
-          <svg className="nav__cart__img" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            {/* Asa / manubrio */}
-            <path d="M9 5.5 C9 3.5 13 3.5 13 5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" fill="none"/>
-            {/* Cuerpo de la bolsa */}
-            <rect x="6" y="5.5" width="10" height="10" rx="1.2" fill="currentColor" opacity="0.15"/>
-            <rect x="6" y="5.5" width="10" height="10" rx="1.2" stroke="currentColor" strokeWidth="1.6"/>
-            {/* Patas del carrito */}
-            <line x1="8" y1="15.5" x2="7.5" y2="18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
-            <line x1="14" y1="15.5" x2="14.5" y2="18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
-            {/* Ruedas */}
-            <circle cx="7" cy="18.8" r="1.2" fill="currentColor"/>
-            <circle cx="15" cy="18.8" r="1.2" fill="currentColor"/>
-          </svg>
+          <img
+            src={(window.__resources && window.__resources.cartIcon) || 'https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323690/ruahlabs/lmlhjytfctlr3apdcebc.png'}
+            alt=""
+            className="nav__cart__img"
+            aria-hidden="true"
+          />
           {cartCount > 0 && <span className="nav__cart__b">{cartCount}</span>}
         </button>
-
-
-
-        <a className="nav__cta" href={nav.cta.href} onClick={(e) => {e.preventDefault();navigate(nav.cta.href);}}>
-          {nav.cta.label}
-          <span className="arrow">→</span>
-        </a>
 
         <button
           className={'hamb' + (mobileOpen ? ' open' : '')}
           aria-label="Menú"
           onClick={() => setMobileOpen((o) => !o)}>
-          
+
           <span className="hamb__bars"></span>
         </button>
       </nav>
@@ -316,7 +307,12 @@ function Hero({ content }) {
               {hero.primaryCta.label}
               <span className="arrow">→</span>
             </a>
-            <a className="btn btn--white" href={hero.secondaryCta.href}>
+            <a className="btn btn--white" href={hero.secondaryCta.href}
+               onClick={e => {
+                 e.preventDefault();
+                 window.dispatchEvent(new CustomEvent('ruah:navigateTo', { detail: { page: 'productos' } }));
+                 window.dispatchEvent(new CustomEvent('ruah:setCategory', { detail: { slug: 'todo' } }));
+               }}>
               {hero.secondaryCta.label}
             </a>
           </Reveal>
@@ -494,8 +490,9 @@ function DesignGallery({ content }) {
 
   const [idx,   setIdx]  = React.useState(0);
   const [modal, setModal] = React.useState(null);
-  const pausedRef  = React.useRef(false);
-  const touchRef   = React.useRef(null);
+  const pausedRef    = React.useRef(false);
+  const touchRef     = React.useRef(null);
+  const modalTouchRef = React.useRef(null);
   const total = piezas.length;
 
   React.useEffect(() => {
@@ -614,15 +611,34 @@ function DesignGallery({ content }) {
           <div className="museum__modal" onClick={e => e.stopPropagation()}>
             <button className="museum__modal-x" onClick={() => setModal(null)} aria-label="Cerrar">&#x2715;</button>
 
-            {/* Imagen principal — ocupa todo el espacio disponible */}
-            <div className="museum__modal-imgwrap">
-              {modal.pieza.imagenes_detalle && modal.pieza.imagenes_detalle.length > 0
-                ? <img src={modal.pieza.imagenes_detalle[modal.imgIdx]} alt={'Detalle ' + (modal.imgIdx + 1)} loading="lazy" />
-                : modal.pieza.imagen_principal
-                  ? <img src={modal.pieza.imagen_principal} alt={modal.pieza.nombre} loading="lazy" />
-                  : <div className="museum__modal-ph">{(modal.pieza.nombre || 'RL').slice(0, 2)}</div>
-              }
-            </div>
+            {/* Imagen principal con swipe y flechas */}
+            {(() => {
+              const imgs = modal.pieza.imagenes_detalle && modal.pieza.imagenes_detalle.length > 0
+                ? modal.pieza.imagenes_detalle
+                : modal.pieza.imagen_principal ? [modal.pieza.imagen_principal] : [];
+              const totalImgs = imgs.length;
+              function modalPrev() { if (totalImgs > 1) setModal(m => ({ ...m, imgIdx: (m.imgIdx - 1 + totalImgs) % totalImgs })); }
+              function modalNext() { if (totalImgs > 1) setModal(m => ({ ...m, imgIdx: (m.imgIdx + 1) % totalImgs })); }
+              return (
+                <div className="museum__modal-imgwrap"
+                  onTouchStart={e => { modalTouchRef.current = e.touches[0].clientX; }}
+                  onTouchEnd={e => {
+                    var dx = e.changedTouches[0].clientX - (modalTouchRef.current || 0);
+                    if (Math.abs(dx) > 40) { if (dx < 0) modalNext(); else modalPrev(); }
+                  }}>
+                  {imgs.length > 0
+                    ? <img src={imgs[modal.imgIdx] || imgs[0]} alt={'Detalle ' + (modal.imgIdx + 1)} loading="lazy" />
+                    : <div className="museum__modal-ph">{(modal.pieza.nombre || 'RL').slice(0, 2)}</div>}
+                  {totalImgs > 1 && (
+                    <React.Fragment>
+                      <button className="museum__modal-arr museum__modal-arr--prev" onClick={e => { e.stopPropagation(); modalPrev(); }} aria-label="Anterior">&#8249;</button>
+                      <button className="museum__modal-arr museum__modal-arr--next" onClick={e => { e.stopPropagation(); modalNext(); }} aria-label="Siguiente">&#8250;</button>
+                      <div className="museum__modal-count">{(modal.imgIdx || 0) + 1} / {totalImgs}</div>
+                    </React.Fragment>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Info strip en la parte inferior */}
             <div className="museum__modal-info">

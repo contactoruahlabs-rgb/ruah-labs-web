@@ -482,29 +482,31 @@ section { padding-block: var(--section-pad-y); position: relative; }
 /* Link principal */
 .m-link {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 18px 28px;
-  font-family: var(--sans, sans-serif);
-  font-size: 17px;
-  font-weight: 400;
-  letter-spacing: 0.01em;
-  color: rgba(245,241,232,0.75);
+  padding: 16px 28px;
+  font-family: var(--serif);
+  font-size: 28px;
+  letter-spacing: 0.06em;
+  color: rgba(245,241,232,0.82);
   border-bottom: 1px solid rgba(245,241,232,0.07);
   transition: color .18s;
   cursor: pointer; background: transparent;
   border-top: none; border-left: none; border-right: none;
   width: 100%; text-align: left;
+  line-height: 1.1;
 }
 .m-link:hover, .m-link:active { color: var(--ivory); }
 .m-link--cta {
   color: var(--amber);
   border-bottom: none;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 .m-link--cta:hover { color: var(--amber); }
 .m-link__arr {
-  font-size: 18px;
-  color: rgba(245,241,232,0.25);
+  font-size: 20px;
+  font-family: var(--mono);
+  color: rgba(245,241,232,0.22);
   line-height: 1;
+  flex-shrink: 0;
 }
 .m-link--cta .m-link__arr { color: var(--amber); }
 
@@ -517,14 +519,16 @@ section { padding-block: var(--section-pad-y); position: relative; }
 .m-drop.open .m-drop__list { max-height: 400px; }
 .m-sub__link {
   display: block;
-  padding: 13px 28px 13px 44px;
-  font-family: var(--sans, sans-serif);
-  font-size: 15px;
-  color: rgba(245,241,232,0.45);
+  padding: 11px 28px 11px 40px;
+  font-family: var(--serif);
+  font-size: 20px;
+  letter-spacing: 0.06em;
+  color: rgba(245,241,232,0.4);
   border-bottom: 1px solid rgba(245,241,232,0.04);
   transition: color .18s;
+  line-height: 1.1;
 }
-.m-sub__link:hover { color: var(--ivory); }
+.m-sub__link:hover { color: rgba(245,241,232,0.8); }
 
 /* ---------- Hero ---------- */
 .hero {
@@ -2735,6 +2739,29 @@ section { padding-block: var(--section-pad-y); position: relative; }
     width: 100%;
     padding-bottom: 4px;
   }
+}
+
+/* Flechas de navegación en imagen principal */
+.museum__modal-imgwrap { position: relative; }
+.museum__modal-arr {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 44px; height: 64px;
+  font-size: 32px; line-height: 1;
+  color: var(--ivory);
+  background: rgba(10,10,10,0.55);
+  border: 1px solid rgba(245,241,232,0.12);
+  backdrop-filter: blur(4px);
+  cursor: pointer; z-index: 5;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s, color .2s, border-color .2s;
+}
+.museum__modal-arr--prev { left: 0; border-radius: 0 4px 4px 0; }
+.museum__modal-arr--next { right: 0; border-radius: 4px 0 0 4px; }
+.museum__modal-arr:hover { background: var(--amber); color: var(--black); border-color: var(--amber); }
+.museum__modal-count {
+  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em;
+  color: rgba(245,241,232,0.5); pointer-events: none;
 }
 
 /* ── Empty / Keyframes ───────────────────────────── */

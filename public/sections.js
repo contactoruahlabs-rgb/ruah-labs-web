@@ -242,69 +242,7 @@ function Nav({
       e.preventDefault();
       navigate(l.href);
     }
-  }, l.label)))), /*#__PURE__*/React.createElement("button", {
-    className: "nav__cart",
-    type: "button",
-    onClick: onOpenCheckout,
-    "aria-label": 'Carrito (' + cartCount + ')',
-    title: "Ir a pagar"
-  }, /*#__PURE__*/React.createElement("svg", {
-    className: "nav__cart__img",
-    viewBox: "0 0 22 22",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg",
-    "aria-hidden": "true"
-  }, /*#__PURE__*/React.createElement("path", {
-    d: "M9 5.5 C9 3.5 13 3.5 13 5.5",
-    stroke: "currentColor",
-    strokeWidth: "1.6",
-    strokeLinecap: "round",
-    fill: "none"
-  }), /*#__PURE__*/React.createElement("rect", {
-    x: "6",
-    y: "5.5",
-    width: "10",
-    height: "10",
-    rx: "1.2",
-    fill: "currentColor",
-    opacity: "0.15"
-  }), /*#__PURE__*/React.createElement("rect", {
-    x: "6",
-    y: "5.5",
-    width: "10",
-    height: "10",
-    rx: "1.2",
-    stroke: "currentColor",
-    strokeWidth: "1.6"
-  }), /*#__PURE__*/React.createElement("line", {
-    x1: "8",
-    y1: "15.5",
-    x2: "7.5",
-    y2: "18",
-    stroke: "currentColor",
-    strokeWidth: "1.6",
-    strokeLinecap: "round"
-  }), /*#__PURE__*/React.createElement("line", {
-    x1: "14",
-    y1: "15.5",
-    x2: "14.5",
-    y2: "18",
-    stroke: "currentColor",
-    strokeWidth: "1.6",
-    strokeLinecap: "round"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: "7",
-    cy: "18.8",
-    r: "1.2",
-    fill: "currentColor"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: "15",
-    cy: "18.8",
-    r: "1.2",
-    fill: "currentColor"
-  })), cartCount > 0 && /*#__PURE__*/React.createElement("span", {
-    className: "nav__cart__b"
-  }, cartCount)), /*#__PURE__*/React.createElement("a", {
+  }, l.label)))), /*#__PURE__*/React.createElement("a", {
     className: "nav__cta",
     href: nav.cta.href,
     onClick: e => {
@@ -314,6 +252,19 @@ function Nav({
   }, nav.cta.label, /*#__PURE__*/React.createElement("span", {
     className: "arrow"
   }, "\u2192")), /*#__PURE__*/React.createElement("button", {
+    className: "nav__cart",
+    type: "button",
+    onClick: onOpenCheckout,
+    "aria-label": 'Carrito (' + cartCount + ')',
+    title: "Ir a pagar"
+  }, /*#__PURE__*/React.createElement("img", {
+    src: window.__resources && window.__resources.cartIcon || 'https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323690/ruahlabs/lmlhjytfctlr3apdcebc.png',
+    alt: "",
+    className: "nav__cart__img",
+    "aria-hidden": "true"
+  }), cartCount > 0 && /*#__PURE__*/React.createElement("span", {
+    className: "nav__cart__b"
+  }, cartCount)), /*#__PURE__*/React.createElement("button", {
     className: 'hamb' + (mobileOpen ? ' open' : ''),
     "aria-label": "Men\xFA",
     onClick: () => setMobileOpen(o => !o)
@@ -431,7 +382,20 @@ function Hero({
     className: "arrow"
   }, "\u2192")), /*#__PURE__*/React.createElement("a", {
     className: "btn btn--white",
-    href: hero.secondaryCta.href
+    href: hero.secondaryCta.href,
+    onClick: e => {
+      e.preventDefault();
+      window.dispatchEvent(new CustomEvent('ruah:navigateTo', {
+        detail: {
+          page: 'productos'
+        }
+      }));
+      window.dispatchEvent(new CustomEvent('ruah:setCategory', {
+        detail: {
+          slug: 'todo'
+        }
+      }));
+    }
   }, hero.secondaryCta.label)))), /*#__PURE__*/React.createElement("div", {
     className: "hero__marquee"
   }, /*#__PURE__*/React.createElement("div", {
@@ -628,6 +592,7 @@ function DesignGallery({
   const [modal, setModal] = React.useState(null);
   const pausedRef = React.useRef(false);
   const touchRef = React.useRef(null);
+  const modalTouchRef = React.useRef(null);
   const total = piezas.length;
   React.useEffect(() => {
     if (total < 2) return;
@@ -757,19 +722,56 @@ function DesignGallery({
     className: "museum__modal-x",
     onClick: () => setModal(null),
     "aria-label": "Cerrar"
-  }, "\u2715"), /*#__PURE__*/React.createElement("div", {
-    className: "museum__modal-imgwrap"
-  }, modal.pieza.imagenes_detalle && modal.pieza.imagenes_detalle.length > 0 ? /*#__PURE__*/React.createElement("img", {
-    src: modal.pieza.imagenes_detalle[modal.imgIdx],
-    alt: 'Detalle ' + (modal.imgIdx + 1),
-    loading: "lazy"
-  }) : modal.pieza.imagen_principal ? /*#__PURE__*/React.createElement("img", {
-    src: modal.pieza.imagen_principal,
-    alt: modal.pieza.nombre,
-    loading: "lazy"
-  }) : /*#__PURE__*/React.createElement("div", {
-    className: "museum__modal-ph"
-  }, (modal.pieza.nombre || 'RL').slice(0, 2))), /*#__PURE__*/React.createElement("div", {
+  }, "\u2715"), (() => {
+    const imgs = modal.pieza.imagenes_detalle && modal.pieza.imagenes_detalle.length > 0 ? modal.pieza.imagenes_detalle : modal.pieza.imagen_principal ? [modal.pieza.imagen_principal] : [];
+    const totalImgs = imgs.length;
+    function modalPrev() {
+      if (totalImgs > 1) setModal(m => ({
+        ...m,
+        imgIdx: (m.imgIdx - 1 + totalImgs) % totalImgs
+      }));
+    }
+    function modalNext() {
+      if (totalImgs > 1) setModal(m => ({
+        ...m,
+        imgIdx: (m.imgIdx + 1) % totalImgs
+      }));
+    }
+    return /*#__PURE__*/React.createElement("div", {
+      className: "museum__modal-imgwrap",
+      onTouchStart: e => {
+        modalTouchRef.current = e.touches[0].clientX;
+      },
+      onTouchEnd: e => {
+        var dx = e.changedTouches[0].clientX - (modalTouchRef.current || 0);
+        if (Math.abs(dx) > 40) {
+          if (dx < 0) modalNext();else modalPrev();
+        }
+      }
+    }, imgs.length > 0 ? /*#__PURE__*/React.createElement("img", {
+      src: imgs[modal.imgIdx] || imgs[0],
+      alt: 'Detalle ' + (modal.imgIdx + 1),
+      loading: "lazy"
+    }) : /*#__PURE__*/React.createElement("div", {
+      className: "museum__modal-ph"
+    }, (modal.pieza.nombre || 'RL').slice(0, 2)), totalImgs > 1 && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+      className: "museum__modal-arr museum__modal-arr--prev",
+      onClick: e => {
+        e.stopPropagation();
+        modalPrev();
+      },
+      "aria-label": "Anterior"
+    }, "\u2039"), /*#__PURE__*/React.createElement("button", {
+      className: "museum__modal-arr museum__modal-arr--next",
+      onClick: e => {
+        e.stopPropagation();
+        modalNext();
+      },
+      "aria-label": "Siguiente"
+    }, "\u203A"), /*#__PURE__*/React.createElement("div", {
+      className: "museum__modal-count"
+    }, (modal.imgIdx || 0) + 1, " / ", totalImgs)));
+  })(), /*#__PURE__*/React.createElement("div", {
     className: "museum__modal-info"
   }, /*#__PURE__*/React.createElement("div", {
     className: "museum__modal-meta"
