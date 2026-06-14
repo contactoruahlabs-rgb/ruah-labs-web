@@ -259,7 +259,7 @@ function Nav({
     "aria-label": 'Carrito (' + cartCount + ')',
     title: "Ir a pagar"
   }, /*#__PURE__*/React.createElement("img", {
-    src: window.__resources && window.__resources.cartIcon || 'https://res.cloudinary.com/dh05zwrbp/image/upload/v1781467794/ruahlabs/zeqg1q9s5ezkcyyo3vc5.webp',
+    src: window.__resources && window.__resources.cartIcon || 'https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323690/ruahlabs/lmlhjytfctlr3apdcebc.png',
     alt: "",
     className: "nav__cart__img",
     "aria-hidden": "true"
@@ -466,7 +466,7 @@ function FeaturedDuo({
     key: item.id,
     delay: i * 100,
     className: "feat-card",
-    onClick: () => item.productId && onOpenProduct && onOpenProduct(item.productId, item.img)
+    onClick: () => item.productId && onOpenProduct && onOpenProduct(item.productId, item.img, item.gallery || [])
   }, /*#__PURE__*/React.createElement("div", {
     className: "feat-card__media"
   }, item.img ? /*#__PURE__*/React.createElement("img", {
@@ -492,7 +492,7 @@ function FeaturedDuo({
     className: "btn btn--amber feat-card__cta",
     onClick: e => {
       e.stopPropagation();
-      item.productId && onOpenProduct && onOpenProduct(item.productId);
+      item.productId && onOpenProduct && onOpenProduct(item.productId, item.img, item.gallery || []);
     }
   }, "Comprar ", /*#__PURE__*/React.createElement("span", null, "\u2192")))))))));
 }
@@ -1178,7 +1178,8 @@ function ProductDetail({
       "aria-hidden": "true"
     });
   }
-  const gallery = [overrideImg, product.img, ...(product.gallery || [])].filter((v, i, a) => v && a.indexOf(v) === i);
+  const overrideImgs = Array.isArray(overrideImg) ? overrideImg : overrideImg ? [overrideImg] : [];
+  const gallery = [...overrideImgs, product.img, ...(product.gallery || [])].filter((v, i, a) => v && a.indexOf(v) === i);
   galleryLenRef.current = gallery.length;
   const currentImg = gallery[idx] || product.img;
   function pdPrev(e) {

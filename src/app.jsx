@@ -222,7 +222,7 @@ function App() {
           <React.Fragment>
             <Hero content={content} />
             <HomeIntro content={content} />
-            <FeaturedDuo content={content} onOpenProduct={(id) => setProductId(id)} />
+            <FeaturedDuo content={content} onOpenProduct={(id, img, gallery) => { setProductId(id); setProductOverrideImg([img, ...(gallery || [])].filter(Boolean)); }} />
             <Protocol content={content} />
             <HomeCategoryCarousel content={content} onOpenProduct={(id) => setProductId(id)} />
             <Testimonials content={content} />

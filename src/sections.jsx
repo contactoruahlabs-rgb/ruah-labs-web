@@ -223,7 +223,7 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
           title="Ir a pagar"
         >
           <img
-            src={(window.__resources && window.__resources.cartIcon) || 'https://res.cloudinary.com/dh05zwrbp/image/upload/v1781467794/ruahlabs/zeqg1q9s5ezkcyyo3vc5.webp'}
+            src={(window.__resources && window.__resources.cartIcon) || 'https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323690/ruahlabs/lmlhjytfctlr3apdcebc.png'}
             alt=""
             className="nav__cart__img"
             aria-hidden="true"
@@ -378,7 +378,7 @@ function FeaturedDuo({ content, onOpenProduct }) {
       <div className="shell">
         <div className="feat-duo__grid">
           {featured.map((item, i) => (
-            <Reveal key={item.id} delay={i * 100} className="feat-card" onClick={() => item.productId && onOpenProduct && onOpenProduct(item.productId, item.img)}>
+            <Reveal key={item.id} delay={i * 100} className="feat-card" onClick={() => item.productId && onOpenProduct && onOpenProduct(item.productId, item.img, item.gallery || [])}>
               <div className="feat-card__media">
                 {item.img
                   ? <img src={item.img} alt={item.name} loading="lazy" />
@@ -393,7 +393,7 @@ function FeaturedDuo({ content, onOpenProduct }) {
                   <button
                     type="button"
                     className="btn btn--amber feat-card__cta"
-                    onClick={(e) => { e.stopPropagation(); item.productId && onOpenProduct && onOpenProduct(item.productId); }}
+                    onClick={(e) => { e.stopPropagation(); item.productId && onOpenProduct && onOpenProduct(item.productId, item.img, item.gallery || []); }}
                   >
                     Comprar <span>→</span>
                   </button>
@@ -1015,7 +1015,8 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
     return <div className="pd-overlay" aria-hidden="true"></div>;
   }
 
-  const gallery = [overrideImg, product.img, ...(product.gallery || [])].filter((v, i, a) => v && a.indexOf(v) === i);
+  const overrideImgs = Array.isArray(overrideImg) ? overrideImg : (overrideImg ? [overrideImg] : []);
+  const gallery = [...overrideImgs, product.img, ...(product.gallery || [])].filter((v, i, a) => v && a.indexOf(v) === i);
   galleryLenRef.current = gallery.length;
   const currentImg = gallery[idx] || product.img;
 
