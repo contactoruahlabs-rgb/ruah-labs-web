@@ -1171,12 +1171,8 @@ const DEFAULT_CONTENT = {
       title: 'Contacto',
       items: [{
         id: 'i5',
-        label: 'hola@ruahlabs.cl',
-        href: 'mailto:hola@ruahlabs.cl'
-      }, {
-        id: 'i6',
-        label: '+56 9 0000 0000',
-        href: 'tel:+56900000000'
+        label: 'contacto@ruahlabs.cl',
+        href: 'mailto:contacto@ruahlabs.cl'
       }, {
         id: 'i7',
         label: '@ruahlabs',

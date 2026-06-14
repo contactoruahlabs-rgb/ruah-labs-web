@@ -607,8 +607,7 @@ const DEFAULT_CONTENT = {
         id: 'fc2',
         title: 'Contacto',
         items: [
-          { id: 'i5', label: 'hola@ruahlabs.cl', href: 'mailto:hola@ruahlabs.cl' },
-          { id: 'i6', label: '+56 9 0000 0000',  href: 'tel:+56900000000' },
+          { id: 'i5', label: 'contacto@ruahlabs.cl', href: 'mailto:contacto@ruahlabs.cl' },
           { id: 'i7', label: '@ruahlabs',        href: 'https://instagram.com/ruahlabs' },
           { id: 'i8', label: 'Santiago · Chile', href: '#' },
         ],

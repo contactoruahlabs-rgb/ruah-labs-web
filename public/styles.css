@@ -481,7 +481,7 @@ section { padding-block: var(--section-pad-y); position: relative; }
 
 /* Link principal */
 .m-link {
-  display: flex; justify-content: space-between; align-items: center;
+  display: flex; justify-content: center; align-items: center; gap: 10px;
   padding: 16px 28px;
   font-family: var(--serif);
   font-size: 28px;
@@ -491,10 +491,12 @@ section { padding-block: var(--section-pad-y); position: relative; }
   transition: color .18s;
   cursor: pointer; background: transparent;
   border-top: none; border-left: none; border-right: none;
-  width: 100%; text-align: left;
+  width: 100%; text-align: center;
   line-height: 1.1;
 }
 .m-link:hover, .m-link:active { color: var(--ivory); }
+.m-link--amber { color: #eca10c; }
+.m-link--amber:hover, .m-link--amber:active { color: #eca10c; }
 .m-link--cta {
   color: var(--amber);
   border-bottom: none;

@@ -57,11 +57,11 @@ function SectionHeader({ index, title, right, amberTitle = false }) {
 }
 
 // --- Nav ---
-function MobileDropdown({ label, children }) {
+function MobileDropdown({ label, children, amber }) {
   var [open, setOpen] = React.useState(false);
   return (
     <div className={'m-drop' + (open ? ' open' : '')}>
-      <button className="m-link m-drop__head" type="button" onClick={() => setOpen(o => !o)}>
+      <button className={'m-link m-drop__head' + (amber ? ' m-link--amber' : '')} type="button" onClick={() => setOpen(o => !o)}>
         <span>{label}</span>
         <span className="m-link__arr">{open ? '↑' : '↓'}</span>
       </button>
@@ -149,7 +149,8 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
       window.dispatchEvent(new CustomEvent('ruah:triggerSecret'));
       return;
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (onGoHome) onGoHome();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   return (
@@ -241,27 +242,39 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
 
       <div className={'mobile-menu' + (mobileOpen ? ' open' : '')}>
         <div className="mobile-menu__inner">
-          <div className="mobile-menu__head">
-            <span className="mobile-menu__logo">RUAH LABS</span>
+          <div className="mobile-menu__head" style={{justifyContent:'flex-end'}}>
             <button className="mobile-menu__x" onClick={() => setMobileOpen(false)} aria-label="Cerrar menú">×</button>
           </div>
           <nav className="mobile-menu__nav">
-            {nav.links.map((l) =>
-            l.dropdown ?
-            <MobileDropdown key={l.id} label={l.label}>
-              {products.categories.map((c) =>
-                <a key={c.id} href="#productos" className="m-sub__link"
-                   onClick={(e) => { e.preventDefault(); navigateCategory(c.slug); setMobileOpen(false); }}>
-                  {c.name}
-                </a>
-              )}
-            </MobileDropdown> :
-            <a key={l.id} href={l.href} className="m-link"
-               onClick={(e) => { e.preventDefault(); navigate(l.href); }}>
-              <span>{l.label}</span>
-              <span className="m-link__arr">→</span>
-            </a>
-            )}
+            {(function() {
+              var linkMap = {};
+              (nav.links || []).forEach(function(l) { linkMap[l.id] = l; });
+              var mobileOrder = ['l0','l3','l2','l8','l1','l5','l7','l6','l4'];
+              return mobileOrder.map(function(id) {
+                var l = linkMap[id];
+                if (!l) return null;
+                var isAmber = l.id === 'l2';
+                if (l.dropdown) {
+                  return (
+                    <MobileDropdown key={l.id} label={l.label} amber={isAmber}>
+                      {products.categories.map((c) =>
+                        <a key={c.id} href="#productos" className="m-sub__link"
+                           onClick={(e) => { e.preventDefault(); navigateCategory(c.slug); setMobileOpen(false); }}>
+                          {c.name}
+                        </a>
+                      )}
+                    </MobileDropdown>
+                  );
+                }
+                return (
+                  <a key={l.id} href={l.href} className={'m-link' + (isAmber ? ' m-link--amber' : '')}
+                     onClick={(e) => { e.preventDefault(); navigate(l.href); }}>
+                    <span>{l.label}</span>
+                    <span className="m-link__arr">→</span>
+                  </a>
+                );
+              });
+            })()}
             <a href={nav.cta.href} className="m-link m-link--cta"
                onClick={(e) => { e.preventDefault(); navigate(nav.cta.href); }}>
               <span>{nav.cta.label}</span>
@@ -1279,7 +1292,12 @@ function Footer({ content, onOpenAdmin }) {
           <div className="footer__col" key={c.id}>
               <h4>{c.title}</h4>
               {c.items.map((i) =>
-            <a key={i.id} href={i.href}>{i.label}</a>
+            <a key={i.id} href={i.href}
+               onClick={i.href && i.href.startsWith('#') ? (e) => { e.preventDefault(); var el = document.querySelector(i.href); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } : undefined}
+               target={i.href && i.href.startsWith('http') ? '_blank' : undefined}
+               rel={i.href && i.href.startsWith('http') ? 'noreferrer' : undefined}>
+              {i.label}
+            </a>
             )}
             </div>
           )}
