@@ -22,13 +22,14 @@ if (fs.existsSync(envPath)) {
 var MP_TOKEN   = process.env.MERCADOPAGO_ACCESS_TOKEN || '';
 var SITE_URL   = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:8000';
 var IS_DEV     = !MP_TOKEN.startsWith('APP_USR-');
-var ADMIN_KEY  = process.env.ADMIN_API_KEY || '';
 var ADMIN_LOGIN_EMAIL = 'contacto.ruahlabs@gmail.com';
 // Cache de tokens ya validados (2 min) — evita pegarle a Supabase en cada request.
+// SEGURIDAD: la única forma de ser admin es un JWT válido de Supabase Auth.
+// Se eliminó el bypass por llave estática (x-admin-key == ADMIN_API_KEY): un solo
+// string filtrable concedía control total. Ahora la firma del JWT es obligatoria.
 var _adminTokCache = {}; // token -> validUntil(ms)
 async function isAdmin(token) {
   if (!token) return false;
-  if (ADMIN_KEY && token === ADMIN_KEY) return true;
   var now = Date.now();
   if (_adminTokCache[token] && now < _adminTokCache[token]) return true;
   try {
@@ -217,23 +218,19 @@ app.post('/api/checkout/create-preference', rateLimit('checkout', 10, 60 * 1000)
   var shipFee = VALID_SHIP_FEES.hasOwnProperty(shippingMethod) ? VALID_SHIP_FEES[shippingMethod] : 4990;
 
   getContentPrices().then(function(priceMap) {
-    var hasDB = Object.keys(priceMap).length > 0;
+    // SEGURIDAD (fail-closed): el precio SIEMPRE sale de la DB del servidor.
+    // Si no hay precios (DB caída/vacía) NO confiamos en el precio del cliente
+    // — rechazamos el pago en vez de arriesgar un subpago.
+    if (Object.keys(priceMap).length === 0) {
+      console.error('[create-preference] sin precios en DB — pago rechazado (fail-closed)');
+      return res.status(503).json({ error: 'No se pudieron validar los precios. Intenta de nuevo en unos minutos.' });
+    }
 
     var items = cart.map(function(it) {
-      var price;
-      if (hasDB) {
-        price = priceMap[it.id];
-        if (price === undefined) {
-          console.warn('[create-preference] producto no encontrado en DB:', it.id);
-          return null; // rechazar ítem desconocido
-        }
-      } else {
-        // Sin contenido en DB: aceptar precio del frontend con mínimo de seguridad
-        price = parseInt(String(it.price).replace(/[^0-9]/g, ''), 10) || 0;
-        if (price < 1000) {
-          console.warn('[create-preference] precio sospechoso para', it.id, ':', price);
-          return null;
-        }
+      var price = priceMap[it.id];
+      if (price === undefined) {
+        console.warn('[create-preference] producto no encontrado en DB:', it.id);
+        return null; // rechazar ítem desconocido
       }
       return {
         id:          String(it.id),
@@ -362,6 +359,10 @@ function generatePassword() {
   return w1 + '.' + w2 + n + sym;
 }
 
+// Hash dummy para igualar el tiempo de respuesta cuando el usuario NO existe
+// (evita enumeración de cuentas por timing). Se compara igual que un hash real.
+var DUMMY_HASH = bcrypt.hashSync('ruah-dummy-timing-equalizer', 10);
+
 // ─── POST /api/club/login ─────────────────────────────────────────────────────
 app.post('/api/club/login', rateLimit('login', 5, 15 * 60 * 1000), function(req, res) {
   var email = (req.body.email || '').trim().toLowerCase();
@@ -375,9 +376,12 @@ app.post('/api/club/login', rateLimit('login', 5, 15 * 60 * 1000), function(req,
       var member = Array.isArray(r.data) ? r.data[0] : null;
 
       if (!member || !member.is_active) {
-        // Log intento fallido
-        sbFetch('POST', 'club_access_log', { body: { email: email, action: 'login_fail', user_agent: ua } });
-        return res.status(401).json({ error: 'Credenciales incorrectas' });
+        // Comparar contra un hash dummy para que el tiempo sea igual que con un
+        // usuario real (no revelar por timing si el email existe).
+        return bcrypt.compare(pass, DUMMY_HASH).then(function() {
+          sbFetch('POST', 'club_access_log', { body: { email: email, action: 'login_fail', user_agent: ua } });
+          return res.status(401).json({ error: 'Credenciales incorrectas' });
+        });
       }
 
       return bcrypt.compare(pass, member.password_hash).then(function(match) {
@@ -786,6 +790,6 @@ app.listen(3001, function() {
   console.log('   Site URL:', SITE_URL);
   console.log('   Supabase URL:', SB_URL ? '✅ ' + SB_URL : '❌ NO CONFIGURADO');
   console.log('   Supabase SVC key:', SB_SVC ? '✅ configurada (' + SB_SVC.slice(0,12) + '...)' : '❌ NO CONFIGURADA');
-  console.log('   Admin key:', ADMIN_KEY ? '✅ configurada' : '❌ NO CONFIGURADA');
+  console.log('   Admin auth:', 'Supabase JWT (' + ADMIN_LOGIN_EMAIL + ')');
   console.log('   Cloudinary key:', CLD_KEY ? '✅ ' + CLD_KEY : '❌ NO CONFIGURADA');
 });
