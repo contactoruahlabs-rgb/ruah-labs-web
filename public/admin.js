@@ -5592,6 +5592,29 @@ function ViewCheckout({
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "card__head"
+  }, /*#__PURE__*/React.createElement("h3", null, "Tarifas de env\xEDo"), /*#__PURE__*/React.createElement("span", {
+    className: "meta"
+  }, "El servidor usa estos valores \u2014 el cliente no puede modificarlos")), /*#__PURE__*/React.createElement("div", {
+    className: "row"
+  }, /*#__PURE__*/React.createElement(Text, {
+    label: "Env\xEDo est\xE1ndar (CLP, sin puntos)",
+    value: String((ck.shippingFees || {}).std ?? 4990),
+    onChange: v => update('checkout.shippingFees.std', parseInt(v.replace(/[^0-9]/g, ''), 10) || 0),
+    hint: "Ej: 4990"
+  }), /*#__PURE__*/React.createElement(Text, {
+    label: "Env\xEDo express (CLP, sin puntos)",
+    value: String((ck.shippingFees || {}).express ?? 9990),
+    onChange: v => update('checkout.shippingFees.express', parseInt(v.replace(/[^0-9]/g, ''), 10) || 0),
+    hint: "Ej: 9990"
+  }), /*#__PURE__*/React.createElement(Text, {
+    label: "Retiro en tienda (0 = gratis)",
+    value: String((ck.shippingFees || {}).pickup ?? 0),
+    onChange: v => update('checkout.shippingFees.pickup', parseInt(v.replace(/[^0-9]/g, ''), 10) || 0),
+    hint: "Normalmente 0"
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card__head"
   }, /*#__PURE__*/React.createElement("h3", null, "Colores del checkout")), /*#__PURE__*/React.createElement("div", {
     className: "row"
   }, /*#__PURE__*/React.createElement(ColorPicker, {

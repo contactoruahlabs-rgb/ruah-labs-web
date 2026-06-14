@@ -1089,6 +1089,11 @@ const DEFAULT_CONTENT = {
     addressTitle: 'Dirección de envío',
     shippingTitle: 'Método de envío',
     shippingSub: 'Despachamos a todo Chile. Retiro disponible Lun – Vie, 11 a 19h.',
+    shippingFees: {
+      std: 4990,
+      express: 9990,
+      pickup: 0
+    },
     payTitle: 'Método de pago',
     nextLabel: 'Continuar a envío',
     nextPayLabel: 'Continuar a pago',
@@ -1354,6 +1359,7 @@ function migrateContent(c) {
   if (!c.colors) c.colors = {};
   if (!c.checkout) c.checkout = DEFAULT_CONTENT.checkout;
   if (!c.checkout.style) c.checkout.style = DEFAULT_CONTENT.checkout.style;
+  if (!c.checkout.shippingFees) c.checkout.shippingFees = DEFAULT_CONTENT.checkout.shippingFees;
   // Ensure new protocol fields exist
   if (!c.protocol.sections) Object.assign(c.protocol, DEFAULT_CONTENT.protocol);
   if (!c.protocol.flow) c.protocol.flow = DEFAULT_CONTENT.protocol.flow;

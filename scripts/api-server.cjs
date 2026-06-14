@@ -186,23 +186,29 @@ function rateLimit(key, maxReqs, windowMs) {
 }
 
 // ─── Helpers de precios ───────────────────────────────────────────────────────
-var VALID_SHIP_FEES = { std: 4990, express: 9990, pickup: 0 };
+var DEFAULT_SHIP_FEES = { std: 4990, express: 9990, pickup: 0 };
 
 function getContentPrices() {
-  if (!SB_URL || !SB_SVC) return Promise.resolve({});
+  if (!SB_URL || !SB_SVC) return Promise.resolve({ prices: {}, shipping: DEFAULT_SHIP_FEES });
   return sbFetch('GET', 'content', { query: 'key=eq.main&select=data&limit=1' })
     .then(function(r) {
       var row = Array.isArray(r.data) ? r.data[0] : null;
-      if (!row || !row.data) return {};
+      if (!row || !row.data) return { prices: {}, shipping: DEFAULT_SHIP_FEES };
       var items = ((row.data.products && row.data.products.items) || [])
         .concat((row.data.cuadros && row.data.cuadros.products) || []);
-      var map = {};
+      var prices = {};
       items.forEach(function(p) {
-        if (p.id) map[p.id] = parseInt(String(p.price || '0').replace(/[^0-9]/g, ''), 10) || 0;
+        if (p.id) prices[p.id] = parseInt(String(p.price || '0').replace(/[^0-9]/g, ''), 10) || 0;
       });
-      return map;
+      var s = row.data.checkout && row.data.checkout.shippingFees;
+      var shipping = {
+        std:     (s && typeof s.std     === 'number') ? s.std     : DEFAULT_SHIP_FEES.std,
+        express: (s && typeof s.express === 'number') ? s.express : DEFAULT_SHIP_FEES.express,
+        pickup:  (s && typeof s.pickup  === 'number') ? s.pickup  : DEFAULT_SHIP_FEES.pickup,
+      };
+      return { prices, shipping };
     })
-    .catch(function() { return {}; });
+    .catch(function() { return { prices: {}, shipping: DEFAULT_SHIP_FEES }; });
 }
 
 // ─── POST /api/checkout/create-preference ────────────────────────────────────
@@ -214,10 +220,12 @@ app.post('/api/checkout/create-preference', rateLimit('checkout', 10, 60 * 1000)
 
   if (!cart.length) return res.status(400).json({ error: 'Carrito vacío' });
 
-  // Shipping fee validado en servidor (ignoramos lo que manda el frontend)
-  var shipFee = VALID_SHIP_FEES.hasOwnProperty(shippingMethod) ? VALID_SHIP_FEES[shippingMethod] : 4990;
+  getContentPrices().then(function(result) {
+    var priceMap = result.prices;
+    var fees     = result.shipping;
+    // Shipping fee validado en servidor (ignoramos lo que manda el frontend)
+    var shipFee  = fees.hasOwnProperty(shippingMethod) ? fees[shippingMethod] : fees.std;
 
-  getContentPrices().then(function(priceMap) {
     // SEGURIDAD (fail-closed): el precio SIEMPRE sale de la DB del servidor.
     // Si no hay precios (DB caída/vacía) NO confiamos en el precio del cliente
     // — rechazamos el pago en vez de arriesgar un subpago.

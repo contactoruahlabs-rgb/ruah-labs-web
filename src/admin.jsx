@@ -2513,6 +2513,15 @@ function ViewCheckout({ content, store }) {
       </div>
 
       <div className="card">
+        <div className="card__head"><h3>Tarifas de envío</h3><span className="meta">El servidor usa estos valores — el cliente no puede modificarlos</span></div>
+        <div className="row">
+          <Text label="Envío estándar (CLP, sin puntos)" value={String((ck.shippingFees || {}).std ?? 4990)} onChange={v => update('checkout.shippingFees.std', parseInt(v.replace(/[^0-9]/g,''),10)||0)} hint="Ej: 4990" />
+          <Text label="Envío express (CLP, sin puntos)"  value={String((ck.shippingFees || {}).express ?? 9990)} onChange={v => update('checkout.shippingFees.express', parseInt(v.replace(/[^0-9]/g,''),10)||0)} hint="Ej: 9990" />
+          <Text label="Retiro en tienda (0 = gratis)"   value={String((ck.shippingFees || {}).pickup ?? 0)} onChange={v => update('checkout.shippingFees.pickup', parseInt(v.replace(/[^0-9]/g,''),10)||0)} hint="Normalmente 0" />
+        </div>
+      </div>
+
+      <div className="card">
         <div className="card__head"><h3>Colores del checkout</h3></div>
         <div className="row">
           <ColorPicker label="Fondo principal (negro)"      value={s.cardBg || '#0a0a0a'}    onChange={v => setStyle('cardBg', v)} />
