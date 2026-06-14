@@ -509,7 +509,7 @@ function StepPay({
       {payMethod === 'transfer' && (
         <div className="ck-alt">
           <div className="ck-alt__t">Transferencia electrónica</div>
-          <div className="ck-alt__d">BancoEstado · Cuenta Vista 1234567 · ruahlabs.cl@gmail.com — confirmaremos al recibirla.</div>
+          <div className="ck-alt__d">BancoEstado · Cuenta Vista 1234567 · contacto@ruahlabs.cl — confirmaremos al recibirla.</div>
         </div>
       )}
 

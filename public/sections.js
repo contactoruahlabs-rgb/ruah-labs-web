@@ -454,19 +454,19 @@ function FeaturedDuo({
   content,
   onOpenProduct
 }) {
-  const h = content.home || {};
-  const featured = h.featured || [];
+  const items = (content.products && content.products.items || []).filter(p => p.featuredOnHome).slice(0, 2);
+  if (!items.length) return null;
   return /*#__PURE__*/React.createElement("section", {
     className: "feat-duo"
   }, /*#__PURE__*/React.createElement("div", {
     className: "shell"
   }, /*#__PURE__*/React.createElement("div", {
     className: "feat-duo__grid"
-  }, featured.map((item, i) => /*#__PURE__*/React.createElement(Reveal, {
+  }, items.map((item, i) => /*#__PURE__*/React.createElement(Reveal, {
     key: item.id,
     delay: i * 100,
     className: "feat-card",
-    onClick: () => item.productId && onOpenProduct && onOpenProduct(item.productId, item.img, item.gallery || [])
+    onClick: () => onOpenProduct && onOpenProduct(item.id)
   }, /*#__PURE__*/React.createElement("div", {
     className: "feat-card__media"
   }, item.img ? /*#__PURE__*/React.createElement("img", {
@@ -492,7 +492,7 @@ function FeaturedDuo({
     className: "btn btn--amber feat-card__cta",
     onClick: e => {
       e.stopPropagation();
-      item.productId && onOpenProduct && onOpenProduct(item.productId, item.img, item.gallery || []);
+      onOpenProduct && onOpenProduct(item.id);
     }
   }, "Comprar ", /*#__PURE__*/React.createElement("span", null, "\u2192")))))))));
 }
@@ -723,9 +723,7 @@ function DesignGallery({
   }, /*#__PURE__*/React.createElement("p", {
     className: "dg__footer-desc"
   }, "Hacemos piezas \xFAnicas centradas en Cristo. T\xFA eliges el vers\xEDculo, el estilo y el formato."), /*#__PURE__*/React.createElement("a", {
-    href: "https://wa.me/56926237239?text=Hola%2C%20me%20interesa%20cotizar%20un%20dise%C3%B1o%20personalizado",
-    target: "_blank",
-    rel: "noopener noreferrer",
+    href: "mailto:contacto@ruahlabs.cl?subject=Cotizaci\xF3n%20dise\xF1o%20personalizado",
     className: "dg__footer-cta"
   }, "COTIZAR \u2192"))), modal && /*#__PURE__*/React.createElement("div", {
     className: "museum__modal-overlay",

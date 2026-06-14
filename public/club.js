@@ -141,7 +141,7 @@ function Club({
     }
   }, "\u25C9 ACCESO PRIVADO"), /*#__PURE__*/React.createElement("h2", null, "SOMOS MAS", /*#__PURE__*/React.createElement("br", null), "DE LOS QUE", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("em", null, "CREES.")), /*#__PURE__*/React.createElement("p", {
     className: "lede"
-  }, "La contrase\xF1a te lleg\xF3 por correo al momento de tu compra. Si no la encuentras, escr\xEDbenos a hola@ruahlabs.cl"), /*#__PURE__*/React.createElement("form", {
+  }, "La contrase\xF1a te lleg\xF3 por correo al momento de tu compra. Si no la encuentras, escr\xEDbenos a contacto@ruahlabs.cl"), /*#__PURE__*/React.createElement("form", {
     onSubmit: enter
   }, /*#__PURE__*/React.createElement("label", {
     htmlFor: "club-email"

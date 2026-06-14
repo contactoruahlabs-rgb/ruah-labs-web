@@ -1550,6 +1550,13 @@ function ViewProducts({
         ...x,
         featuredInCarousel: v
       } : x))
+    }), /*#__PURE__*/React.createElement(Toggle, {
+      label: "Mostrar como producto destacado del inicio (m\xE1x. 2)",
+      value: !!it.featuredOnHome,
+      onChange: v => updateList('products.items', l => l.map(x => x.id === it.id ? {
+        ...x,
+        featuredOnHome: v
+      } : x))
     }), /*#__PURE__*/React.createElement("button", {
       className: "abtn ghost sm",
       type: "button",

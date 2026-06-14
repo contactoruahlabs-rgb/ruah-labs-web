@@ -678,7 +678,7 @@ function StepPay({
     className: "ck-alt__t"
   }, "Transferencia electr\xF3nica"), /*#__PURE__*/React.createElement("div", {
     className: "ck-alt__d"
-  }, "BancoEstado \xB7 Cuenta Vista 1234567 \xB7 ruahlabs.cl@gmail.com \u2014 confirmaremos al recibirla.")), /*#__PURE__*/React.createElement("div", {
+  }, "BancoEstado \xB7 Cuenta Vista 1234567 \xB7 contacto@ruahlabs.cl \u2014 confirmaremos al recibirla.")), /*#__PURE__*/React.createElement("div", {
     className: "ck-discount"
   }, /*#__PURE__*/React.createElement("label", {
     className: "ck-field"

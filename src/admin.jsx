@@ -763,6 +763,12 @@ function ViewProducts({ content, store }) {
                   onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, featuredInCarousel: v } : x))}
                 />
 
+                <Toggle
+                  label="Mostrar como producto destacado del inicio (máx. 2)"
+                  value={!!it.featuredOnHome}
+                  onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, featuredOnHome: v } : x))}
+                />
+
                 <button className="abtn ghost sm" type="button" onClick={() => setExpandedId(isOpen ? null : it.id)} style={{ alignSelf: 'flex-start', marginTop: 4 }}>
                   {isOpen ? '▴ Ocultar descripción y detalles' : '▾ Descripción + detalles + galería'}
                 </button>

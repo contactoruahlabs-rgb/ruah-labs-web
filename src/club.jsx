@@ -111,7 +111,7 @@ function Club({ open, content, onClose, store }) {
               <em>CREES.</em>
             </h2>
             <p className="lede">
-              La contraseña te llegó por correo al momento de tu compra. Si no la encuentras, escríbenos a hola@ruahlabs.cl
+              La contraseña te llegó por correo al momento de tu compra. Si no la encuentras, escríbenos a contacto@ruahlabs.cl
             </p>
             <form onSubmit={enter}>
               <label htmlFor="club-email">Correo</label>
