@@ -83,6 +83,24 @@ function SectionHeader({
 }
 
 // --- Nav ---
+function MobileDropdown({
+  label,
+  num,
+  children
+}) {
+  var [open, setOpen] = React.useState(false);
+  return /*#__PURE__*/React.createElement("div", {
+    className: 'm-drop' + (open ? ' open' : '')
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "m-link m-drop__head",
+    type: "button",
+    onClick: () => setOpen(o => !o)
+  }, /*#__PURE__*/React.createElement("span", null, label), /*#__PURE__*/React.createElement("span", {
+    className: "m-link__num"
+  }, open ? '−' : '+')), /*#__PURE__*/React.createElement("div", {
+    className: "m-drop__list"
+  }, children));
+}
 function Nav({
   content,
   onOpenProduct,
@@ -254,44 +272,49 @@ function Nav({
   }, /*#__PURE__*/React.createElement("span", {
     className: "hamb__bars"
   }))), /*#__PURE__*/React.createElement("div", {
-    className: 'mobile-menu' + (mobileOpen ? ' open' : '')
-  }, nav.links.map((l, i) => l.dropdown ? /*#__PURE__*/React.createElement("div", {
-    key: l.id,
-    className: "m-group"
+    className: 'mobile-menu' + (mobileOpen ? ' open' : ''),
+    onClick: () => setMobileOpen(false)
   }, /*#__PURE__*/React.createElement("div", {
-    className: "m-group__head"
-  }, /*#__PURE__*/React.createElement("span", null, l.label), /*#__PURE__*/React.createElement("span", {
-    className: "num"
-  }, String(i + 1).padStart(2, '0'))), /*#__PURE__*/React.createElement("div", {
-    className: "m-group__list"
+    className: "mobile-menu__inner",
+    onClick: e => e.stopPropagation()
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "mobile-menu__x",
+    onClick: () => setMobileOpen(false),
+    "aria-label": "Cerrar men\xFA"
+  }, "\xD7"), /*#__PURE__*/React.createElement("nav", {
+    className: "mobile-menu__nav"
+  }, nav.links.map((l, i) => l.dropdown ? /*#__PURE__*/React.createElement(MobileDropdown, {
+    key: l.id,
+    label: l.label,
+    num: String(i + 1).padStart(2, '0')
   }, products.categories.map(c => /*#__PURE__*/React.createElement("a", {
     key: c.id,
     href: "#productos",
+    className: "m-sub__link",
     onClick: e => {
       e.preventDefault();
       navigateCategory(c.slug);
     }
-  }, /*#__PURE__*/React.createElement("span", null, "\u2014 ", c.name), /*#__PURE__*/React.createElement("span", null, "\u2192"))))) : /*#__PURE__*/React.createElement("a", {
+  }, c.name))) : /*#__PURE__*/React.createElement("a", {
     key: l.id,
     href: l.href,
+    className: "m-link",
     onClick: e => {
       e.preventDefault();
       navigate(l.href);
     }
   }, /*#__PURE__*/React.createElement("span", null, l.label), /*#__PURE__*/React.createElement("span", {
-    className: "num"
+    className: "m-link__num"
   }, String(i + 1).padStart(2, '0')))), /*#__PURE__*/React.createElement("a", {
     href: nav.cta.href,
+    className: "m-link m-link--cta",
     onClick: e => {
       e.preventDefault();
       navigate(nav.cta.href);
-    },
-    style: {
-      color: 'var(--amber)'
     }
   }, /*#__PURE__*/React.createElement("span", null, nav.cta.label), /*#__PURE__*/React.createElement("span", {
-    className: "num"
-  }, "\u2192"))));
+    className: "m-link__num"
+  }, "\u2192"))))));
 }
 
 // --- Hero ---
@@ -420,9 +443,7 @@ function FeaturedDuo({
     loading: "lazy"
   }) : /*#__PURE__*/React.createElement("div", {
     className: "feat-card__ph"
-  }, (item.name || 'RL').slice(0, 2)), item.tag && /*#__PURE__*/React.createElement("span", {
-    className: "feat-card__tag"
-  }, item.tag), /*#__PURE__*/React.createElement("span", {
+  }, (item.name || 'RL').slice(0, 2)), /*#__PURE__*/React.createElement("span", {
     className: "feat-card__hover"
   }, "Ver detalle \u2192")), /*#__PURE__*/React.createElement("div", {
     className: "feat-card__body"
@@ -1008,9 +1029,7 @@ function Products({
     loading: "lazy"
   }) : /*#__PURE__*/React.createElement("div", {
     className: "prod__ph"
-  }, it.name.split(' ').slice(-1)[0].slice(0, 2)), it.tag && /*#__PURE__*/React.createElement("span", {
-    className: 'prod__tag' + (it.tagStyle === 'soft' ? ' soft' : '')
-  }, it.tag), /*#__PURE__*/React.createElement("span", {
+  }, it.name.split(' ').slice(-1)[0].slice(0, 2)), /*#__PURE__*/React.createElement("span", {
     className: "prod__view"
   }, "Ver detalle \u2192")), /*#__PURE__*/React.createElement("div", {
     className: "prod__body"
@@ -1058,13 +1077,17 @@ function ProductDetail({
     setZoomed(false);
     setSelectedSize(null);
   }, [open, productId]);
+  var pdTouchRef = React.useRef(null);
   React.useEffect(() => {
     function onKey(e) {
-      if (e.key === 'Escape' && open) onClose();
+      if (!open) return;
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowRight') setIdx(i => (i + 1) % gallery.length);
+      if (e.key === 'ArrowLeft') setIdx(i => (i - 1 + gallery.length) % gallery.length);
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+  }, [open, onClose, gallery.length]);
   if (!open || !product) {
     return /*#__PURE__*/React.createElement("div", {
       className: "pd-overlay",
@@ -1073,6 +1096,14 @@ function ProductDetail({
   }
   const gallery = [overrideImg, product.img, ...(product.gallery || [])].filter((v, i, a) => v && a.indexOf(v) === i);
   const currentImg = gallery[idx] || product.img;
+  function pdPrev(e) {
+    e.stopPropagation();
+    setIdx(i => (i - 1 + gallery.length) % gallery.length);
+  }
+  function pdNext(e) {
+    e.stopPropagation();
+    setIdx(i => (i + 1) % gallery.length);
+  }
   return /*#__PURE__*/React.createElement("div", {
     className: 'pd-overlay open',
     onClick: onClose,
@@ -1089,13 +1120,32 @@ function ProductDetail({
     className: "pd__media"
   }, /*#__PURE__*/React.createElement("div", {
     className: 'pd__main' + (zoomed ? ' pd__main--zoomed' : ''),
-    onClick: () => setZoomed(z => !z)
+    onClick: () => setZoomed(z => !z),
+    onTouchStart: e => {
+      pdTouchRef.current = e.touches[0].clientX;
+    },
+    onTouchEnd: e => {
+      var dx = e.changedTouches[0].clientX - (pdTouchRef.current || 0);
+      if (Math.abs(dx) > 40) {
+        if (dx < 0) pdNext(e);else pdPrev(e);
+      }
+    }
   }, currentImg ? /*#__PURE__*/React.createElement("img", {
     src: currentImg,
     alt: product.name
   }) : /*#__PURE__*/React.createElement("div", {
     className: "pd__ph"
-  }, product.name.split(' ').slice(-1)[0].slice(0, 2))), gallery.length > 1 && /*#__PURE__*/React.createElement("div", {
+  }, product.name.split(' ').slice(-1)[0].slice(0, 2)), gallery.length > 1 && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    className: "pd__arr pd__arr--prev",
+    onClick: pdPrev,
+    "aria-label": "Anterior"
+  }, "\u2039"), /*#__PURE__*/React.createElement("button", {
+    className: "pd__arr pd__arr--next",
+    onClick: pdNext,
+    "aria-label": "Siguiente"
+  }, "\u203A"), /*#__PURE__*/React.createElement("div", {
+    className: "pd__arr-count"
+  }, idx + 1, " / ", gallery.length))), gallery.length > 1 && /*#__PURE__*/React.createElement("div", {
     className: "pd__thumbs"
   }, gallery.map((g, i) => /*#__PURE__*/React.createElement("button", {
     key: i,

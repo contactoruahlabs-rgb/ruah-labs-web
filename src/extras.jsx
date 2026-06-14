@@ -101,57 +101,89 @@ function CuadroProductModal({ productId, cuadros, onClose, onAddToCart, onBuyNow
 // ============================================================
 function GalleryModal({ title, subtitle, photos, onClose }) {
   const open = !!photos;
-  const [lightbox, setLightbox] = React.useState(null);
+  const [idx, setIdx] = React.useState(0);
+  const touchRef = React.useRef(null);
+  const trackRef = React.useRef(null);
 
   React.useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
-    setLightbox(null);
+    setIdx(0);
   }, [open]);
 
   React.useEffect(() => {
     function onKey(e) {
       if (!open) return;
-      if (e.key === 'Escape') { if (lightbox !== null) setLightbox(null); else onClose(); }
-      if (e.key === 'ArrowRight' && lightbox !== null && photos) setLightbox(i => Math.min(i + 1, photos.length - 1));
-      if (e.key === 'ArrowLeft'  && lightbox !== null && photos) setLightbox(i => Math.max(i - 1, 0));
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowRight' && photos) setIdx(i => Math.min(i + 1, photos.length - 1));
+      if (e.key === 'ArrowLeft'  && photos) setIdx(i => Math.max(i - 1, 0));
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose, lightbox, photos]);
+  }, [open, onClose, photos]);
 
   if (!open) return null;
   const imgs = (photos || []).filter(Boolean);
+  const total = imgs.length;
+
+  function prev(e) { e && e.stopPropagation(); setIdx(i => Math.max(i - 1, 0)); }
+  function next(e) { e && e.stopPropagation(); setIdx(i => Math.min(i + 1, total - 1)); }
 
   return (
-    <div className="gallery-overlay open" onClick={() => { if (lightbox !== null) setLightbox(null); else onClose(); }} role="dialog" aria-modal="true">
+    <div className="gallery-overlay open" role="dialog" aria-modal="true">
       <div className="gallery-modal" onClick={e => e.stopPropagation()}>
+
+        {/* Cabecera con título + botón regresar */}
         <div className="gallery-modal__top">
           <div className="gallery-modal__info">
             {subtitle && <span className="gallery-modal__code">{subtitle}</span>}
             <h3 className="gallery-modal__name">{title}</h3>
           </div>
-          <button className="gallery-modal__close" onClick={onClose}>× Cerrar</button>
+          <button className="gallery-modal__back" onClick={onClose}>
+            ← REGRESAR
+          </button>
         </div>
-        <div className="gallery-modal__grid">
-          {imgs.length === 0 ? (
-            <div className="gallery-modal__empty">— SIN FOTOGRAFÍAS AÚN —</div>
-          ) : imgs.map((ph, i) => (
-            <div key={i} className="gallery-modal__img" onClick={() => setLightbox(i)}>
-              <img src={ph} alt={title + ' · ' + (i + 1)} loading="lazy" />
-              <div className="gallery-modal__img-hover">🔍</div>
-            </div>
-          ))}
-        </div>
-      </div>
 
-      {lightbox !== null && imgs[lightbox] && (
-        <div className="gallery-lightbox" onClick={() => setLightbox(null)}>
-          <button className="gallery-lightbox__prev" onClick={e => { e.stopPropagation(); setLightbox(i => Math.max(i - 1, 0)); }} disabled={lightbox === 0}>‹</button>
-          <img src={imgs[lightbox]} alt={title} onClick={e => e.stopPropagation()} />
-          <button className="gallery-lightbox__next" onClick={e => { e.stopPropagation(); setLightbox(i => Math.min(i + 1, imgs.length - 1)); }} disabled={lightbox === imgs.length - 1}>›</button>
-          <div className="gallery-lightbox__count">{lightbox + 1} / {imgs.length}</div>
-        </div>
-      )}
+        {imgs.length === 0 ? (
+          <div className="gallery-modal__empty">— SIN FOTOGRAFÍAS AÚN —</div>
+        ) : (
+          <React.Fragment>
+            {/* Imagen principal */}
+            <div
+              className="gallery-modal__main"
+              onTouchStart={e => { touchRef.current = e.touches[0].clientX; }}
+              onTouchEnd={e => {
+                var dx = e.changedTouches[0].clientX - (touchRef.current || 0);
+                if (Math.abs(dx) > 40) { if (dx < 0) next(); else prev(); }
+              }}
+            >
+              <img src={imgs[idx]} alt={title + ' · ' + (idx + 1)} />
+              {total > 1 && (
+                <React.Fragment>
+                  <button className="gm__arr gm__arr--prev" onClick={prev} disabled={idx === 0}>&#8249;</button>
+                  <button className="gm__arr gm__arr--next" onClick={next} disabled={idx === total - 1}>&#8250;</button>
+                  <div className="gm__count">{idx + 1} / {total}</div>
+                </React.Fragment>
+              )}
+            </div>
+
+            {/* Strip de miniaturas con scroll horizontal */}
+            {total > 1 && (
+              <div className="gallery-modal__strip" ref={trackRef}>
+                {imgs.map((ph, i) => (
+                  <button
+                    key={i}
+                    className={'gm__thumb' + (i === idx ? ' active' : '')}
+                    onClick={() => setIdx(i)}
+                    aria-label={'Foto ' + (i + 1)}
+                  >
+                    <img src={ph} alt="" loading="lazy" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </React.Fragment>
+        )}
+      </div>
     </div>
   );
 }
@@ -165,6 +197,8 @@ function Cuadros({ content, onAddToCart, onBuyNow, onOpenCuadro }) {
   const openCuadro = (id) => { if (onOpenCuadro) onOpenCuadro(id); };
   const [selectedEstilo, setSelectedEstilo] = React.useState(null);
   const [selectedFormato, setSelectedFormato] = React.useState(null);
+  const [selectedMadera, setSelectedMadera] = React.useState(null);
+  const [selectedMarco, setSelectedMarco] = React.useState(null);
 
   return (
     <section className="cuadros" id="cuadros">
@@ -253,7 +287,7 @@ function Cuadros({ content, onAddToCart, onBuyNow, onOpenCuadro }) {
             </div>
             <div className="cu-panel">
               <div className="cu-panel__hd">
-                PASO {c.steps[activeStep]?.num || '01'} {activeStep === 3 ? '· ENVIAR BRIEF' : '· ' + (c.steps[activeStep]?.name || '')}
+                PASO {c.steps[activeStep]?.num || '01'} {activeStep === 4 ? '· ENVIAR BRIEF' : '· ' + (c.steps[activeStep]?.name || '')}
               </div>
 
               {activeStep === 0 && (
@@ -307,11 +341,50 @@ function Cuadros({ content, onAddToCart, onBuyNow, onOpenCuadro }) {
               )}
 
               {activeStep === 3 && (
+                <div className="cu-acabado">
+                  <div className="cu-acabado__group">
+                    <div className="cu-acabado__label">MADERA</div>
+                    <div className="cu-acabado__opts">
+                      {(c.maderas || []).map(m => (
+                        <button key={m.id}
+                          className={'cu-acab-opt' + (selectedMadera === m.id ? ' selected' : '')}
+                          type="button"
+                          onClick={() => setSelectedMadera(m.id)}>
+                          <span className="cu-acab-opt__name">{m.name}</span>
+                          <span className="cu-acab-opt__desc">{m.desc}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="cu-acabado__group">
+                    <div className="cu-acabado__label">MARCO</div>
+                    <div className="cu-acabado__opts">
+                      {(c.marcos || []).map(m => (
+                        <button key={m.id}
+                          className={'cu-acab-opt' + (selectedMarco === m.id ? ' selected' : '')}
+                          type="button"
+                          onClick={() => setSelectedMarco(m.id)}>
+                          <span className="cu-acab-opt__name">{m.name}</span>
+                          <span className="cu-acab-opt__desc">{m.desc}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <button className="cu-acabado__next" type="button"
+                    onClick={() => setActiveStep(4)}>
+                    CONTINUAR → ENVIAR BRIEF
+                  </button>
+                </div>
+              )}
+
+              {activeStep === 4 && (
                 <CuadrosSendForm
                   fields={c.sendFields || []}
                   submitLabel={c.sendSubmit || 'ENVIAR BRIEF'}
                   selectedEstilo={selectedEstilo ? (c.estilos || []).find(e => e.id === selectedEstilo)?.name : null}
                   selectedFormato={selectedFormato ? (c.formatos || []).find(f => f.id === selectedFormato)?.size : null}
+                  selectedMadera={selectedMadera ? (c.maderas || []).find(m => m.id === selectedMadera)?.name : null}
+                  selectedMarco={selectedMarco ? (c.marcos || []).find(m => m.id === selectedMarco)?.name : null}
                 />
               )}
             </div>
@@ -323,12 +396,12 @@ function Cuadros({ content, onAddToCart, onBuyNow, onOpenCuadro }) {
   );
 }
 
-function CuadrosSendForm({ fields, submitLabel, selectedEstilo, selectedFormato }) {
+function CuadrosSendForm({ fields, submitLabel, selectedEstilo, selectedFormato, selectedMadera, selectedMarco }) {
   const [status, setStatus] = React.useState('idle'); // idle | sending | ok | err-NNN | net-err
   function onSubmit(e) {
     e.preventDefault();
     var fd  = new FormData(e.target);
-    var row = { name: '', email: '', versiculo: '', notas: '', estilo: selectedEstilo || '', formato: selectedFormato || '' };
+    var row = { name: '', email: '', versiculo: '', notas: '', estilo: selectedEstilo || '', formato: selectedFormato || '', madera: selectedMadera || '', marco: selectedMarco || '' };
     fields.forEach(function(f) {
       var val = (fd.get(f.id) || '').trim();
       var lbl = (f.label || '').toUpperCase();

@@ -139,30 +139,36 @@ function GalleryModal({
   onClose
 }) {
   const open = !!photos;
-  const [lightbox, setLightbox] = React.useState(null);
+  const [idx, setIdx] = React.useState(0);
+  const touchRef = React.useRef(null);
+  const trackRef = React.useRef(null);
   React.useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
-    setLightbox(null);
+    setIdx(0);
   }, [open]);
   React.useEffect(() => {
     function onKey(e) {
       if (!open) return;
-      if (e.key === 'Escape') {
-        if (lightbox !== null) setLightbox(null);else onClose();
-      }
-      if (e.key === 'ArrowRight' && lightbox !== null && photos) setLightbox(i => Math.min(i + 1, photos.length - 1));
-      if (e.key === 'ArrowLeft' && lightbox !== null && photos) setLightbox(i => Math.max(i - 1, 0));
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowRight' && photos) setIdx(i => Math.min(i + 1, photos.length - 1));
+      if (e.key === 'ArrowLeft' && photos) setIdx(i => Math.max(i - 1, 0));
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose, lightbox, photos]);
+  }, [open, onClose, photos]);
   if (!open) return null;
   const imgs = (photos || []).filter(Boolean);
+  const total = imgs.length;
+  function prev(e) {
+    e && e.stopPropagation();
+    setIdx(i => Math.max(i - 1, 0));
+  }
+  function next(e) {
+    e && e.stopPropagation();
+    setIdx(i => Math.min(i + 1, total - 1));
+  }
   return /*#__PURE__*/React.createElement("div", {
     className: "gallery-overlay open",
-    onClick: () => {
-      if (lightbox !== null) setLightbox(null);else onClose();
-    },
     role: "dialog",
     "aria-modal": "true"
   }, /*#__PURE__*/React.createElement("div", {
@@ -177,46 +183,47 @@ function GalleryModal({
   }, subtitle), /*#__PURE__*/React.createElement("h3", {
     className: "gallery-modal__name"
   }, title)), /*#__PURE__*/React.createElement("button", {
-    className: "gallery-modal__close",
+    className: "gallery-modal__back",
     onClick: onClose
-  }, "\xD7 Cerrar")), /*#__PURE__*/React.createElement("div", {
-    className: "gallery-modal__grid"
-  }, imgs.length === 0 ? /*#__PURE__*/React.createElement("div", {
+  }, "\u2190 REGRESAR")), imgs.length === 0 ? /*#__PURE__*/React.createElement("div", {
     className: "gallery-modal__empty"
-  }, "\u2014 SIN FOTOGRAF\xCDAS A\xDAN \u2014") : imgs.map((ph, i) => /*#__PURE__*/React.createElement("div", {
+  }, "\u2014 SIN FOTOGRAF\xCDAS A\xDAN \u2014") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "gallery-modal__main",
+    onTouchStart: e => {
+      touchRef.current = e.touches[0].clientX;
+    },
+    onTouchEnd: e => {
+      var dx = e.changedTouches[0].clientX - (touchRef.current || 0);
+      if (Math.abs(dx) > 40) {
+        if (dx < 0) next();else prev();
+      }
+    }
+  }, /*#__PURE__*/React.createElement("img", {
+    src: imgs[idx],
+    alt: title + ' · ' + (idx + 1)
+  }), total > 1 && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    className: "gm__arr gm__arr--prev",
+    onClick: prev,
+    disabled: idx === 0
+  }, "\u2039"), /*#__PURE__*/React.createElement("button", {
+    className: "gm__arr gm__arr--next",
+    onClick: next,
+    disabled: idx === total - 1
+  }, "\u203A"), /*#__PURE__*/React.createElement("div", {
+    className: "gm__count"
+  }, idx + 1, " / ", total))), total > 1 && /*#__PURE__*/React.createElement("div", {
+    className: "gallery-modal__strip",
+    ref: trackRef
+  }, imgs.map((ph, i) => /*#__PURE__*/React.createElement("button", {
     key: i,
-    className: "gallery-modal__img",
-    onClick: () => setLightbox(i)
+    className: 'gm__thumb' + (i === idx ? ' active' : ''),
+    onClick: () => setIdx(i),
+    "aria-label": 'Foto ' + (i + 1)
   }, /*#__PURE__*/React.createElement("img", {
     src: ph,
-    alt: title + ' · ' + (i + 1),
+    alt: "",
     loading: "lazy"
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "gallery-modal__img-hover"
-  }, "\uD83D\uDD0D"))))), lightbox !== null && imgs[lightbox] && /*#__PURE__*/React.createElement("div", {
-    className: "gallery-lightbox",
-    onClick: () => setLightbox(null)
-  }, /*#__PURE__*/React.createElement("button", {
-    className: "gallery-lightbox__prev",
-    onClick: e => {
-      e.stopPropagation();
-      setLightbox(i => Math.max(i - 1, 0));
-    },
-    disabled: lightbox === 0
-  }, "\u2039"), /*#__PURE__*/React.createElement("img", {
-    src: imgs[lightbox],
-    alt: title,
-    onClick: e => e.stopPropagation()
-  }), /*#__PURE__*/React.createElement("button", {
-    className: "gallery-lightbox__next",
-    onClick: e => {
-      e.stopPropagation();
-      setLightbox(i => Math.min(i + 1, imgs.length - 1));
-    },
-    disabled: lightbox === imgs.length - 1
-  }, "\u203A"), /*#__PURE__*/React.createElement("div", {
-    className: "gallery-lightbox__count"
-  }, lightbox + 1, " / ", imgs.length)));
+  })))))));
 }
 
 // ============================================================
@@ -235,6 +242,8 @@ function Cuadros({
   };
   const [selectedEstilo, setSelectedEstilo] = React.useState(null);
   const [selectedFormato, setSelectedFormato] = React.useState(null);
+  const [selectedMadera, setSelectedMadera] = React.useState(null);
+  const [selectedMarco, setSelectedMarco] = React.useState(null);
   return /*#__PURE__*/React.createElement("section", {
     className: "cuadros",
     id: "cuadros"
@@ -363,7 +372,7 @@ function Cuadros({
     className: "cu-panel"
   }, /*#__PURE__*/React.createElement("div", {
     className: "cu-panel__hd"
-  }, "PASO ", c.steps[activeStep]?.num || '01', " ", activeStep === 3 ? '· ENVIAR BRIEF' : '· ' + (c.steps[activeStep]?.name || '')), activeStep === 0 && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+  }, "PASO ", c.steps[activeStep]?.num || '01', " ", activeStep === 4 ? '· ENVIAR BRIEF' : '· ' + (c.steps[activeStep]?.name || '')), activeStep === 0 && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "cu-panel__lead"
   }, c.step1Body), /*#__PURE__*/React.createElement("div", {
     className: "cu-refs"
@@ -414,18 +423,58 @@ function Cuadros({
     className: "cu-formato__size"
   }, f.size), /*#__PURE__*/React.createElement("span", {
     className: "cu-formato__price"
-  }, f.price)))), activeStep === 3 && /*#__PURE__*/React.createElement(CuadrosSendForm, {
+  }, f.price)))), activeStep === 3 && /*#__PURE__*/React.createElement("div", {
+    className: "cu-acabado"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "cu-acabado__group"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "cu-acabado__label"
+  }, "MADERA"), /*#__PURE__*/React.createElement("div", {
+    className: "cu-acabado__opts"
+  }, (c.maderas || []).map(m => /*#__PURE__*/React.createElement("button", {
+    key: m.id,
+    className: 'cu-acab-opt' + (selectedMadera === m.id ? ' selected' : ''),
+    type: "button",
+    onClick: () => setSelectedMadera(m.id)
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "cu-acab-opt__name"
+  }, m.name), /*#__PURE__*/React.createElement("span", {
+    className: "cu-acab-opt__desc"
+  }, m.desc))))), /*#__PURE__*/React.createElement("div", {
+    className: "cu-acabado__group"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "cu-acabado__label"
+  }, "MARCO"), /*#__PURE__*/React.createElement("div", {
+    className: "cu-acabado__opts"
+  }, (c.marcos || []).map(m => /*#__PURE__*/React.createElement("button", {
+    key: m.id,
+    className: 'cu-acab-opt' + (selectedMarco === m.id ? ' selected' : ''),
+    type: "button",
+    onClick: () => setSelectedMarco(m.id)
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "cu-acab-opt__name"
+  }, m.name), /*#__PURE__*/React.createElement("span", {
+    className: "cu-acab-opt__desc"
+  }, m.desc))))), /*#__PURE__*/React.createElement("button", {
+    className: "cu-acabado__next",
+    type: "button",
+    onClick: () => setActiveStep(4)
+  }, "CONTINUAR \u2192 ENVIAR BRIEF")), activeStep === 4 && /*#__PURE__*/React.createElement(CuadrosSendForm, {
     fields: c.sendFields || [],
     submitLabel: c.sendSubmit || 'ENVIAR BRIEF',
     selectedEstilo: selectedEstilo ? (c.estilos || []).find(e => e.id === selectedEstilo)?.name : null,
-    selectedFormato: selectedFormato ? (c.formatos || []).find(f => f.id === selectedFormato)?.size : null
+    selectedFormato: selectedFormato ? (c.formatos || []).find(f => f.id === selectedFormato)?.size : null,
+    selectedMadera: selectedMadera ? (c.maderas || []).find(m => m.id === selectedMadera)?.name : null,
+    selectedMarco: selectedMarco ? (c.marcos || []).find(m => m.id === selectedMarco)?.name : null
   }))))));
 }
 function CuadrosSendForm({
   fields,
   submitLabel,
   selectedEstilo,
-  selectedFormato
+  selectedFormato,
+  selectedMadera,
+  selectedMarco
 }) {
   const [status, setStatus] = React.useState('idle'); // idle | sending | ok | err-NNN | net-err
   function onSubmit(e) {
@@ -437,7 +486,9 @@ function CuadrosSendForm({
       versiculo: '',
       notas: '',
       estilo: selectedEstilo || '',
-      formato: selectedFormato || ''
+      formato: selectedFormato || '',
+      madera: selectedMadera || '',
+      marco: selectedMarco || ''
     };
     fields.forEach(function (f) {
       var val = (fd.get(f.id) || '').trim();

@@ -57,6 +57,19 @@ function SectionHeader({ index, title, right, amberTitle = false }) {
 }
 
 // --- Nav ---
+function MobileDropdown({ label, num, children }) {
+  var [open, setOpen] = React.useState(false);
+  return (
+    <div className={'m-drop' + (open ? ' open' : '')}>
+      <button className="m-link m-drop__head" type="button" onClick={() => setOpen(o => !o)}>
+        <span>{label}</span>
+        <span className="m-link__num">{open ? '−' : '+'}</span>
+      </button>
+      <div className="m-drop__list">{children}</div>
+    </div>
+  );
+}
+
 function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage, onNavigate, onGoHome }) {
   const [scrolled, setScrolled] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -223,42 +236,41 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
         </button>
       </nav>
 
-      <div className={'mobile-menu' + (mobileOpen ? ' open' : '')}>
-        {nav.links.map((l, i) =>
-        l.dropdown ?
-        <div key={l.id} className="m-group">
-              <div className="m-group__head">
-                <span>{l.label}</span>
-                <span className="num">{String(i + 1).padStart(2, '0')}</span>
-              </div>
-              <div className="m-group__list">
-                {products.categories.map((c) =>
-            <a
-              key={c.id}
-              href="#productos"
-              onClick={(e) => {e.preventDefault();navigateCategory(c.slug);}}>
-              
-                    <span>— {c.name}</span>
-                    <span>→</span>
-                  </a>
+      <div className={'mobile-menu' + (mobileOpen ? ' open' : '')} onClick={() => setMobileOpen(false)}>
+        <div className="mobile-menu__inner" onClick={e => e.stopPropagation()}>
+          <button className="mobile-menu__x" onClick={() => setMobileOpen(false)} aria-label="Cerrar menú">×</button>
+          <nav className="mobile-menu__nav">
+            {nav.links.map((l, i) =>
+            l.dropdown ?
+            <MobileDropdown key={l.id} label={l.label} num={String(i + 1).padStart(2, '0')}>
+                  {products.categories.map((c) =>
+              <a
+                key={c.id}
+                href="#productos"
+                className="m-sub__link"
+                onClick={(e) => {e.preventDefault();navigateCategory(c.slug);}}>
+
+                      {c.name}
+                    </a>
+              )}
+                </MobileDropdown> :
+
+            <a key={l.id} href={l.href} className="m-link" onClick={(e) => {e.preventDefault();navigate(l.href);}}>
+                  <span>{l.label}</span>
+                  <span className="m-link__num">{String(i + 1).padStart(2, '0')}</span>
+                </a>
+
             )}
-              </div>
-            </div> :
+            <a
+              href={nav.cta.href}
+              className="m-link m-link--cta"
+              onClick={(e) => {e.preventDefault();navigate(nav.cta.href);}}>
 
-        <a key={l.id} href={l.href} onClick={(e) => {e.preventDefault();navigate(l.href);}}>
-              <span>{l.label}</span>
-              <span className="num">{String(i + 1).padStart(2, '0')}</span>
+              <span>{nav.cta.label}</span>
+              <span className="m-link__num">→</span>
             </a>
-
-        )}
-        <a
-          href={nav.cta.href}
-          onClick={(e) => {e.preventDefault();navigate(nav.cta.href);}}
-          style={{ color: 'var(--amber)' }}>
-          
-          <span>{nav.cta.label}</span>
-          <span className="num">→</span>
-        </a>
+          </nav>
+        </div>
       </div>
     </React.Fragment>);
 
@@ -356,7 +368,6 @@ function FeaturedDuo({ content, onOpenProduct }) {
                   ? <img src={item.img} alt={item.name} loading="lazy" />
                   : <div className="feat-card__ph">{(item.name || 'RL').slice(0, 2)}</div>
                 }
-                {item.tag && <span className="feat-card__tag">{item.tag}</span>}
                 <span className="feat-card__hover">Ver detalle →</span>
               </div>
               <div className="feat-card__body">
@@ -900,8 +911,7 @@ function Products({ content, onOpenProduct, initialCategory }) {
               <img src={it.img} alt={it.name} loading="lazy" /> :
               <div className="prod__ph">{it.name.split(' ').slice(-1)[0].slice(0, 2)}</div>
               }
-                  {it.tag && <span className={'prod__tag' + (it.tagStyle === 'soft' ? ' soft' : '')}>{it.tag}</span>}
-                  <span className="prod__view">Ver detalle →</span>
+                    <span className="prod__view">Ver detalle →</span>
                 </div>
                 <div className="prod__body">
                   <div className="prod__verse">{it.verse}</div>
@@ -946,11 +956,18 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
     setSelectedSize(null);
   }, [open, productId]);
 
+  var pdTouchRef = React.useRef(null);
+
   React.useEffect(() => {
-    function onKey(e) {if (e.key === 'Escape' && open) onClose();}
+    function onKey(e) {
+      if (!open) return;
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowRight') setIdx(i => (i + 1) % gallery.length);
+      if (e.key === 'ArrowLeft')  setIdx(i => (i - 1 + gallery.length) % gallery.length);
+    }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+  }, [open, onClose, gallery.length]);
 
   if (!open || !product) {
     return <div className="pd-overlay" aria-hidden="true"></div>;
@@ -959,16 +976,34 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
   const gallery = [overrideImg, product.img, ...(product.gallery || [])].filter((v, i, a) => v && a.indexOf(v) === i);
   const currentImg = gallery[idx] || product.img;
 
+  function pdPrev(e) { e.stopPropagation(); setIdx(i => (i - 1 + gallery.length) % gallery.length); }
+  function pdNext(e) { e.stopPropagation(); setIdx(i => (i + 1) % gallery.length); }
+
   return (
     <div className={'pd-overlay open'} onClick={onClose} role="dialog" aria-modal="true">
       <div className="pd" onClick={(e) => e.stopPropagation()}>
         <button className="pd__close" onClick={onClose} aria-label="Cerrar">×</button>
 
         <div className="pd__media">
-          <div className={'pd__main' + (zoomed ? ' pd__main--zoomed' : '')} onClick={() => setZoomed(z => !z)}>
+          <div
+            className={'pd__main' + (zoomed ? ' pd__main--zoomed' : '')}
+            onClick={() => setZoomed(z => !z)}
+            onTouchStart={e => { pdTouchRef.current = e.touches[0].clientX; }}
+            onTouchEnd={e => {
+              var dx = e.changedTouches[0].clientX - (pdTouchRef.current || 0);
+              if (Math.abs(dx) > 40) { if (dx < 0) pdNext(e); else pdPrev(e); }
+            }}
+          >
             {currentImg ?
             <img src={currentImg} alt={product.name} /> :
             <div className="pd__ph">{product.name.split(' ').slice(-1)[0].slice(0, 2)}</div>}
+            {gallery.length > 1 && (
+              <React.Fragment>
+                <button className="pd__arr pd__arr--prev" onClick={pdPrev} aria-label="Anterior">&#8249;</button>
+                <button className="pd__arr pd__arr--next" onClick={pdNext} aria-label="Siguiente">&#8250;</button>
+                <div className="pd__arr-count">{idx + 1} / {gallery.length}</div>
+              </React.Fragment>
+            )}
           </div>
           {gallery.length > 1 &&
           <div className="pd__thumbs">
@@ -978,7 +1013,7 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
               className={'pd__thumb' + (i === idx ? ' active' : '')}
               onClick={() => setIdx(i)}
               aria-label={'Imagen ' + (i + 1)}>
-              
+
                   <img src={g} alt="" />
                 </button>
             )}

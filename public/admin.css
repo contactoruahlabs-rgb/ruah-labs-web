@@ -504,20 +504,60 @@
   .admin { grid-template-columns: 1fr; }
   .admin__side {
     flex-direction: row;
-    flex-wrap: wrap;
-    padding: 12px;
+    flex-wrap: nowrap;
+    padding: 0 8px;
     overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    min-height: 0;
+    flex-shrink: 0;
+    border-right: none;
+    border-bottom: 1px solid rgba(245,241,232,0.1);
   }
-  .admin__brand { padding: 8px 12px; border: 0; flex: 1 1 100%; }
-  .admin__nav { flex-direction: row; flex-wrap: wrap; margin-top: 0; }
-  .admin__nav button { padding: 8px 10px; }
-  .admin__footer { flex: 1 1 100%; flex-direction: row; border-top: 0; padding-top: 0; }
+  .admin__brand { padding: 10px 12px; border: 0; flex-shrink: 0; white-space: nowrap; }
+  .admin__nav { flex-direction: row; flex-wrap: nowrap; margin-top: 0; gap: 2px; flex-shrink: 0; }
+  .admin__nav button {
+    padding: 10px 12px;
+    font-size: 11px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-height: 44px;
+  }
+  .admin__footer { display: none; }
   .row, .row-3 { grid-template-columns: 1fr; }
   .stat-tiles { grid-template-columns: 1fr 1fr; }
   .prod-edit { grid-template-columns: 80px 1fr; }
   .prod-edit__actions { grid-column: 1 / -1; flex-direction: row; }
-  .admin__body { padding: 16px; }
+  .admin__body { padding: 16px; overflow-y: auto; }
   .admin__top { padding: 12px 16px; }
+}
+
+@media (max-width: 600px) {
+  .admin {
+    grid-template-rows: auto 1fr;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .admin__side {
+    padding: 0 4px;
+  }
+  .admin__brand { display: none; }
+  .admin__nav button {
+    padding: 12px 10px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+  }
+  .admin__body {
+    padding: 12px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    height: 100%;
+  }
+  .admin__top { padding: 10px 12px; gap: 8px; flex-wrap: wrap; }
+  .admin__top h2 { font-size: 14px; }
+  .stat-tiles { grid-template-columns: 1fr; gap: 8px; }
+  .abtn { min-height: 44px; font-size: 11px; }
+  input, textarea, select { font-size: 16px !important; }
 }
 
 
