@@ -1142,11 +1142,24 @@ function ProductDetail({
     unica: ['Talla Única']
   };
   React.useEffect(() => {
-    document.body.style.overflow = open ? 'hidden' : '';
+    if (!open) {
+      document.body.style.overflow = '';
+      return;
+    }
+    const found = content.products.items.find(x => x.id === productId);
+    document.body.style.overflow = found ? 'hidden' : '';
     setIdx(0);
     setZoomed(false);
     setSelectedSize(null);
   }, [open, productId]);
+
+  // Auto-close if productId doesn't match any product (prevents body-scroll freeze)
+  React.useEffect(() => {
+    if (open && !product) {
+      document.body.style.overflow = '';
+      onClose();
+    }
+  }, [open, product]);
   var pdTouchRef = React.useRef(null);
   var galleryLenRef = React.useRef(1);
   React.useEffect(() => {

@@ -521,7 +521,8 @@ section { padding-block: var(--section-pad-y); position: relative; }
 .m-drop.open .m-drop__list { max-height: 400px; }
 .m-sub__link {
   display: block;
-  padding: 11px 28px 11px 40px;
+  padding: 11px 28px;
+  text-align: center;
   font-family: var(--serif);
   font-size: 20px;
   letter-spacing: 0.06em;

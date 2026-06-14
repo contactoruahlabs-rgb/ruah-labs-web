@@ -294,10 +294,7 @@ function App() {
     content: content
   }), /*#__PURE__*/React.createElement(FeaturedDuo, {
     content: content,
-    onOpenProduct: (id, img) => {
-      setProductId(id);
-      setProductOverrideImg(img || null);
-    }
+    onOpenProduct: id => setProductId(id)
   }), /*#__PURE__*/React.createElement(Protocol, {
     content: content
   }), /*#__PURE__*/React.createElement(HomeCategoryCarousel, {
