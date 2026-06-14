@@ -1078,16 +1078,17 @@ function ProductDetail({
     setSelectedSize(null);
   }, [open, productId]);
   var pdTouchRef = React.useRef(null);
+  var galleryLenRef = React.useRef(1);
   React.useEffect(() => {
     function onKey(e) {
       if (!open) return;
       if (e.key === 'Escape') onClose();
-      if (e.key === 'ArrowRight') setIdx(i => (i + 1) % gallery.length);
-      if (e.key === 'ArrowLeft') setIdx(i => (i - 1 + gallery.length) % gallery.length);
+      if (e.key === 'ArrowRight') setIdx(i => (i + 1) % galleryLenRef.current);
+      if (e.key === 'ArrowLeft') setIdx(i => (i - 1 + galleryLenRef.current) % galleryLenRef.current);
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose, gallery.length]);
+  }, [open, onClose]);
   if (!open || !product) {
     return /*#__PURE__*/React.createElement("div", {
       className: "pd-overlay",
@@ -1095,6 +1096,7 @@ function ProductDetail({
     });
   }
   const gallery = [overrideImg, product.img, ...(product.gallery || [])].filter((v, i, a) => v && a.indexOf(v) === i);
+  galleryLenRef.current = gallery.length;
   const currentImg = gallery[idx] || product.img;
   function pdPrev(e) {
     e.stopPropagation();
