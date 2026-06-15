@@ -229,6 +229,36 @@ function GalleryModal({
 // ============================================================
 // CUADROS
 // ============================================================
+function CuadrosComingSoon({
+  videoUrl
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'fixed',
+      inset: 0,
+      zIndex: 58,
+      background: '#000',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden'
+    }
+  }, /*#__PURE__*/React.createElement("video", {
+    src: videoUrl,
+    autoPlay: true,
+    loop: true,
+    muted: true,
+    playsInline: true,
+    style: {
+      position: 'absolute',
+      inset: 0,
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover',
+      objectPosition: 'center'
+    }
+  }));
+}
 function Cuadros({
   content,
   onAddToCart,
@@ -245,7 +275,9 @@ function Cuadros({
   return /*#__PURE__*/React.createElement("section", {
     className: "cuadros",
     id: "cuadros"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, c.comingSoon && /*#__PURE__*/React.createElement(CuadrosComingSoon, {
+    videoUrl: c.comingSoonVideo
+  }), /*#__PURE__*/React.createElement("div", {
     className: "shell"
   }, /*#__PURE__*/React.createElement(SectionHeader, {
     index: c.headerIndex,

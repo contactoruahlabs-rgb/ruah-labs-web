@@ -191,6 +191,18 @@ function GalleryModal({ title, subtitle, photos, onClose }) {
 // ============================================================
 // CUADROS
 // ============================================================
+function CuadrosComingSoon({ videoUrl }) {
+  return (
+    <div style={{ position:'fixed', inset:0, zIndex:58, background:'#000', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
+      <video
+        src={videoUrl}
+        autoPlay loop muted playsInline
+        style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', objectPosition:'center' }}
+      />
+    </div>
+  );
+}
+
 function Cuadros({ content, onAddToCart, onBuyNow, onOpenCuadro }) {
   const c = content.cuadros;
   const [activeStep, setActiveStep] = React.useState(0);
@@ -200,6 +212,7 @@ function Cuadros({ content, onAddToCart, onBuyNow, onOpenCuadro }) {
 
   return (
     <section className="cuadros" id="cuadros">
+      {c.comingSoon && <CuadrosComingSoon videoUrl={c.comingSoonVideo} />}
       <div className="shell">
         <SectionHeader index={c.headerIndex} title={c.headerTitle} right={c.headerRight} />
 

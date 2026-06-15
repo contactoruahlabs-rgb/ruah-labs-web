@@ -1690,6 +1690,18 @@ function ViewCuadros({ content, store }) {
   return (
     <div>
       <SectionTokens groupName="Cuadros" content={content} store={store} />
+
+      <div className="card" style={{ borderColor: c.comingSoon ? 'var(--amber)' : undefined }}>
+        <div className="card__head">
+          <h3>🚧 Modo "Próximamente"</h3>
+          <span className="meta">{c.comingSoon ? 'ACTIVO — el video cubre la sección' : 'desactivado — sección visible normal'}</span>
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:16, padding:'4px 0 8px' }}>
+          <Toggle label={c.comingSoon ? 'Desactivar (lanzar cuadros)' : 'Activar pantalla "Próximamente"'} value={!!c.comingSoon} onChange={v => update('cuadros.comingSoon', v)} />
+        </div>
+        <Text label="URL del video (Cloudinary)" value={c.comingSoonVideo || ''} onChange={v => update('cuadros.comingSoonVideo', v)} hint="https://res.cloudinary.com/..." />
+      </div>
+
       <div className="card">
         <div className="card__head"><h3>Cabecera de sección</h3></div>
         <div className="row-3">

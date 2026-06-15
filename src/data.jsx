@@ -348,6 +348,8 @@ const DEFAULT_CONTENT = {
     ],
   },
   cuadros: {
+    comingSoon: true,
+    comingSoonVideo: 'https://res.cloudinary.com/dh05zwrbp/video/upload/v1781484605/ruahlabs/cuadros-coming-soon.mp4',
     headerIndex: '§05  /  06',
     headerTitle: 'CUADROS',
     headerRight: 'MINIMALISTA · DISRUPTIVO · 1/1',

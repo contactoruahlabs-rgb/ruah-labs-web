@@ -3737,6 +3737,31 @@ function ViewCuadros({
     content: content,
     store: store
   }), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      borderColor: c.comingSoon ? 'var(--amber)' : undefined
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card__head"
+  }, /*#__PURE__*/React.createElement("h3", null, "\uD83D\uDEA7 Modo \"Pr\xF3ximamente\""), /*#__PURE__*/React.createElement("span", {
+    className: "meta"
+  }, c.comingSoon ? 'ACTIVO — el video cubre la sección' : 'desactivado — sección visible normal')), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 16,
+      padding: '4px 0 8px'
+    }
+  }, /*#__PURE__*/React.createElement(Toggle, {
+    label: c.comingSoon ? 'Desactivar (lanzar cuadros)' : 'Activar pantalla "Próximamente"',
+    value: !!c.comingSoon,
+    onChange: v => update('cuadros.comingSoon', v)
+  })), /*#__PURE__*/React.createElement(Text, {
+    label: "URL del video (Cloudinary)",
+    value: c.comingSoonVideo || '',
+    onChange: v => update('cuadros.comingSoonVideo', v),
+    hint: "https://res.cloudinary.com/..."
+  })), /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "card__head"
