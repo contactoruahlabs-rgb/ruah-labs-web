@@ -854,8 +854,8 @@
 }
 .nav__cart:hover { transform: scale(1.08); }
 .nav__cart__img {
-  width: 14px;
-  height: 14px;
+  width: 20px;
+  height: 20px;
   object-fit: contain;
   display: block;
   pointer-events: none;
