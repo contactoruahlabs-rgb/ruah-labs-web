@@ -4,7 +4,7 @@
     {
       "name": "http-server",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["http-server", "."],
+      "runtimeArgs": ["http-server", "public"],
       "port": 8000
     }
   ]
