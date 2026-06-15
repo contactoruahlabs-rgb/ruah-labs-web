@@ -1808,14 +1808,13 @@ section { padding-block: var(--section-pad-y); position: relative; }
 }
 .feat-duo__grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  grid-template-columns: repeat(2, minmax(240px, 400px));
+  gap: clamp(16px, 3vw, 40px);
+  justify-content: center;
 }
 .feat-card {
   cursor: pointer;
   position: relative;
-  max-width: clamp(240px, 20vw, 400px);
-  margin: 0 auto;
 }
 .feat-card__media {
   position: relative;
