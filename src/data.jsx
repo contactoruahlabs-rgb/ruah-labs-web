@@ -350,6 +350,7 @@ const DEFAULT_CONTENT = {
   cuadros: {
     comingSoon: true,
     comingSoonVideo: 'https://res.cloudinary.com/dh05zwrbp/video/upload/v1781484605/ruahlabs/cuadros-coming-soon.mp4',
+    comingSoonVideoDesktop: 'https://res.cloudinary.com/dh05zwrbp/video/upload/v1781494045/ruahlabs/cuadros-coming-soon-desktop.mp4',
     headerIndex: '§05  /  06',
     headerTitle: 'CUADROS',
     headerRight: 'MINIMALISTA · DISRUPTIVO · 1/1',
@@ -729,6 +730,7 @@ function migrateContent(c) {
   if (!c.checkout) c.checkout = DEFAULT_CONTENT.checkout;
   if (!c.checkout.style) c.checkout.style = DEFAULT_CONTENT.checkout.style;
   if (!c.checkout.shippingFees) c.checkout.shippingFees = DEFAULT_CONTENT.checkout.shippingFees;
+  if (!c.cuadros.comingSoonVideoDesktop) c.cuadros.comingSoonVideoDesktop = DEFAULT_CONTENT.cuadros.comingSoonVideoDesktop;
 
   // Página de Envíos y Devoluciones
   if (!c.envios) c.envios = DEFAULT_CONTENT.envios;

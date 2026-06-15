@@ -1699,7 +1699,8 @@ function ViewCuadros({ content, store }) {
         <div style={{ display:'flex', alignItems:'center', gap:16, padding:'4px 0 8px' }}>
           <Toggle label={c.comingSoon ? 'Desactivar (lanzar cuadros)' : 'Activar pantalla "Próximamente"'} value={!!c.comingSoon} onChange={v => update('cuadros.comingSoon', v)} />
         </div>
-        <Text label="URL del video (Cloudinary)" value={c.comingSoonVideo || ''} onChange={v => update('cuadros.comingSoonVideo', v)} hint="https://res.cloudinary.com/..." />
+        <Text label="Video móvil (vertical, Cloudinary)" value={c.comingSoonVideo || ''} onChange={v => update('cuadros.comingSoonVideo', v)} hint="Se muestra en pantallas < 768px" />
+        <Text label="Video desktop (horizontal, Cloudinary)" value={c.comingSoonVideoDesktop || ''} onChange={v => update('cuadros.comingSoonVideoDesktop', v)} hint="Se muestra en pantallas ≥ 768px" />
       </div>
 
       <div className="card">

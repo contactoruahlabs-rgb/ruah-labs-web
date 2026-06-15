@@ -230,7 +230,8 @@ function GalleryModal({
 // CUADROS
 // ============================================================
 function CuadrosComingSoon({
-  videoUrl
+  videoMobile,
+  videoDesktop
 }) {
   return /*#__PURE__*/React.createElement("div", {
     style: {
@@ -238,25 +239,24 @@ function CuadrosComingSoon({
       inset: 0,
       zIndex: 58,
       background: '#000',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
       overflow: 'hidden'
     }
-  }, /*#__PURE__*/React.createElement("video", {
-    src: videoUrl,
+  }, videoMobile && /*#__PURE__*/React.createElement("video", {
+    key: videoMobile,
+    src: videoMobile,
     autoPlay: true,
     loop: true,
     muted: true,
     playsInline: true,
-    style: {
-      position: 'absolute',
-      inset: 0,
-      width: '100%',
-      height: '100%',
-      objectFit: 'cover',
-      objectPosition: 'center'
-    }
+    className: "cs-video cs-video--mobile"
+  }), videoDesktop && /*#__PURE__*/React.createElement("video", {
+    key: videoDesktop,
+    src: videoDesktop,
+    autoPlay: true,
+    loop: true,
+    muted: true,
+    playsInline: true,
+    className: "cs-video cs-video--desktop"
   }));
 }
 function Cuadros({
@@ -276,7 +276,8 @@ function Cuadros({
     className: "cuadros",
     id: "cuadros"
   }, c.comingSoon && /*#__PURE__*/React.createElement(CuadrosComingSoon, {
-    videoUrl: c.comingSoonVideo
+    videoMobile: c.comingSoonVideo,
+    videoDesktop: c.comingSoonVideoDesktop
   }), /*#__PURE__*/React.createElement("div", {
     className: "shell"
   }, /*#__PURE__*/React.createElement(SectionHeader, {

@@ -3757,10 +3757,15 @@ function ViewCuadros({
     value: !!c.comingSoon,
     onChange: v => update('cuadros.comingSoon', v)
   })), /*#__PURE__*/React.createElement(Text, {
-    label: "URL del video (Cloudinary)",
+    label: "Video m\xF3vil (vertical, Cloudinary)",
     value: c.comingSoonVideo || '',
     onChange: v => update('cuadros.comingSoonVideo', v),
-    hint: "https://res.cloudinary.com/..."
+    hint: "Se muestra en pantallas < 768px"
+  }), /*#__PURE__*/React.createElement(Text, {
+    label: "Video desktop (horizontal, Cloudinary)",
+    value: c.comingSoonVideoDesktop || '',
+    onChange: v => update('cuadros.comingSoonVideoDesktop', v),
+    hint: "Se muestra en pantallas \u2265 768px"
   })), /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {

@@ -1589,3 +1589,19 @@
   .gm__thumb { width: 56px; height: 56px; }
 }
 
+
+/* Coming-soon video overlay — responsive: mobile vs desktop */
+.cs-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.cs-video--desktop { display: none; }
+.cs-video--mobile  { display: block; }
+@media (min-width: 768px) {
+  .cs-video--desktop { display: block; }
+  .cs-video--mobile  { display: none; }
+}

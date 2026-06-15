@@ -191,14 +191,25 @@ function GalleryModal({ title, subtitle, photos, onClose }) {
 // ============================================================
 // CUADROS
 // ============================================================
-function CuadrosComingSoon({ videoUrl }) {
+function CuadrosComingSoon({ videoMobile, videoDesktop }) {
   return (
-    <div style={{ position:'fixed', inset:0, zIndex:58, background:'#000', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
-      <video
-        src={videoUrl}
-        autoPlay loop muted playsInline
-        style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', objectPosition:'center' }}
-      />
+    <div style={{ position:'fixed', inset:0, zIndex:58, background:'#000', overflow:'hidden' }}>
+      {videoMobile && (
+        <video
+          key={videoMobile}
+          src={videoMobile}
+          autoPlay loop muted playsInline
+          className="cs-video cs-video--mobile"
+        />
+      )}
+      {videoDesktop && (
+        <video
+          key={videoDesktop}
+          src={videoDesktop}
+          autoPlay loop muted playsInline
+          className="cs-video cs-video--desktop"
+        />
+      )}
     </div>
   );
 }
@@ -212,7 +223,7 @@ function Cuadros({ content, onAddToCart, onBuyNow, onOpenCuadro }) {
 
   return (
     <section className="cuadros" id="cuadros">
-      {c.comingSoon && <CuadrosComingSoon videoUrl={c.comingSoonVideo} />}
+      {c.comingSoon && <CuadrosComingSoon videoMobile={c.comingSoonVideo} videoDesktop={c.comingSoonVideoDesktop} />}
       <div className="shell">
         <SectionHeader index={c.headerIndex} title={c.headerTitle} right={c.headerRight} />
 
