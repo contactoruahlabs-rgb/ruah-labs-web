@@ -1,4 +1,4 @@
 # RUAH LABS — SPA fallback (Cloudflare Pages)
 # Cualquier ruta que no sea un archivo real (ej: /producto/polera-salmo-23)
 # sirve index.html con código 200 para que el router del cliente la maneje.
-/producto/*    /index.html   200
+/producto/*    /    200
