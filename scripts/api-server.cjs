@@ -540,6 +540,7 @@ function renderWelcomeTemplate(firstName, lastName, email, cart, password, order
     .replace(/\{\{PASSWORD\}\}/g,        esc(password || ''))
     .replace(/\{\{ORDER_ID\}\}/g,        esc(orderId || ''))
     .replace(/\{\{PRODUCT_NAME\}\}/g,    esc(firstItem.name || ''))
+    .replace(/\{\{PRODUCT_SPECS\}\}/g,   esc(firstItem.specs || ''))
     .replace(/\{\{PRODUCT_PRICE\}\}/g,   'CLP $' + firstPrice.toLocaleString('es-CL'))
     .replace(/\{\{ORDER_ITEMS\}\}/g,     itemsHtml)
     .replace(/\{\{SITE_URL\}\}/g,        SITE_DOMAIN);

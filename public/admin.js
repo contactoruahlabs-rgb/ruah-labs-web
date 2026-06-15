@@ -1446,7 +1446,17 @@ function ViewProducts({
         ...x,
         verse: v
       } : x))
-    })), /*#__PURE__*/React.createElement("div", {
+    })), /*#__PURE__*/React.createElement(Text, {
+      label: "Especificaciones (aparece en el correo de compra)",
+      value: it.specs || '',
+      multiline: true,
+      rows: 4,
+      placeholder: 'Material: Algodón 220 gsm\nEstampado: Serigrafía 2 tintas\nFit: Oversize unisex\nTallas: S · M · L · XL · XXL\nOrigen: Santiago, Chile',
+      onChange: v => updateList('products.items', l => l.map(x => x.id === it.id ? {
+        ...x,
+        specs: v
+      } : x))
+    }), /*#__PURE__*/React.createElement("div", {
       className: "row-3"
     }, /*#__PURE__*/React.createElement(Text, {
       label: "Precio CLP",

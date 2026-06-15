@@ -706,6 +706,7 @@ function ViewProducts({ content, store }) {
                   <Text label="Nombre" value={it.name} onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, name: v } : x))} />
                   <Text label="Versículo / Subtítulo" value={it.verse} onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, verse: v } : x))} />
                 </div>
+                <Text label="Especificaciones (aparece en el correo de compra)" value={it.specs || ''} multiline rows={4} placeholder={'Material: Algodón 220 gsm\nEstampado: Serigrafía 2 tintas\nFit: Oversize unisex\nTallas: S · M · L · XL · XXL\nOrigen: Santiago, Chile'} onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, specs: v } : x))} />
                 <div className="row-3">
                   <Text label="Precio CLP" value={it.price} onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, price: v } : x))} />
                   <Text label="Etiqueta" value={it.tag} onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, tag: v } : x))} hint="DROP 04 / EXCLUSIVO / BÁSICO" />

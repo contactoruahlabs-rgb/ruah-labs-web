@@ -38,6 +38,7 @@ function App() {
         verse: product.verse,
         price: product.price,
         img: product.img,
+        specs: product.specs || '',
         size: size || null,
         qty
       }];

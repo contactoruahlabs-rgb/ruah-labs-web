@@ -252,7 +252,10 @@ function Checkout({
       // Guardar número de pedido antes del redirect
       try {
         var pending = JSON.parse(sessionStorage.getItem('ruah-pending-order') || '{}');
-        pending.orderId = data.preference_id || 'RUAH-' + Date.now().toString().slice(-8);
+        var _chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        var _code = 'RL';
+        for (var _i = 0; _i < 4; _i++) _code += _chars[Math.floor(Math.random() * _chars.length)];
+        pending.orderId = _code;
         sessionStorage.setItem('ruah-pending-order', JSON.stringify(pending));
       } catch (_) {}
       var url = data.init_point || data.sandbox_init_point;
