@@ -706,7 +706,18 @@ function ViewProducts({ content, store }) {
                   <Text label="Nombre" value={it.name} onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, name: v } : x))} />
                   <Text label="Versículo / Subtítulo" value={it.verse} onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, verse: v } : x))} />
                 </div>
-                <Text label="Especificaciones (aparece en el correo de compra)" value={it.specs || ''} multiline rows={4} placeholder={'Material: Algodón 220 gsm\nEstampado: Serigrafía 2 tintas\nFit: Oversize unisex\nTallas: S · M · L · XL · XXL\nOrigen: Santiago, Chile'} onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, specs: v } : x))} />
+                <div className="card" style={{ margin:'12px 0 0', padding:'12px 16px', background:'var(--surface2,#f5f5f3)' }}>
+                  <div className="card__head" style={{ marginBottom:10 }}><h4 style={{ margin:0, fontSize:12, letterSpacing:'0.05em' }}>ESPECIFICACIONES (aparecen en el correo de compra)</h4></div>
+                  <div className="row">
+                    <Text label="Material:"    value={it.material  || ''} placeholder="Algodón premium 220 gsm"             onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, material:   v } : x))} />
+                    <Text label="Estampado:"   value={it.estampado || ''} placeholder="Serigrafía a 2 tintas"               onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, estampado: v } : x))} />
+                  </div>
+                  <div className="row">
+                    <Text label="Fit:"         value={it.fit       || ''} placeholder="Oversize relajado, unisex"           onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, fit:       v } : x))} />
+                    <Text label="Tallas:"      value={it.tallas    || ''} placeholder="S · M · L · XL · XXL"               onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, tallas:    v } : x))} />
+                  </div>
+                  <Text label="Origen:"        value={it.origen    || ''} placeholder="Diseñado y producido en Santiago, Chile" onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, origen:    v } : x))} />
+                </div>
                 <div className="row-3">
                   <Text label="Precio CLP" value={it.price} onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, price: v } : x))} />
                   <Text label="Etiqueta" value={it.tag} onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, tag: v } : x))} hint="DROP 04 / EXCLUSIVO / BÁSICO" />

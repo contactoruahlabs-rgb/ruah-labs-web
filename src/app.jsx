@@ -35,7 +35,11 @@ function App() {
         verse: product.verse,
         price: product.price,
         img: product.img,
-        specs: product.specs || '',
+        material:   product.material   || '',
+        estampado:  product.estampado  || '',
+        fit:        product.fit        || '',
+        tallas:     product.tallas     || '',
+        origen:     product.origen     || '',
         size: size || null,
         qty,
       }];

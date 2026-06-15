@@ -1446,17 +1446,69 @@ function ViewProducts({
         ...x,
         verse: v
       } : x))
-    })), /*#__PURE__*/React.createElement(Text, {
-      label: "Especificaciones (aparece en el correo de compra)",
-      value: it.specs || '',
-      multiline: true,
-      rows: 4,
-      placeholder: 'Material: Algodón 220 gsm\nEstampado: Serigrafía 2 tintas\nFit: Oversize unisex\nTallas: S · M · L · XL · XXL\nOrigen: Santiago, Chile',
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "card",
+      style: {
+        margin: '12px 0 0',
+        padding: '12px 16px',
+        background: 'var(--surface2,#f5f5f3)'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "card__head",
+      style: {
+        marginBottom: 10
+      }
+    }, /*#__PURE__*/React.createElement("h4", {
+      style: {
+        margin: 0,
+        fontSize: 12,
+        letterSpacing: '0.05em'
+      }
+    }, "ESPECIFICACIONES (aparecen en el correo de compra)")), /*#__PURE__*/React.createElement("div", {
+      className: "row"
+    }, /*#__PURE__*/React.createElement(Text, {
+      label: "Material:",
+      value: it.material || '',
+      placeholder: "Algod\xF3n premium 220 gsm",
       onChange: v => updateList('products.items', l => l.map(x => x.id === it.id ? {
         ...x,
-        specs: v
+        material: v
       } : x))
-    }), /*#__PURE__*/React.createElement("div", {
+    }), /*#__PURE__*/React.createElement(Text, {
+      label: "Estampado:",
+      value: it.estampado || '',
+      placeholder: "Serigraf\xEDa a 2 tintas",
+      onChange: v => updateList('products.items', l => l.map(x => x.id === it.id ? {
+        ...x,
+        estampado: v
+      } : x))
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "row"
+    }, /*#__PURE__*/React.createElement(Text, {
+      label: "Fit:",
+      value: it.fit || '',
+      placeholder: "Oversize relajado, unisex",
+      onChange: v => updateList('products.items', l => l.map(x => x.id === it.id ? {
+        ...x,
+        fit: v
+      } : x))
+    }), /*#__PURE__*/React.createElement(Text, {
+      label: "Tallas:",
+      value: it.tallas || '',
+      placeholder: "S \xB7 M \xB7 L \xB7 XL \xB7 XXL",
+      onChange: v => updateList('products.items', l => l.map(x => x.id === it.id ? {
+        ...x,
+        tallas: v
+      } : x))
+    })), /*#__PURE__*/React.createElement(Text, {
+      label: "Origen:",
+      value: it.origen || '',
+      placeholder: "Dise\xF1ado y producido en Santiago, Chile",
+      onChange: v => updateList('products.items', l => l.map(x => x.id === it.id ? {
+        ...x,
+        origen: v
+      } : x))
+    })), /*#__PURE__*/React.createElement("div", {
       className: "row-3"
     }, /*#__PURE__*/React.createElement(Text, {
       label: "Precio CLP",

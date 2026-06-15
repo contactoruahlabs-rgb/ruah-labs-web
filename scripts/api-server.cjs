@@ -540,7 +540,16 @@ function renderWelcomeTemplate(firstName, lastName, email, cart, password, order
     .replace(/\{\{PASSWORD\}\}/g,        esc(password || ''))
     .replace(/\{\{ORDER_ID\}\}/g,        esc(orderId || ''))
     .replace(/\{\{PRODUCT_NAME\}\}/g,    esc(firstItem.name || ''))
-    .replace(/\{\{PRODUCT_SPECS\}\}/g,   esc(firstItem.specs || ''))
+    .replace(/\{\{PRODUCT_SPECS\}\}/g,   (function() {
+      var lines = [
+        firstItem.material  ? 'Material: '   + firstItem.material  : '',
+        firstItem.estampado ? 'Estampado: '  + firstItem.estampado : '',
+        firstItem.fit       ? 'Fit: '        + firstItem.fit       : '',
+        firstItem.tallas    ? 'Tallas: '     + firstItem.tallas    : '',
+        firstItem.origen    ? 'Origen: '     + firstItem.origen    : '',
+      ].filter(Boolean).join('\n');
+      return esc(lines);
+    })())
     .replace(/\{\{PRODUCT_PRICE\}\}/g,   'CLP $' + firstPrice.toLocaleString('es-CL'))
     .replace(/\{\{ORDER_ITEMS\}\}/g,     itemsHtml)
     .replace(/\{\{SITE_URL\}\}/g,        SITE_DOMAIN);
