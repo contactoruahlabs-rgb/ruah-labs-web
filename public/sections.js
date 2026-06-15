@@ -1292,7 +1292,39 @@ function ProductDetail({
     className: "pd__scrollable"
   }, product.description && /*#__PURE__*/React.createElement("p", {
     className: "pd__desc"
-  }, product.description), product.details && product.details.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, product.description), (product.material || product.estampado || product.fit || product.tallas || product.origen) && /*#__PURE__*/React.createElement("div", {
+    className: "pd__details"
+  }, product.material && /*#__PURE__*/React.createElement("div", {
+    className: "pd__detail"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "lbl"
+  }, "Material"), /*#__PURE__*/React.createElement("span", {
+    className: "val"
+  }, product.material)), product.estampado && /*#__PURE__*/React.createElement("div", {
+    className: "pd__detail"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "lbl"
+  }, "Estampado"), /*#__PURE__*/React.createElement("span", {
+    className: "val"
+  }, product.estampado)), product.fit && /*#__PURE__*/React.createElement("div", {
+    className: "pd__detail"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "lbl"
+  }, "Fit"), /*#__PURE__*/React.createElement("span", {
+    className: "val"
+  }, product.fit)), product.tallas && /*#__PURE__*/React.createElement("div", {
+    className: "pd__detail"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "lbl"
+  }, "Tallas"), /*#__PURE__*/React.createElement("span", {
+    className: "val"
+  }, product.tallas)), product.origen && /*#__PURE__*/React.createElement("div", {
+    className: "pd__detail"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "lbl"
+  }, "Origen"), /*#__PURE__*/React.createElement("span", {
+    className: "val"
+  }, product.origen))), product.details && product.details.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "pd__details"
   }, product.details.map(d => /*#__PURE__*/React.createElement("div", {
     className: "pd__detail",

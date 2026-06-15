@@ -1110,6 +1110,15 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
             {product.description &&
             <p className="pd__desc">{product.description}</p>
             }
+            {(product.material || product.estampado || product.fit || product.tallas || product.origen) &&
+            <div className="pd__details">
+              {product.material  && <div className="pd__detail"><span className="lbl">Material</span><span className="val">{product.material}</span></div>}
+              {product.estampado && <div className="pd__detail"><span className="lbl">Estampado</span><span className="val">{product.estampado}</span></div>}
+              {product.fit       && <div className="pd__detail"><span className="lbl">Fit</span><span className="val">{product.fit}</span></div>}
+              {product.tallas    && <div className="pd__detail"><span className="lbl">Tallas</span><span className="val">{product.tallas}</span></div>}
+              {product.origen    && <div className="pd__detail"><span className="lbl">Origen</span><span className="val">{product.origen}</span></div>}
+            </div>
+            }
             {product.details && product.details.length > 0 &&
             <div className="pd__details">
               {product.details.map((d) =>
