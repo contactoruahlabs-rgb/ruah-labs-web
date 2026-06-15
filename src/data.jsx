@@ -716,7 +716,10 @@ function migrateContent(c) {
   if (l8) l8.label = 'Personalizados';
 
   c.products = c.products || { ...DEFAULT_CONTENT.products };
-  c.products.categories = mergeById(c.products.categories, DEFAULT_CONTENT.products.categories);
+  // Las categorías son gestionadas enteramente por el admin — NO hacer mergeById
+  // porque eso reinyectaría categorías borradas por el usuario.
+  // Solo inicializar si no existe la lista.
+  if (!Array.isArray(c.products.categories)) c.products.categories = DEFAULT_CONTENT.products.categories;
 
   // Backfill cuadros expansions
   if (c.cuadros) {
