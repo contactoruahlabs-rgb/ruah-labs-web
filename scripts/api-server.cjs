@@ -19,9 +19,13 @@ if (fs.existsSync(envPath)) {
   });
 }
 
-var MP_TOKEN   = process.env.MERCADOPAGO_ACCESS_TOKEN || '';
-var SITE_URL   = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:8000';
-var IS_DEV     = !MP_TOKEN.startsWith('APP_USR-');
+var MP_TOKEN          = process.env.MERCADOPAGO_ACCESS_TOKEN || '';
+var SITE_URL          = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:8000';
+var IS_DEV            = !MP_TOKEN.startsWith('APP_USR-');
+var MP_WEBHOOK_SECRET = process.env.MERCADOPAGO_WEBHOOK_SECRET || '';
+// Dedup compartido entre /api/checkout/welcome (redirect cliente) y el webhook.
+// Evita que ambos disparen el correo para el mismo pago.
+var _processedPayments = new Set();
 var ADMIN_LOGIN_EMAIL = 'contacto.ruahlabs@gmail.com';
 // Cache de tokens ya validados (2 min) — evita pegarle a Supabase en cada request.
 // SEGURIDAD: la única forma de ser admin es un JWT válido de Supabase Auth.
@@ -633,6 +637,12 @@ app.post('/api/checkout/welcome', rateLimit('welcome', 5, 60 * 1000), async func
 
   if (!email) return res.status(400).json({ error: 'Email requerido' });
 
+  // Dedup: si el webhook ya procesó este pago, no enviar un segundo correo.
+  if (paymentId && _processedPayments.has(paymentId)) {
+    return res.json({ ok: true, club_created: false, email_sent: false, note: 'webhook_handled' });
+  }
+  if (paymentId) _processedPayments.add(paymentId);
+
   // Verificar que el pago existe y está aprobado en MercadoPago antes de enviar
   // nada. Sin esto, el endpoint sería un emisor abierto de correo con tu dominio.
   // En modo dev (token de prueba) se omite para poder testear.
@@ -683,6 +693,93 @@ app.post('/api/checkout/welcome', rateLimit('welcome', 5, 60 * 1000), async func
     console.error('[Welcome Error]', err.message);
     srvErr(res, err);
   });
+});
+
+// ─── POST /api/webhooks/mercadopago ──────────────────────────────────────────
+// Recibe notificaciones server-to-server de MercadoPago (independiente del
+// redirect del cliente). Cubre el caso donde el comprador cierra la pestaña
+// antes de que el navegador vuelva a ruahlabs.cl.
+app.post('/api/webhooks/mercadopago', function(req, res) {
+  // Responder 200 de inmediato: MP reintenta si no recibe respuesta en < 5s.
+  res.sendStatus(200);
+
+  // Verificar firma HMAC-SHA256 (solo si el secret está configurado en Railway)
+  var xSig   = req.headers['x-signature']  || '';
+  var xReqId = req.headers['x-request-id'] || '';
+  if (MP_WEBHOOK_SECRET && xSig) {
+    var tsMatch  = xSig.match(/ts=(\d+)/);
+    var v1Match  = xSig.match(/v1=([a-f0-9]+)/);
+    if (!tsMatch || !v1Match) { console.warn('[wh] firma malformada, ignorado'); return; }
+    var dataId  = (req.body && req.body.data && req.body.data.id) ? String(req.body.data.id) : '';
+    var msg     = 'id:' + dataId + ';request-id:' + xReqId + ';ts:' + tsMatch[1] + ';';
+    var expHash = require('crypto').createHmac('sha256', MP_WEBHOOK_SECRET).update(msg).digest('hex');
+    if (expHash !== v1Match[1]) { console.warn('[wh] firma inválida, ignorado'); return; }
+  } else if (!MP_WEBHOOK_SECRET) {
+    console.warn('[wh] MERCADOPAGO_WEBHOOK_SECRET sin configurar — verificación omitida');
+  }
+
+  var body      = req.body || {};
+  var paymentId = String((body.data && body.data.id) || '');
+  if (body.type !== 'payment' || !paymentId) return;
+
+  // Dedup: el redirect del cliente puede haber procesado este pago primero
+  if (_processedPayments.has(paymentId)) { console.log('[wh] ya procesado:', paymentId); return; }
+  _processedPayments.add(paymentId);
+  if (_processedPayments.size > 1000) _processedPayments.clear();
+
+  mpGetPayment(paymentId).then(function(pay) {
+    if (pay.status !== 200 || !pay.body || pay.body.status !== 'approved') {
+      console.log('[wh] pago no aprobado:', paymentId, pay.body && pay.body.status);
+      return;
+    }
+    var payment    = pay.body;
+    var payerEmail = (payment.payer && payment.payer.email) ? payment.payer.email.trim().toLowerCase() : '';
+    var payerFirst = (payment.payer && payment.payer.first_name) || '';
+    var payerLast  = (payment.payer && payment.payer.last_name)  || '';
+    if (!payerEmail) { console.warn('[wh] pago sin email:', paymentId); return; }
+
+    // Enriquecer items del pago con specs completas (verse, material, etc.) desde la DB
+    sbFetch('GET', 'content', { query: 'key=eq.main&select=data&limit=1' }).then(function(r) {
+      var row = Array.isArray(r.data) ? r.data[0] : null;
+      var allProducts = [];
+      if (row && row.data) {
+        allProducts = allProducts
+          .concat((row.data.products && row.data.products.items)  || [])
+          .concat((row.data.cuadros  && row.data.cuadros.products) || []);
+      }
+      var mpItems = (payment.additional_info && payment.additional_info.items) || [];
+      var cart = mpItems
+        .filter(function(it) { return it.id && it.id !== 'shipping'; })
+        .map(function(it) {
+          var p = allProducts.find(function(x) { return x.id === it.id; }) || {};
+          return { id: it.id, name: it.title || p.name || '', price: String(it.unit_price || 0),
+            qty: parseInt(it.quantity, 10) || 1, verse: p.verse || '',
+            material: p.material || '', estampado: p.estampado || '',
+            fit: p.fit || '', tallas: p.tallas || '', origen: p.origen || '' };
+        });
+
+      var _ch = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      var orderId = 'RL';
+      for (var _i = 0; _i < 4; _i++) orderId += _ch[Math.floor(Math.random() * _ch.length)];
+
+      var rawPass = generatePassword();
+      bcrypt.hash(rawPass, 10).then(function(hash) {
+        sbFetch('POST', 'club_credentials', {
+          body: { name: (payerFirst + ' ' + payerLast).trim(), email: payerEmail,
+                  password_hash: hash, notes: 'MP webhook #' + paymentId, must_change_password: true },
+        }).then(function(cr) {
+          var created    = cr.status < 400;
+          var passToSend = created ? rawPass : '(ya tienes acceso al club)';
+          var subject    = '✓ RUAH LABS · Tu pedido está en camino + acceso al Club';
+          var html       = renderWelcomeTemplate(payerFirst, payerLast, payerEmail, cart, passToSend, orderId)
+                        || buildWelcomeEmail(payerFirst, payerLast, payerEmail, cart, passToSend, orderId);
+          sendEmail(payerEmail, subject, html)
+            .then(function() { console.log('[wh] ✅', payerEmail, '| pago:', paymentId, '| club:', created ? 'creado' : 'ya existía'); })
+            .catch(function(e) { console.error('[wh] email error:', e.message); });
+        }).catch(function(e) { console.error('[wh] sb error:', e.message); });
+      }).catch(function(e) { console.error('[wh] bcrypt error:', e.message); });
+    }).catch(function(e) { console.error('[wh] content error:', e.message); });
+  }).catch(function(e) { console.error('[wh] mp get error:', e.message); });
 });
 
 // ─── POST /api/club/signup ───────────────────────────────────────────────────
