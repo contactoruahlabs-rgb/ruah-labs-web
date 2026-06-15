@@ -103,6 +103,51 @@ function App() {
     return () => window.removeEventListener('ruah:navigateTo', onNav);
   }, []);
 
+  // -------- URL slugs de producto (/producto/<slug>) --------
+  // Abre el producto según la URL: carga directa + botones atrás/adelante.
+  React.useEffect(() => {
+    function syncFromPath() {
+      const m = window.location.pathname.match(/^\/producto\/([^/?#]+)/);
+      if (m) {
+        const slug = decodeURIComponent(m[1]);
+        const prod = (content.products.items || []).find(p => window.slugify(p.name) === slug);
+        setProductId(prod ? prod.id : null);
+      } else {
+        setProductId(null);
+      }
+    }
+    syncFromPath();
+    window.addEventListener('popstate', syncFromPath);
+    return () => window.removeEventListener('popstate', syncFromPath);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Reintenta abrir el deep-link cuando el contenido llega desde Supabase.
+  React.useEffect(() => {
+    const m = window.location.pathname.match(/^\/producto\/([^/?#]+)/);
+    if (!m || productId) return;
+    const slug = decodeURIComponent(m[1]);
+    const prod = (content.products.items || []).find(p => window.slugify(p.name) === slug);
+    if (prod) setProductId(prod.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [content.products.items]);
+
+  // Refleja en la URL el producto abierto (sin entradas duplicadas en el historial).
+  React.useEffect(() => {
+    const onProductPath = /^\/producto\//.test(window.location.pathname);
+    if (productId == null) {
+      if (onProductPath) window.history.pushState({}, '', '/');
+      return;
+    }
+    const prod = (content.products.items || []).find(p => p.id === productId);
+    if (!prod) return;
+    const url = '/producto/' + window.slugify(prod.name);
+    if (window.location.pathname !== url) window.history.pushState({
+      productId
+    }, '', url);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productId]);
+
   // Global checkout events (from buttons elsewhere, e.g. nav cart)
   React.useEffect(() => {
     const onCk = () => setCheckoutOpen(true);
@@ -174,7 +219,8 @@ function App() {
     iglesias: 'IGLESIAS',
     evento: 'EVENTO',
     protocolo: 'PROTOCOLO',
-    comunidad: 'COMUNIDAD'
+    comunidad: 'COMUNIDAD',
+    envios: 'ENVÍOS Y DEVOLUCIONES'
   };
   function openPage(page, cat) {
     setActivePage(page);
@@ -254,6 +300,13 @@ function App() {
         }, /*#__PURE__*/React.createElement(Testimonials, {
           content: content
         }), /*#__PURE__*/React.createElement(CTABlock, {
+          content: content
+        }));
+      case 'envios':
+        return /*#__PURE__*/React.createElement(PageView, {
+          title: "ENV\xCDOS Y DEVOLUCIONES",
+          onBack: goHome
+        }, /*#__PURE__*/React.createElement(Envios, {
           content: content
         }));
       case 'design':

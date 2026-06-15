@@ -896,9 +896,12 @@ function Products({ content, onOpenProduct, initialCategory }) {
 
   const activeCat = p.categories.find((c) => c.slug === activeSlug) || p.categories[0];
   const countFor = (cat) => cat.slug === 'todo' ? p.items.length : p.items.filter((it) => it.categoryId === cat.id).length;
-  const items = activeCat.slug === 'todo' ?
+  const parsePrice = (s) => parseInt(String(s || '0').replace(/[^0-9]/g, ''), 10) || 0;
+  const baseItems = activeCat.slug === 'todo' ?
   p.items :
   p.items.filter((it) => it.categoryId === activeCat.id);
+  // Orden automático: de menor a mayor precio
+  const items = [...baseItems].sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
 
   return (
     <section className="products" id="productos">
@@ -1242,6 +1245,39 @@ function CTABlock({ content }) {
 
 }
 
+// --- Envíos y Devoluciones ---
+function Envios({ content }) {
+  const e = content.envios || {};
+  return (
+    <section className="envios" id="envios">
+      <div className="shell">
+        <div className="sec-head">
+          <Reveal>
+            <div className="sec-head__num">{e.headerIndex}</div>
+          </Reveal>
+          <div>
+            <h2 className="sec-head__title">
+              <RevealLine>{e.title}</RevealLine>{' '}
+              <RevealLine delay={120}><span className="amb">{e.titleEm}</span></RevealLine>
+            </h2>
+            <Reveal delay={250} className="sec-head__sub">
+              <p>{e.intro}</p>
+            </Reveal>
+          </div>
+        </div>
+        <div className="envios__grid">
+          {(e.blocks || []).map((b, i) =>
+            <Reveal key={b.id} delay={i * 60} className="envios__block">
+              <h3 className="envios__block-title">{b.title}</h3>
+              <p className="envios__block-body">{b.body}</p>
+            </Reveal>
+          )}
+        </div>
+      </div>
+    </section>);
+
+}
+
 // --- Footer ---
 function Footer({ content, onOpenAdmin, onNavigate }) {
   const f = content.footer;
@@ -1297,7 +1333,7 @@ function Footer({ content, onOpenAdmin, onNavigate }) {
           <div className="footer__col" key={c.id}>
               <h4>{c.title}</h4>
               {c.items.map((i) => {
-              var PAGE_MAP = { '#nosotros': 'nosotros', '#servicios': 'servicios', '#productos': 'productos', '#protocolo': 'protocolo', '#comunidad': 'comunidad', '#cuadros': 'cuadros', '#iglesias': 'iglesias', '#evento': 'evento', '#design': 'design' };
+              var PAGE_MAP = { '#nosotros': 'nosotros', '#servicios': 'servicios', '#productos': 'productos', '#protocolo': 'protocolo', '#comunidad': 'comunidad', '#cuadros': 'cuadros', '#iglesias': 'iglesias', '#evento': 'evento', '#design': 'design', '#envios': 'envios' };
               var spaPage = i.href && PAGE_MAP[i.href];
               return (
             <a key={i.id} href={i.href}

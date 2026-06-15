@@ -1060,7 +1060,10 @@ function Products({
   }, []);
   const activeCat = p.categories.find(c => c.slug === activeSlug) || p.categories[0];
   const countFor = cat => cat.slug === 'todo' ? p.items.length : p.items.filter(it => it.categoryId === cat.id).length;
-  const items = activeCat.slug === 'todo' ? p.items : p.items.filter(it => it.categoryId === activeCat.id);
+  const parsePrice = s => parseInt(String(s || '0').replace(/[^0-9]/g, ''), 10) || 0;
+  const baseItems = activeCat.slug === 'todo' ? p.items : p.items.filter(it => it.categoryId === activeCat.id);
+  // Orden automático: de menor a mayor precio
+  const items = [...baseItems].sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
   return /*#__PURE__*/React.createElement("section", {
     className: "products",
     id: "productos"
@@ -1427,6 +1430,42 @@ function CTABlock({
   }, c.secondaryCta.label))))));
 }
 
+// --- Envíos y Devoluciones ---
+function Envios({
+  content
+}) {
+  const e = content.envios || {};
+  return /*#__PURE__*/React.createElement("section", {
+    className: "envios",
+    id: "envios"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "shell"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "sec-head"
+  }, /*#__PURE__*/React.createElement(Reveal, null, /*#__PURE__*/React.createElement("div", {
+    className: "sec-head__num"
+  }, e.headerIndex)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    className: "sec-head__title"
+  }, /*#__PURE__*/React.createElement(RevealLine, null, e.title), ' ', /*#__PURE__*/React.createElement(RevealLine, {
+    delay: 120
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "amb"
+  }, e.titleEm))), /*#__PURE__*/React.createElement(Reveal, {
+    delay: 250,
+    className: "sec-head__sub"
+  }, /*#__PURE__*/React.createElement("p", null, e.intro)))), /*#__PURE__*/React.createElement("div", {
+    className: "envios__grid"
+  }, (e.blocks || []).map((b, i) => /*#__PURE__*/React.createElement(Reveal, {
+    key: b.id,
+    delay: i * 60,
+    className: "envios__block"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "envios__block-title"
+  }, b.title), /*#__PURE__*/React.createElement("p", {
+    className: "envios__block-body"
+  }, b.body))))));
+}
+
 // --- Footer ---
 function Footer({
   content,
@@ -1497,7 +1536,8 @@ function Footer({
       '#cuadros': 'cuadros',
       '#iglesias': 'iglesias',
       '#evento': 'evento',
-      '#design': 'design'
+      '#design': 'design',
+      '#envios': 'envios'
     };
     var spaPage = i.href && PAGE_MAP[i.href];
     return /*#__PURE__*/React.createElement("a", {

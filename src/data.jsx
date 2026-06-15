@@ -630,6 +630,20 @@ const DEFAULT_CONTENT = {
     bottomLeft: '© ' + new Date().getFullYear() + ' RUAH LABS · TODO POR JESÚS',
     bottomRight: 'SOMOS MÁS DE LOS QUE CREES',
   },
+  envios: {
+    headerIndex: '§ ENVÍOS',
+    title: 'ENVÍOS Y',
+    titleEm: 'DEVOLUCIONES',
+    intro: 'Despachamos a todo Chile. Aquí encuentras los tiempos, los costos y cómo solicitar un cambio o devolución.',
+    blocks: [
+      { id: 'en1', title: 'Tiempos de entrega', body: 'Región Metropolitana: 2 a 4 días hábiles. Regiones: 4 a 7 días hábiles. Despachamos dentro de 1 a 2 días hábiles tras confirmarse el pago.' },
+      { id: 'en2', title: 'Costos de envío', body: 'Envío estándar: $4.990. Envío express: $9.990. Retiro en tienda: gratis (Lun a Vie, 11 a 19h, coordinando antes).' },
+      { id: 'en3', title: 'Seguimiento', body: 'Al despachar tu pedido te enviamos el número de seguimiento al correo registrado en la compra.' },
+      { id: 'en4', title: 'Cambios de talla', body: 'Tienes 30 días desde la recepción para solicitar un cambio, sujeto a stock. La prenda debe estar sin uso, con etiquetas y en su empaque original.' },
+      { id: 'en5', title: 'Devoluciones', body: 'Si el producto llega con falla de fábrica lo reponemos o te devolvemos el 100% del valor. Escríbenos con tu número de pedido y una foto.' },
+      { id: 'en6', title: 'Cómo solicitar', body: 'Escríbenos a contacto@ruahlabs.cl o por Instagram @ruahlabs indicando tu número de pedido. Te respondemos en un máximo de 48 horas hábiles.' },
+    ],
+  },
   club: {
     heroEyebrow: '◉ ACCESO PRIVILEGIADO',
     title: 'RUAH LABS',
@@ -685,6 +699,16 @@ function loadContent() {
   }
 }
 
+// Convierte "Polera Salmo 23" → "polera-salmo-23" (para URLs de producto).
+function slugify(str) {
+  return String(str || '')
+    .toLowerCase()
+    .replace(/[áàä]/g, 'a').replace(/[éèë]/g, 'e').replace(/[íìï]/g, 'i')
+    .replace(/[óòö]/g, 'o').replace(/[úùü]/g, 'u').replace(/ñ/g, 'n')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
 // Append any DEFAULT_CONTENT entries (by id) that the user's saved content is missing.
 function migrateContent(c) {
   // SEGURIDAD: eliminar hashes de contraseña heredados del blob almacenado.
@@ -705,6 +729,16 @@ function migrateContent(c) {
   if (!c.checkout) c.checkout = DEFAULT_CONTENT.checkout;
   if (!c.checkout.style) c.checkout.style = DEFAULT_CONTENT.checkout.style;
   if (!c.checkout.shippingFees) c.checkout.shippingFees = DEFAULT_CONTENT.checkout.shippingFees;
+
+  // Página de Envíos y Devoluciones
+  if (!c.envios) c.envios = DEFAULT_CONTENT.envios;
+  // Asegurar enlace a Envíos en el footer (col "Sitio"), sin duplicar.
+  if (c.footer && Array.isArray(c.footer.cols) && c.footer.cols.length) {
+    var sitioCol = c.footer.cols[0];
+    if (sitioCol && Array.isArray(sitioCol.items) && !sitioCol.items.some(function (it) { return it.href === '#envios'; })) {
+      sitioCol.items.push({ id: 'i_env', label: 'Envíos y Devoluciones', href: '#envios' });
+    }
+  }
   // Ensure new protocol fields exist
   if (!c.protocol.sections) Object.assign(c.protocol, DEFAULT_CONTENT.protocol);
   if (!c.protocol.flow)     c.protocol.flow = DEFAULT_CONTENT.protocol.flow;
@@ -1159,4 +1193,4 @@ function useContentStore() {
   return { content, setContent, update, updateList, reset, exportJSON, importJSON, save };
 }
 
-Object.assign(window, { DEFAULT_CONTENT, useContentStore, loadContent, saveContent, deepMerge, applyColors, applyCheckoutStyle });
+Object.assign(window, { DEFAULT_CONTENT, useContentStore, loadContent, saveContent, deepMerge, applyColors, applyCheckoutStyle, slugify });

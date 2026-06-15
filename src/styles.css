@@ -794,6 +794,31 @@ section { padding-block: var(--section-pad-y); position: relative; }
   text-wrap: pretty;
 }
 
+/* ---------- Envíos y Devoluciones ---------- */
+.envios { border-top: 1px solid var(--line); }
+.envios__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(24px, 3vw, 40px);
+  margin-top: var(--space-xl, 56px);
+}
+.envios__block { border-top: 1px solid var(--line); padding-top: 18px; }
+.envios__block-title {
+  font-family: var(--mono, monospace);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin: 0 0 10px;
+}
+.envios__block-body {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink);
+  margin: 0;
+  max-width: 60ch;
+}
+
 /* ---------- Services ---------- */
 .services {
   border-top: 1px solid var(--line);
