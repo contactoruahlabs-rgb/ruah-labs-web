@@ -15,7 +15,7 @@ function sanitize(str) {
 }
 const DEFAULT_CONTENT = {
   launch: {
-    active: true,
+    active: false,
     imageMobile: 'https://res.cloudinary.com/dh05zwrbp/image/upload/v1781610879/1_qrplpp.jpg',
     imageDesktop: 'https://res.cloudinary.com/dh05zwrbp/image/upload/v1781610878/2_ybcfx3.jpg'
   },
