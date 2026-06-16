@@ -737,6 +737,8 @@ function migrateContent(c) {
   if (!c.checkout.shippingFees) c.checkout.shippingFees = DEFAULT_CONTENT.checkout.shippingFees;
   if (!c.cuadros.comingSoonVideoDesktop) c.cuadros.comingSoonVideoDesktop = DEFAULT_CONTENT.cuadros.comingSoonVideoDesktop;
   if (!c.launch) c.launch = DEFAULT_CONTENT.launch;
+  if (!c.launch.imageMobile)  c.launch.imageMobile  = DEFAULT_CONTENT.launch.imageMobile;
+  if (!c.launch.imageDesktop) c.launch.imageDesktop = DEFAULT_CONTENT.launch.imageDesktop;
 
   // Página de Envíos y Devoluciones
   if (!c.envios) c.envios = DEFAULT_CONTENT.envios;
