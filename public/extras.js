@@ -297,10 +297,7 @@ function Cuadros({
   return /*#__PURE__*/React.createElement("section", {
     className: "cuadros",
     id: "cuadros"
-  }, c.comingSoon && /*#__PURE__*/React.createElement(CuadrosComingSoon, {
-    videoMobile: c.comingSoonVideo,
-    videoDesktop: c.comingSoonVideoDesktop
-  }), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
     className: "shell"
   }, /*#__PURE__*/React.createElement(SectionHeader, {
     index: c.headerIndex,
