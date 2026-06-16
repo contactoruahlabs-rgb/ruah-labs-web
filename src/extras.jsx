@@ -232,6 +232,7 @@ function Cuadros({ content, onAddToCart, onBuyNow, onOpenCuadro }) {
 
   return (
     <section className="cuadros" id="cuadros">
+      {c.comingSoon && <CuadrosComingSoon videoMobile={c.comingSoonVideo} videoDesktop={c.comingSoonVideoDesktop} />}
       <div className="shell">
         <SectionHeader index={c.headerIndex} title={c.headerTitle} right={c.headerRight} />
 

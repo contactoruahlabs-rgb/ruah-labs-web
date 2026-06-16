@@ -353,7 +353,7 @@ const DEFAULT_CONTENT = {
     ],
   },
   cuadros: {
-    comingSoon: false,
+    comingSoon: true,
     comingSoonVideo: 'https://res.cloudinary.com/dh05zwrbp/video/upload/v1781484605/ruahlabs/cuadros-coming-soon.mp4',
     comingSoonVideoDesktop: 'https://res.cloudinary.com/dh05zwrbp/video/upload/v1781494045/ruahlabs/cuadros-coming-soon-desktop.mp4',
     headerIndex: '§05  /  06',
