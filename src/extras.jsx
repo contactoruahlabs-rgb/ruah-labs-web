@@ -191,6 +191,15 @@ function GalleryModal({ title, subtitle, photos, onClose }) {
 // ============================================================
 // CUADROS
 // ============================================================
+function LaunchScreen({ imageMobile, imageDesktop }) {
+  return (
+    <div style={{ position:'fixed', inset:0, zIndex:9999, background:'#000', overflow:'hidden' }}>
+      {imageMobile  && <img src={imageMobile}  className="ls-img ls-img--mobile"  alt="" />}
+      {imageDesktop && <img src={imageDesktop} className="ls-img ls-img--desktop" alt="" />}
+    </div>
+  );
+}
+
 function CuadrosComingSoon({ videoMobile, videoDesktop }) {
   return (
     <div style={{ position:'fixed', inset:0, zIndex:58, background:'#000', overflow:'hidden' }}>

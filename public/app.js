@@ -392,7 +392,10 @@ function App() {
     className: "toast show"
   }, /*#__PURE__*/React.createElement("span", {
     className: "dot"
-  }), /*#__PURE__*/React.createElement("span", null, toast.msg)));
+  }), /*#__PURE__*/React.createElement("span", null, toast.msg)), content.launch && content.launch.active && /*#__PURE__*/React.createElement(LaunchScreen, {
+    imageMobile: content.launch.imageMobile,
+    imageDesktop: content.launch.imageDesktop
+  }));
 }
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(/*#__PURE__*/React.createElement(App, null));

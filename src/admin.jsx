@@ -2760,8 +2760,72 @@ function ViewDesign({ content, store }) {
 }
 
 // ----- Admin shell -----
+function ViewLaunch({ content, store }) {
+  const L = content.launch || {};
+  const active = !!L.active;
+  return (
+    <div>
+      <div className="card" style={{ borderColor: active ? '#ff4444' : 'var(--amber)', marginBottom: 24 }}>
+        <div className="card__head" style={{ marginBottom: 16 }}>
+          <h3 style={{ margin: 0, fontSize: 14, letterSpacing: '0.08em' }}>
+            {active ? '🔴 PANTALLA DE LANZAMIENTO ACTIVA' : '⚪ PANTALLA DE LANZAMIENTO INACTIVA'}
+          </h3>
+          <span className="meta" style={{ color: active ? '#ff4444' : 'var(--amber)' }}>
+            {active
+              ? 'Los visitantes ven la imagen — el sitio está oculto'
+              : 'El sitio está visible normalmente'}
+          </span>
+        </div>
+        <button
+          className={'abtn ' + (active ? 'danger' : 'amber')}
+          style={{ width: '100%', fontSize: 15, padding: '14px 0', letterSpacing: '0.1em', marginBottom: 8 }}
+          onClick={() => store.update('launch.active', !active)}
+        >
+          {active ? '✓ DESACTIVAR — MOSTRAR EL SITIO' : '🚀 ACTIVAR — CUBRIR EL SITIO'}
+        </button>
+        {active && (
+          <p style={{ margin: '8px 0 0', color: '#ff4444', fontSize: 12, textAlign: 'center' }}>
+            Guarda los cambios para que tome efecto en todos los visitantes
+          </p>
+        )}
+      </div>
+
+      <div className="card" style={{ marginBottom: 16 }}>
+        <div className="card__head" style={{ marginBottom: 12 }}>
+          <h4 style={{ margin: 0, fontSize: 12, letterSpacing: '0.05em' }}>IMAGEN MÓVIL (vertical 9:16)</h4>
+        </div>
+        <Text
+          label="URL de imagen móvil (Cloudinary)"
+          value={L.imageMobile || ''}
+          placeholder="https://res.cloudinary.com/..."
+          onChange={v => store.update('launch.imageMobile', v)}
+        />
+        {L.imageMobile && (
+          <img src={L.imageMobile} alt="preview móvil" style={{ marginTop: 8, maxHeight: 160, borderRadius: 4, display: 'block' }} />
+        )}
+      </div>
+
+      <div className="card">
+        <div className="card__head" style={{ marginBottom: 12 }}>
+          <h4 style={{ margin: 0, fontSize: 12, letterSpacing: '0.05em' }}>IMAGEN DESKTOP (horizontal 16:9)</h4>
+        </div>
+        <Text
+          label="URL de imagen desktop (Cloudinary)"
+          value={L.imageDesktop || ''}
+          placeholder="https://res.cloudinary.com/..."
+          onChange={v => store.update('launch.imageDesktop', v)}
+        />
+        {L.imageDesktop && (
+          <img src={L.imageDesktop} alt="preview desktop" style={{ marginTop: 8, maxWidth: '100%', maxHeight: 120, borderRadius: 4, display: 'block' }} />
+        )}
+      </div>
+    </div>
+  );
+}
+
 const ADMIN_VIEWS = [
   { id: 'dash',         label: 'Panel',         comp: ViewDashboard },
+  { id: 'launch',       label: '🚀 Lanzamiento', comp: ViewLaunch },
   { id: 'colors',       label: 'Colores texto', comp: ViewColors },
   { id: 'theme',        label: 'Paleta',        comp: ViewTheme },
   { id: 'typography',   label: 'Tipografía',    comp: ViewTypography },

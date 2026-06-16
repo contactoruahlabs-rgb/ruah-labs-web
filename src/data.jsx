@@ -14,6 +14,11 @@ function sanitize(str) {
 }
 
 const DEFAULT_CONTENT = {
+  launch: {
+    active: false,
+    imageMobile: '',
+    imageDesktop: '',
+  },
   brand: {
     name: 'RUAH LABS',
     tagline: 'LABORATORIO CREATIVO',
@@ -731,6 +736,7 @@ function migrateContent(c) {
   if (!c.checkout.style) c.checkout.style = DEFAULT_CONTENT.checkout.style;
   if (!c.checkout.shippingFees) c.checkout.shippingFees = DEFAULT_CONTENT.checkout.shippingFees;
   if (!c.cuadros.comingSoonVideoDesktop) c.cuadros.comingSoonVideoDesktop = DEFAULT_CONTENT.cuadros.comingSoonVideoDesktop;
+  if (!c.launch) c.launch = DEFAULT_CONTENT.launch;
 
   // Página de Envíos y Devoluciones
   if (!c.envios) c.envios = DEFAULT_CONTENT.envios;

@@ -6177,10 +6177,119 @@ function ViewDesign({
 }
 
 // ----- Admin shell -----
+function ViewLaunch({
+  content,
+  store
+}) {
+  const L = content.launch || {};
+  const active = !!L.active;
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      borderColor: active ? '#ff4444' : 'var(--amber)',
+      marginBottom: 24
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card__head",
+    style: {
+      marginBottom: 16
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: 0,
+      fontSize: 14,
+      letterSpacing: '0.08em'
+    }
+  }, active ? '🔴 PANTALLA DE LANZAMIENTO ACTIVA' : '⚪ PANTALLA DE LANZAMIENTO INACTIVA'), /*#__PURE__*/React.createElement("span", {
+    className: "meta",
+    style: {
+      color: active ? '#ff4444' : 'var(--amber)'
+    }
+  }, active ? 'Los visitantes ven la imagen — el sitio está oculto' : 'El sitio está visible normalmente')), /*#__PURE__*/React.createElement("button", {
+    className: 'abtn ' + (active ? 'danger' : 'amber'),
+    style: {
+      width: '100%',
+      fontSize: 15,
+      padding: '14px 0',
+      letterSpacing: '0.1em',
+      marginBottom: 8
+    },
+    onClick: () => store.update('launch.active', !active)
+  }, active ? '✓ DESACTIVAR — MOSTRAR EL SITIO' : '🚀 ACTIVAR — CUBRIR EL SITIO'), active && /*#__PURE__*/React.createElement("p", {
+    style: {
+      margin: '8px 0 0',
+      color: '#ff4444',
+      fontSize: 12,
+      textAlign: 'center'
+    }
+  }, "Guarda los cambios para que tome efecto en todos los visitantes")), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      marginBottom: 16
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card__head",
+    style: {
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("h4", {
+    style: {
+      margin: 0,
+      fontSize: 12,
+      letterSpacing: '0.05em'
+    }
+  }, "IMAGEN M\xD3VIL (vertical 9:16)")), /*#__PURE__*/React.createElement(Text, {
+    label: "URL de imagen m\xF3vil (Cloudinary)",
+    value: L.imageMobile || '',
+    placeholder: "https://res.cloudinary.com/...",
+    onChange: v => store.update('launch.imageMobile', v)
+  }), L.imageMobile && /*#__PURE__*/React.createElement("img", {
+    src: L.imageMobile,
+    alt: "preview m\xF3vil",
+    style: {
+      marginTop: 8,
+      maxHeight: 160,
+      borderRadius: 4,
+      display: 'block'
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card__head",
+    style: {
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("h4", {
+    style: {
+      margin: 0,
+      fontSize: 12,
+      letterSpacing: '0.05em'
+    }
+  }, "IMAGEN DESKTOP (horizontal 16:9)")), /*#__PURE__*/React.createElement(Text, {
+    label: "URL de imagen desktop (Cloudinary)",
+    value: L.imageDesktop || '',
+    placeholder: "https://res.cloudinary.com/...",
+    onChange: v => store.update('launch.imageDesktop', v)
+  }), L.imageDesktop && /*#__PURE__*/React.createElement("img", {
+    src: L.imageDesktop,
+    alt: "preview desktop",
+    style: {
+      marginTop: 8,
+      maxWidth: '100%',
+      maxHeight: 120,
+      borderRadius: 4,
+      display: 'block'
+    }
+  })));
+}
 const ADMIN_VIEWS = [{
   id: 'dash',
   label: 'Panel',
   comp: ViewDashboard
+}, {
+  id: 'launch',
+  label: '🚀 Lanzamiento',
+  comp: ViewLaunch
 }, {
   id: 'colors',
   label: 'Colores texto',

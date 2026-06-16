@@ -229,6 +229,28 @@ function GalleryModal({
 // ============================================================
 // CUADROS
 // ============================================================
+function LaunchScreen({
+  imageMobile,
+  imageDesktop
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'fixed',
+      inset: 0,
+      zIndex: 9999,
+      background: '#000',
+      overflow: 'hidden'
+    }
+  }, imageMobile && /*#__PURE__*/React.createElement("img", {
+    src: imageMobile,
+    className: "ls-img ls-img--mobile",
+    alt: ""
+  }), imageDesktop && /*#__PURE__*/React.createElement("img", {
+    src: imageDesktop,
+    className: "ls-img ls-img--desktop",
+    alt: ""
+  }));
+}
 function CuadrosComingSoon({
   videoMobile,
   videoDesktop

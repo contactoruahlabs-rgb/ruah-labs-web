@@ -305,6 +305,13 @@ function App() {
           <span>{toast.msg}</span>
         </div>
       )}
+
+      {content.launch && content.launch.active && (
+        <LaunchScreen
+          imageMobile={content.launch.imageMobile}
+          imageDesktop={content.launch.imageDesktop}
+        />
+      )}
     </React.Fragment>
   );
 }
