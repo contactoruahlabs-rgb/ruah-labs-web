@@ -5,5 +5,9 @@
   "assets": {
     "directory": "public",
     "binding": "ASSETS"
-  }
+  },
+  "routes": [
+    { "pattern": "ruahlabs.cl/*", "zone_name": "ruahlabs.cl" },
+    { "pattern": "www.ruahlabs.cl/*", "zone_name": "ruahlabs.cl" }
+  ]
 }
