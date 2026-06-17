@@ -555,15 +555,15 @@ function Iglesias({ content }) {
                       <span className="ig-proj__code">{p.code}</span>
                     </div>
                     <div className="ig-proj__pattern"></div>
-                    <div className="ig-proj__foot">
-                      <span className="ig-proj__bar"></span>
-                      <span className="ig-proj__name">{p.name}</span>
-                    </div>
                     {hasGallery && (
                       <div className="ig-proj__gallery-badge">
                         {(p.gallery || []).length} foto{(p.gallery || []).length !== 1 ? 's' : ''} →
                       </div>
                     )}
+                  </div>
+                  <div className="ig-proj__foot">
+                    <span className="ig-proj__bar"></span>
+                    <span className="ig-proj__name">{p.name}</span>
                   </div>
                   <div className="ig-proj__meta">{p.meta}</div>
                 </Reveal>

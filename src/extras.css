@@ -481,8 +481,7 @@
   filter: brightness(0.74) contrast(1.05);
 }
 .ig-proj__card.has-img::before { opacity: 0.5; }
-.ig-proj__card.has-img .ig-proj__code,
-.ig-proj__card.has-img .ig-proj__name { text-shadow: 0 1px 4px rgba(0,0,0,0.7); }
+.ig-proj__card.has-img .ig-proj__code { text-shadow: 0 1px 4px rgba(0,0,0,0.7); }
 
 /* Brief section */
 .cu-brief {
@@ -1057,11 +1056,11 @@
   text-transform: uppercase;
 }
 .ig-proj__foot {
-  position: relative; z-index: 2;
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   align-items: center;
   gap: 7px;
+  margin-top: 10px;
 }
 .ig-proj__bar { width: 4px; height: 11px; background: var(--amber); display: inline-block; }
 .ig-proj__name {
