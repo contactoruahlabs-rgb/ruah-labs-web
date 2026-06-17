@@ -1055,6 +1055,23 @@ section { padding-block: var(--section-pad-y); position: relative; }
 }
 .prod__buy:hover { background: var(--amber); color: var(--black); border-color: var(--amber); }
 
+.prod__stock {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--gray);
+}
+.prod__stock--low { color: #c84a2a; }
+.prod__stock--out { color: var(--gray-soft); }
+
+.prod__guarantee {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--gray-soft);
+  margin-top: 4px;
+}
+
 .empty-state {
   padding: 80px 0;
   text-align: center;

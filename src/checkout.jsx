@@ -441,6 +441,14 @@ function StepPay({
     <form className="ck-form" onSubmit={onPay}>
       <h2 className="ck-h">{ck.payTitle || 'Método de pago'}</h2>
 
+      <div className="ck-pay-logos" aria-label="Métodos de pago aceptados">
+        <span className="ck-pay-logo ck-pay-logo--webpay">WEBPAY</span>
+        <span className="ck-pay-logo ck-pay-logo--mp">MERCADO PAGO</span>
+        <span className="ck-pay-logo">VISA</span>
+        <span className="ck-pay-logo">MASTERCARD</span>
+        <span className="ck-pay-logo">TRANSFERENCIA</span>
+      </div>
+
       <div className="ck-tabs">
         {PAY_METHODS.map(m => (
           <button

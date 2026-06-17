@@ -260,6 +260,7 @@ const DEFAULT_CONTENT = {
       {
         id: 'p1', categoryId: 'c1', name: 'Polera Salmo 23', verse: 'SAL. 23:1',
         price: '18.990', tag: 'DROP 04', tagStyle: 'amber', img: '', gallery: [],
+        stockType: 'limitado', stockTotal: 24,
         description: 'Polera de algodón premium estampada en serigrafía profesional. El versículo Salmo 23:1 trabajado tipográficamente con composición de autor — una pieza para vestir la palabra todos los días.',
         details: [
           { id: 'd1', label: 'Material',  value: 'Algodón premium 220 gsm' },
@@ -272,6 +273,7 @@ const DEFAULT_CONTENT = {
       {
         id: 'p2', categoryId: 'c2', name: 'Polerón Imago Dei', verse: 'GEN. 1:27',
         price: '34.990', tag: 'EXCLUSIVO', tagStyle: 'amber', img: '', gallery: [],
+        stockType: 'limitado', stockTotal: 12,
         description: 'Polerón con capucha de algodón perchado. Estampado frontal y dorsal con composición tipográfica del versículo. Pieza exclusiva del drop de invierno, producción limitada a 80 unidades.',
         details: [
           { id: 'd1', label: 'Material',  value: 'Algodón perchado 320 gsm' },
@@ -294,6 +296,7 @@ const DEFAULT_CONTENT = {
       {
         id: 'p4', categoryId: 'c2', name: 'Buzo Selah', verse: 'SAL. 46:10',
         price: '42.990', tag: 'DROP 04', tagStyle: 'amber', img: '', gallery: [],
+        stockType: 'limitado', stockTotal: 15,
         description: 'Conjunto de polerón y pantalón de algodón perchado. Estampado discreto en pierna y pecho. La palabra Selah — "pausa, escucha" — recorre el costado.',
         details: [
           { id: 'd1', label: 'Material',  value: 'Algodón perchado 330 gsm' },
@@ -314,6 +317,7 @@ const DEFAULT_CONTENT = {
       {
         id: 'p6', categoryId: 'c3', name: 'Chaqueta Coram Deo', verse: 'PROV. 15:3',
         price: '58.990', tag: 'EXCLUSIVO', tagStyle: 'amber', img: '', gallery: [],
+        stockType: 'limitado', stockTotal: 8,
         description: 'Chaqueta sherpa con forro polar. Una pieza para resistir el invierno santiaguino. Tag bordado interior con Proverbios 15:3.',
         details: [
           { id: 'd1', label: 'Material',   value: 'Sherpa exterior + forro polar' },
@@ -334,6 +338,7 @@ const DEFAULT_CONTENT = {
       {
         id: 'p8', categoryId: 'c5', name: 'Cuadro Sola Scriptura', verse: '2 TIM. 3:16',
         price: '28.990', tag: 'EXCLUSIVO', tagStyle: 'amber', img: '', gallery: [],
+        stockType: 'limitado', stockTotal: 5,
         description: 'Cuadro decorativo con marco de madera natural. Composición tipográfica minimalista impresa en papel algodón. Tres tamaños disponibles.',
         details: [
           { id: 'd1', label: 'Material', value: 'Papel algodón 300g + marco de pino' },

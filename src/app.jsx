@@ -313,6 +313,7 @@ function App() {
         />
       )}
       <WhatsAppFab />
+      <EmailPopup />
     </React.Fragment>
   );
 }

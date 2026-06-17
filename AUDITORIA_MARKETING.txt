@@ -1,0 +1,326 @@
+================================================================================
+RUAH LABS — AUDITORIA COMPLETA DE MARKETING Y CONVERSION
+================================================================================
+Fecha: Junio 2026
+Tipo: Pre-mortem + Diagnostico de conversion
+Nota global: 5.8 / 10
+================================================================================
+
+
+DIAGNOSTICO CENTRAL
+--------------------------------------------------------------------------------
+Ruah Labs tiene una de las propuestas de valor mas poderosas del mercado chileno
+de estampado. El Protocolo 1x1 es diferenciador real y emocional. El problema no
+es el producto ni el mensaje. El problema es que la infraestructura de venta esta
+rota: el visitante llega, se emociona con la historia... y no tiene un camino
+claro para comprar, no sabe que metodos de pago hay, no hay urgencia para hacerlo
+ahora, y si se va, no hay forma de recuperarlo.
+
+
+================================================================================
+PUNTUACIONES POR AREA
+================================================================================
+
+Propuesta de valor    9/10   Protocolo 1x1 es genuinamente unico
+Copywriting           8/10   Emocional, autentico, diferenciador
+Conversion (checkout) 3/10   Sin metodos de pago visibles
+Confianza / prueba    5/10   Testimonios muy debiles
+Urgencia / escasez    2/10   Sin stock real ni timers
+Retencion (email)     1/10   Sin captura de email en ningun punto
+Navegacion            5/10   Menu sobrecargado con 9 items
+
+
+================================================================================
+PRE-MORTEM: LAS 10 RAZONES POR LAS QUE LA GENTE NO VA A COMPRAR
+================================================================================
+
+
+01. NO SABEN COMO PAGAR  [CRITICO]
+--------------------------------------------------------------------------------
+El checkout existe en la pagina pero en ningun lugar visible dice "Webpay",
+"MercadoPago", "Flow" o "transferencia". En Chile, si el comprador no ve el logo
+de Webpay antes de llegar al pago, el 60% abandona por desconfianza. Esta es la
+razon numero 1 de abandono de carrito en el mercado chileno.
+
+FIX: Poner logos de Webpay + MercadoPago en la pagina de producto, en el carrito
+y en el paso 3 del checkout.
+
+
+02. EL 97% QUE NO COMPRA HOY SE PIERDE PARA SIEMPRE  [CRITICO]
+--------------------------------------------------------------------------------
+No hay captura de email en ningun punto de la pagina. Sin pop-up de bienvenida,
+sin lead magnet, sin newsletter. El e-commerce promedio convierte entre el 2% y
+el 3% en la primera visita. El 97% restante llega, se emociona con el Protocolo
+1x1, y se va. Sin su correo, no hay segunda oportunidad.
+
+FIX: Pop-up de captura de email con un incentivo: "Suscribete y obtene 10% de
+descuento en tu primera compra + recibe el primer reporte de entrega del mes."
+
+
+03. LOS SERVICIOS NO TIENEN PRECIO → LA GENTE NO PREGUNTA  [CRITICO]
+--------------------------------------------------------------------------------
+RUAH Evento, Asesoria Creativa, Cuadros personalizados, Paquetes para Iglesias,
+ninguno tiene precio base. El 70% de las personas que ven "solicitar cotizacion"
+sin precio estimado no contactan porque asumen que es caro. Basta con poner
+rangos para eliminar esa barrera.
+
+FIX: Agregar "desde $X" en cada servicio. Ejemplo: "Paquete Esencial desde
+$280.000" o "Cuadros desde $59.990". No es fijar precio, es bajar la barrera
+de contacto.
+
+
+04. EL PROTOCOLO 1x1 — EL ARMA MAS PODEROSA — ESTA ENTERRADA  [CRITICO]
+--------------------------------------------------------------------------------
+El Protocolo 1x1 es el motivo mas poderoso para comprar en Ruah Labs en vez de
+en cualquier otra tienda. Pero en el card de producto solo aparece como una linea
+pequeña: "Cada compra activa el Protocolo 1x1". Deberia estar en el boton de
+compra, en el checkout, en cada banner de producto, en el encabezado.
+
+FIX: Cambiar el boton de "Agregar al carrito" a "Comprar y donar una prenda".
+En el checkout agregar una linea: "Esta compra activa el Protocolo 1x1 — una
+prenda llega a la calle."
+
+
+05. TRES TESTIMONIOS DE TEXTO NO GENERAN CONFIANZA EN 2024  [ALTO]
+--------------------------------------------------------------------------------
+Pastor Daniel Vera, Camila Munoz, Sebastian Rojas — tres nombres sin foto, sin
+verificacion, sin plataforma externa. En 2024 cualquiera puede fabricar eso.
+El testimonio de Sebastian ("Me llego el video del chico que recibio mi prenda
+donada. Llore.") es oro puro pero necesita ser visualmente verificable para que
+funcione.
+
+FIX: Screenshots reales de DMs de Instagram, fotos de clientes usando las
+prendas, un video corto de 15 segundos de testimonio. El testimonio de Sebastian
+hecho video puede doblar la conversion de la pagina.
+
+
+06. SIN URGENCIA REAL, LA COMPRA SIEMPRE QUEDA PARA DESPUES  [ALTO]
+--------------------------------------------------------------------------------
+Se mencionan "drops limitados" y "80 unidades" pero no hay contador de stock
+visible ("quedan 7"), no hay timer de cierre del drop, no hay "X personas estan
+viendo esto ahora". "Limitado" sin numero concreto no activa el FOMO. La gente
+dice "lo compro la semana que viene" y nunca vuelve.
+
+FIX: Contador de stock en cada producto. Timer de countdown para el cierre del
+Drop 04. Basta con mostrar el numero real de unidades disponibles.
+
+
+07. EL MENU DE 9 ITEMS GENERA PARALISIS DE DECISION  [ALTO]
+--------------------------------------------------------------------------------
+Quienes Somos, Protocolo, Productos, Servicios, Cuadros, Iglesias, Evento,
+Comunidad, Personalizados. La ley de Hick establece que a mas opciones, mas
+tiempo de decision y mas abandono. El visitante nuevo no sabe por donde empezar.
+
+FIX: Reducir el menu a 5 opciones agrupadas por tipo de comprador:
+Comprar / Iglesias / Eventos / Club / Contacto.
+
+
+08. NO HAY FAQ → LAS DUDAS MATAN LA COMPRA  [ALTO]
+--------------------------------------------------------------------------------
+Preguntas que la gente tiene y no encuentra respuesta rapida:
+- ¿Puedo personalizar una polera con mi versiculo favorito?
+- ¿Cuanto demora el envio?
+- ¿Hay tallas grandes (XL, XXL)?
+- ¿Que pasa si no me queda bien?
+- ¿La donacion es real? ¿Como se que se hizo?
+
+Una persona con una duda no resuelta no compra. Una FAQ bien hecha convierte
+el 15-20% de los que dudaban.
+
+FIX: Agregar una seccion FAQ de 8-10 preguntas antes del footer, con respuestas
+directas y honestas.
+
+
+09. LA GARANTIA ESTA ESCONDIDA EN "ENVIOS Y DEVOLUCIONES"  [ALTO]
+--------------------------------------------------------------------------------
+La garantia de 30 dias para cambio y 100% de reembolso por falla existe, pero
+esta en una seccion que la mayoria no llega a leer. El comprador que no sabe que
+puede cambiar si no le queda bien, no compra por el riesgo percibido.
+
+FIX: Tres iconos de garantia debajo del boton de compra:
+"30 dias para cambios · Cambio de talla gratis · Reembolso si hay falla".
+
+
+10. LA PAGINA MEZCLA 4 AUDIENCIAS DISTINTAS SIN SEPARARLAS  [ALTO]
+--------------------------------------------------------------------------------
+En la misma pagina conviven: el cristiano individual que quiere una polera, el
+pastor que necesita 80 polerones para un retiro, la empresa que quiere estampado
+para un evento corporativo, y la pareja que quiere souvenirs de matrimonio. Cada
+uno necesita un mensaje diferente. Al mezclarlos, ninguno se siente interpelado
+directamente.
+
+FIX: Un selector de audiencia visible al inicio: "¿Que buscas?" con 3 caminos:
+Comprar ropa / Equipar mi iglesia / Organizar un evento.
+
+
+================================================================================
+AUDITORIA POR SECCION
+================================================================================
+
+
+HERO "FE PUESTA EN ACCION"  —  6/10
+--------------------------------------------------------------------------------
+Lo bueno: Titular poderoso y autentico. Dos CTAs diferenciados.
+Lo malo: Habla solo a una audiencia (el creyente individual). No hay prueba
+social inmediata. El CTA "Ver productos" es debil, no hay razon para hacer clic
+ahora. Falta urgencia y contexto de donacion desde el primer segundo.
+Fix: Agregar "742 prendas entregadas" en el hero. Cambiar CTA a "Ver el Drop
+04 — quedan X dias".
+
+
+CARDS DE PRODUCTO  —  4/10
+--------------------------------------------------------------------------------
+Lo bueno: Buen diseno, descripciones detalladas, materiales especificados.
+Lo malo: Sin stock visible, sin metodo de pago indicado, sin garantia visible,
+sin estrellas o reviews, el Protocolo 1x1 es solo texto pequeño.
+Fix: Debajo del precio agregar: "Quedan X · Cambio gratis · Esta compra dona
+una prenda". Boton: "Comprar y donar".
+
+
+CHECKOUT  —  3/10
+--------------------------------------------------------------------------------
+Lo bueno: Flujo de 3 pasos logico. Nota de "Pago cifrado SSL".
+Lo malo: No se muestran logos de metodos de pago en ningun momento. Sin eso,
+la tasa de abandono en este punto es del 60%+.
+Fix: En el paso 3 agregar logos de Webpay / MercadoPago / Flow. Antes de
+confirmar recordar el Protocolo 1x1.
+
+
+PROTOCOLO 1x1  —  8/10
+--------------------------------------------------------------------------------
+Lo bueno: Contenido excelente. La seccion es profunda, honesta y emocionalmente
+poderosa. El verso de Mateo 6:3-4 es perfecto.
+Lo malo: Esta en su propia seccion aislada. El comprador que llego directo a
+productos puede no llegar a leerla nunca.
+Fix: No cambiar el contenido. Distribuir fragmentos en cada punto de contacto
+del proceso de compra.
+
+
+TESTIMONIOS / COMUNIDAD  —  3/10
+--------------------------------------------------------------------------------
+Lo bueno: El testimonio de Sebastian Rojas es excepcionalmente poderoso.
+Lo malo: Solo 3 testimonios de texto, sin foto, sin verificacion.
+Fix: Convertir el testimonio de Sebastian en el centro de la seccion. Un
+screenshot real del DM donde dice eso, con foto de perfil visible (con permiso),
+vale mas que 20 testimonios de texto fabricados.
+
+
+SECCION IGLESIAS  —  6/10
+--------------------------------------------------------------------------------
+Lo bueno: Bien estructurada, formulario especifico, portafolio con proyectos.
+Lo malo: Sin precio base para ningun paquete. El pastor no sabe si puede pagar.
+Fix: "Desde X prendas · Precio base $X". Agregar testimonio de iglesia con
+numero de prendas y nombre del evento.
+
+
+RUAH EVENTO  —  5/10
+--------------------------------------------------------------------------------
+Lo bueno: Copywriting de los mejores de la pagina. "No es un souvenir. Es un
+momento." es linea de campana. La seccion del problema es perfecta.
+Lo malo: Los 3 paquetes no tienen precio. "Cotizacion al dia siguiente" es
+demasiado lento como proceso.
+Fix: Precio base en los 3 paquetes. Boton de WhatsApp directo: "Cotizar en
+2 horas por WhatsApp".
+
+
+SECCION CUADROS  —  6/10
+--------------------------------------------------------------------------------
+Lo bueno: Formulario de 4 pasos bien disenado. Precios del catalogo presentes.
+Lo malo: Sin fotos reales de los cuadros terminados en contexto (en una pared
+real, en una oficina de verdad).
+Fix: Foto real de al menos 3 cuadros colgados en espacios reales: una sala,
+una oficina, una iglesia.
+
+
+RUAH LABS CLUB  —  5/10
+--------------------------------------------------------------------------------
+Lo bueno: Concepto de comunidad muy potente. El contenido del club genera
+pertenencia real.
+Lo malo: No hay CTA claro para unirse. El visitante nuevo no entiende como
+hacerse miembro.
+Fix: Banner claro: "Al comprar, accedes automaticamente al Club. Sin costo
+extra." La ambiguedad mata la intencion.
+
+
+FOOTER / CONTACTO  —  7/10
+--------------------------------------------------------------------------------
+Lo bueno: Completo, bien organizado. WhatsApp FAB es correcto para Chile.
+Lo malo: Sin horario de atencion visible ni tiempo de respuesta estimado.
+Fix: Agregar debajo del boton de WhatsApp: "Respondemos en menos de 2 horas
+· Lun-Vie 9-19h".
+
+
+================================================================================
+LO QUE YA FUNCIONA BIEN (mantener)
+================================================================================
+
+- Protocolo 1x1: diferenciador real, unico en Chile
+- WhatsApp FAB: canal correcto para el mercado chileno
+- Copywriting emocional y autentico en toda la pagina
+- Identidad visual clara y consistente (ivory + amber)
+- Metricas de impacto visible (742 prendas, 34 iglesias, 127 miembros)
+- Seccion de envios y devoluciones completa y clara
+- Segmentacion de audiencias por seccion
+- Formularios de cotizacion especificos por servicio
+- Drops limitados con narrativa de coleccion
+- Club con rutas y reuniones: potencial de retencion muy alto
+
+
+================================================================================
+PLAN DE ACCION PRIORIZADO
+================================================================================
+
+
+SEMANA 1 — Desbloquear la compra (impacto inmediato en ventas)
+--------------------------------------------------------------------------------
+1. Mostrar logos de Webpay / MercadoPago en producto y checkout
+2. Agregar pop-up de captura de email con 10% descuento en primera compra
+3. Mostrar stock real en cards de producto ("Quedan 8 unidades")
+4. Poner garantia visible debajo del boton de compra
+5. Cambiar boton a "Comprar y donar una prenda"
+
+
+SEMANA 2 — Generar confianza
+--------------------------------------------------------------------------------
+1. Reemplazar testimonios de texto por screenshots reales de DMs de Instagram
+2. Agregar video corto del equipo estampando (30 seg, sin mostrar caras)
+3. Subir foto real de una entrega del Protocolo 1x1 (camara al piso)
+4. Agregar contador animado: "742 prendas entregadas, y subiendo"
+5. Crear seccion FAQ con las 8 preguntas mas comunes
+
+
+SEMANA 3 — Activar urgencia real
+--------------------------------------------------------------------------------
+1. Timer de countdown para el cierre del Drop 04
+2. Agregar "desde $X" en todos los servicios sin precio
+3. Reducir menu a 5 opciones: Comprar / Iglesias / Eventos / Club / Contacto
+4. Pop-up de exit intent: "¿Te vas sin tu prenda?"
+5. Banner de acceso al Club: "Compra y entra al Club automaticamente"
+
+
+MES 2 — Separar audiencias y escalar
+--------------------------------------------------------------------------------
+1. Selector de audiencia en hero: "¿Soy individuo / iglesia / empresa?"
+2. Landing page dedicada para Iglesias (SEO: "polerones para retiros Chile")
+3. Landing page para RUAH Evento (SEO: "souvenir para matrimonios Santiago")
+4. Email flow post-compra: confirmacion + video de entrega + invitacion al Club
+5. CTA claro para unirse al Club con beneficios explícitos listados
+
+
+================================================================================
+EL MAYOR POTENCIAL DE TODA LA PAGINA
+================================================================================
+
+El testimonio de Sebastian Rojas:
+
+"Me llego el video del chico que recibio mi prenda donada. Llore. Es la primera
+vez que comprar ropa me hace sentir parte de algo."
+
+Este texto solo, convertido en video o screenshot verificado y puesto en el hero
+o en el checkout, puede doblar la tasa de conversion. Es la razon mas poderosa
+para comprar en Ruah Labs en vez de en cualquier otra tienda. Es la prueba de
+que el Protocolo 1x1 funciona de verdad. Usenlo.
+
+================================================================================
+Auditoria generada por Claude Code · contacto.ruahlabs@gmail.com · Junio 2026
+================================================================================

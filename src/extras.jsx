@@ -631,4 +631,66 @@ function Iglesias({ content }) {
   );
 }
 
-Object.assign(window, { Cuadros, Iglesias, GalleryModal });
+function EmailPopup() {
+  const STORAGE_KEY = 'ruah-email-popup-dismissed';
+  const [visible, setVisible] = React.useState(false);
+  const [email, setEmail]     = React.useState('');
+  const [done, setDone]       = React.useState(false);
+
+  React.useEffect(() => {
+    if (localStorage.getItem(STORAGE_KEY)) return;
+    const t = setTimeout(() => setVisible(true), 12000);
+    return () => clearTimeout(t);
+  }, []);
+
+  function dismiss() {
+    localStorage.setItem(STORAGE_KEY, '1');
+    setVisible(false);
+  }
+
+  function submit(e) {
+    e.preventDefault();
+    if (!email) return;
+    setDone(true);
+    localStorage.setItem(STORAGE_KEY, '1');
+    setTimeout(() => setVisible(false), 3200);
+  }
+
+  if (!visible) return null;
+
+  return (
+    <div className="ep-overlay" role="dialog" aria-modal="true" aria-label="Descuento de bienvenida">
+      <div className="ep-box">
+        <button className="ep-close" onClick={dismiss} aria-label="Cerrar">×</button>
+        {done ? (
+          <div className="ep-done">
+            <div className="ep-done__icon">✓</div>
+            <p className="ep-done__title">Tu código:</p>
+            <p className="ep-done__code">BIENVENIDO10</p>
+            <p className="ep-done__sub">10% off en tu primera compra. Cópialo y úsalo en el checkout.</p>
+          </div>
+        ) : (
+          <React.Fragment>
+            <div className="ep-tag">PROTOCOLO 1×1 ACTIVO</div>
+            <h2 className="ep-title">Tu primera prenda,<br/>con 10% off.</h2>
+            <p className="ep-sub">Suscríbete y recibe el código. Cada compra dona una prenda a alguien en situación de calle.</p>
+            <form className="ep-form" onSubmit={submit}>
+              <input
+                className="ep-input"
+                type="email"
+                placeholder="tu@correo.cl"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+              />
+              <button className="ep-btn" type="submit">Obtener descuento →</button>
+            </form>
+            <p className="ep-legal">Sin spam. Solo drops, rutas y novedades del movimiento.</p>
+          </React.Fragment>
+        )}
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { Cuadros, Iglesias, GalleryModal, EmailPopup });

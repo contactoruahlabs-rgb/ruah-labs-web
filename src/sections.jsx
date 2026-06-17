@@ -953,15 +953,21 @@ function Products({ content, onOpenProduct, initialCategory }) {
                 <div className="prod__body">
                   <div className="prod__verse">{it.verse}</div>
                   <h3 className="prod__title">{it.name}</h3>
+                  {it.stockType === 'limitado' && (() => {
+                    const s = it.stockActual != null ? it.stockActual : it.stockTotal;
+                    return s > 0
+                      ? <div className={'prod__stock' + (s <= 5 ? ' prod__stock--low' : '')}>{s <= 5 ? '⚠ Solo quedan ' + s : 'Quedan ' + s + ' unidades'}</div>
+                      : <div className="prod__stock prod__stock--out">— Agotado</div>;
+                  })()}
                   <div className="prod__row">
                     <div className="prod__price">{(!it.price || it.price === 0 || it.price === '0') ? <span className="clp">A CONSULTAR</span> : <React.Fragment><span className="clp">CLP</span>${it.price}</React.Fragment>}</div>
                     <button
                   className="prod__buy"
                   onClick={(e) => {e.stopPropagation();onOpenProduct(it.id);}}>
-                  
-                      Comprar <span>→</span>
+                      Comprar y donar <span>→</span>
                     </button>
                   </div>
+                  <div className="prod__guarantee">✓ 30 días cambio · ✓ Protocolo 1×1 activo</div>
                 </div>
               </Reveal>
           )}
