@@ -651,9 +651,11 @@ function EmailPopup() {
   function submit(e) {
     e.preventDefault();
     if (!email) return;
+    if (window.ruahDb) {
+      window.ruahDb.from('email_leads').upsert({ email, source: 'popup', created_at: new Date().toISOString() }).catch(() => {});
+    }
     setDone(true);
     localStorage.setItem(STORAGE_KEY, '1');
-    setTimeout(() => setVisible(false), 3200);
   }
 
   if (!visible) return null;

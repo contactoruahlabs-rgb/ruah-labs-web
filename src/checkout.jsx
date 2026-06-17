@@ -442,11 +442,10 @@ function StepPay({
       <h2 className="ck-h">{ck.payTitle || 'Método de pago'}</h2>
 
       <div className="ck-pay-logos" aria-label="Métodos de pago aceptados">
-        <span className="ck-pay-logo ck-pay-logo--webpay">WEBPAY</span>
-        <span className="ck-pay-logo ck-pay-logo--mp">MERCADO PAGO</span>
-        <span className="ck-pay-logo">VISA</span>
-        <span className="ck-pay-logo">MASTERCARD</span>
-        <span className="ck-pay-logo">TRANSFERENCIA</span>
+        <span className="ck-pay-logo ck-pay-logo--mp">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{verticalAlign:'middle',marginRight:5}}><circle cx="12" cy="12" r="12"/></svg>
+          mercado pago
+        </span>
       </div>
 
       <div className="ck-tabs">

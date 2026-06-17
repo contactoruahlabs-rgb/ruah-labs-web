@@ -249,7 +249,7 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
             {(function() {
               var linkMap = {};
               (nav.links || []).forEach(function(l) { linkMap[l.id] = l; });
-              var mobileOrder = ['l0','l3','l2','l8','l1','l5','l7','l6','l4'];
+              var mobileOrder = ['l2','l6','l7'];
               return mobileOrder.map(function(id) {
                 var l = linkMap[id];
                 if (!l) return null;
@@ -290,10 +290,35 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
 // --- Hero ---
 function Hero({ content }) {
   const { hero } = content;
+  const FALLBACK_VIDEO_DESKTOP = 'https://res.cloudinary.com/dh05zwrbp/video/upload/v1781323721/ruahlabs/dk5p5bmllg4bzap3kovl.mp4';
+  const FALLBACK_VIDEO_MOBILE  = 'https://res.cloudinary.com/dh05zwrbp/video/upload/v1781323714/ruahlabs/kv8jqlkslwzfedpjcjia.mp4';
+  const bgType = hero.bgType || 'video';
+  const srcDesktop = bgType === 'image' ? (hero.imageBgDesktop || '') : (hero.videoBgDesktop || FALLBACK_VIDEO_DESKTOP);
+  const srcMobile  = bgType === 'image' ? (hero.imageBgMobile  || '') : (hero.videoBgMobile  || FALLBACK_VIDEO_MOBILE);
+
+  const AUDIENCE = [
+    { label: 'Soy individuo', page: 'productos' },
+    { label: 'Soy iglesia',   page: 'iglesias' },
+    { label: 'Soy empresa',   page: 'evento' },
+  ];
+
   return (
     <section className="hero" id="top">
-      <video className="hero__video-bg hero__video-bg--desktop" src="https://res.cloudinary.com/dh05zwrbp/video/upload/v1781323721/ruahlabs/dk5p5bmllg4bzap3kovl.mp4" autoPlay muted loop playsInline preload="metadata" aria-hidden="true" />
-      <video className="hero__video-bg hero__video-bg--mobile" src="https://res.cloudinary.com/dh05zwrbp/video/upload/v1781323714/ruahlabs/kv8jqlkslwzfedpjcjia.mp4" autoPlay muted loop playsInline preload="metadata" aria-hidden="true" />
+      {bgType === 'image' ? (
+        <React.Fragment>
+          {srcDesktop && <img className="hero__video-bg hero__video-bg--desktop" src={srcDesktop} alt="" aria-hidden="true" style={{objectFit:'cover'}} />}
+          {srcMobile  && <img className="hero__video-bg hero__video-bg--mobile"  src={srcMobile}  alt="" aria-hidden="true" style={{objectFit:'cover'}} />}
+          {!srcDesktop && !srcMobile && <React.Fragment>
+            <video className="hero__video-bg hero__video-bg--desktop" src={FALLBACK_VIDEO_DESKTOP} autoPlay muted loop playsInline preload="metadata" aria-hidden="true" />
+            <video className="hero__video-bg hero__video-bg--mobile"  src={FALLBACK_VIDEO_MOBILE}  autoPlay muted loop playsInline preload="metadata" aria-hidden="true" />
+          </React.Fragment>}
+        </React.Fragment>
+      ) : (
+        <React.Fragment>
+          <video className="hero__video-bg hero__video-bg--desktop" src={srcDesktop} autoPlay muted loop playsInline preload="metadata" aria-hidden="true" />
+          <video className="hero__video-bg hero__video-bg--mobile"  src={srcMobile}  autoPlay muted loop playsInline preload="metadata" aria-hidden="true" />
+        </React.Fragment>
+      )}
       <div className="hero__texture" aria-hidden="true"></div>
       <div className="shell">
         <div className="hero__eyebrow">
@@ -327,6 +352,14 @@ function Hero({ content }) {
             <a className="btn btn--white" href={hero.secondaryCta.href}>
               {hero.secondaryCta.label}
             </a>
+          </Reveal>
+          <Reveal delay={800} className="hero__audience">
+            {AUDIENCE.map((a) => (
+              <button key={a.page} type="button" className="hero__aud-btn"
+                onClick={() => window.dispatchEvent(new CustomEvent('ruah:navigateTo', { detail: { page: a.page } }))}>
+                {a.label} →
+              </button>
+            ))}
           </Reveal>
         </div>
       </div>
@@ -967,7 +1000,8 @@ function Products({ content, onOpenProduct, initialCategory }) {
                       Comprar y donar <span>→</span>
                     </button>
                   </div>
-                  <div className="prod__guarantee">✓ 30 días cambio · ✓ Protocolo 1×1 activo</div>
+                  {!it.noReturn && <div className="prod__guarantee">✓ {it.returnDays || 30} días cambio · ✓ Protocolo 1×1 activo</div>}
+                  {it.noReturn  && <div className="prod__guarantee">✓ Protocolo 1×1 activo</div>}
                 </div>
               </Reveal>
           )}

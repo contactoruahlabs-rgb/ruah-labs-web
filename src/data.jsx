@@ -107,17 +107,11 @@ const DEFAULT_CONTENT = {
   },
   nav: {
     links: [
-      { id: 'l0', label: 'Quiénes Somos', href: '#nosotros' },
-      { id: 'l3', label: 'Protocolo 1×1', href: '#protocolo' },
-      { id: 'l2', label: 'Productos',     href: '#productos', dropdown: true },
-      { id: 'l1', label: 'Servicios',     href: '#servicios' },
-      { id: 'l5', label: 'Cuadros',       href: '#cuadros' },
-      { id: 'l6', label: 'Iglesias',      href: '#iglesias' },
-      { id: 'l7', label: 'Evento',        href: '#evento' },
-      { id: 'l4', label: 'Comunidad',     href: '#comunidad' },
-      { id: 'l8', label: 'Personalizados', href: '#design' },
+      { id: 'l2', label: 'Comprar',   href: '#productos', dropdown: true },
+      { id: 'l6', label: 'Iglesias',  href: '#iglesias' },
+      { id: 'l7', label: 'Eventos',   href: '#evento' },
     ],
-    cta: { label: 'Cotizar', href: '#contacto' },
+    cta: { label: 'Contacto', href: '#contacto' },
   },
   colors: {
     // All values default to empty string ('') — when empty the design uses its
@@ -155,6 +149,11 @@ const DEFAULT_CONTENT = {
     ],
   },
   hero: {
+    bgType: 'video',
+    videoBgDesktop: '',
+    videoBgMobile:  '',
+    imageBgDesktop: '',
+    imageBgMobile:  '',
     eyebrow: 'EST. SANTIAGO · CHILE',
     titleLine1: 'FE',
     titleLine2: 'PUESTA EN',

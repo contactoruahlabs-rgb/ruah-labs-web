@@ -473,9 +473,42 @@ function ViewHome({ content, store }) {
 function ViewHero({ content, store }) {
   const { update } = store;
   const h = content.hero;
+  const bgType = h.bgType || 'video';
   return (
     <React.Fragment>
       <SectionTokens groupName="Hero" content={content} store={store} />
+
+      <div className="card" style={{ marginBottom: 16 }}>
+        <div className="card__head"><h3>Fondo del Hero</h3><span className="meta">Video o imagen a pantalla completa</span></div>
+        <p style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--gray)', marginBottom: 12, lineHeight: 1.6 }}>
+          <strong>Desktop:</strong> 1920×1080 px (16:9) · <strong>Móvil:</strong> 1080×1920 px (9:16)<br/>
+          Formatos aceptados — Video: MP4 H.264 · Imagen: JPG, WebP, PNG
+        </p>
+        <Field label="Tipo de fondo">
+          <div style={{ display: 'flex', gap: 8 }}>
+            {[['video','Video'], ['image','Imagen']].map(([val, lbl]) => (
+              <button key={val} type="button"
+                className={'abtn sm ' + (bgType === val ? 'amber' : 'ghost')}
+                onClick={() => update('hero.bgType', val)}>{lbl}</button>
+            ))}
+          </div>
+        </Field>
+        {bgType === 'video' ? (
+          <React.Fragment>
+            <Text label="URL video desktop (MP4 · Cloudinary)" value={h.videoBgDesktop || ''} placeholder="https://res.cloudinary.com/..." onChange={v => update('hero.videoBgDesktop', v)} />
+            <Text label="URL video móvil (MP4 · Cloudinary)" value={h.videoBgMobile || ''} placeholder="https://res.cloudinary.com/..." onChange={v => update('hero.videoBgMobile', v)} />
+            <p style={{ fontSize: 11, color: 'var(--gray)', marginTop: 6 }}>Dejando en blanco se usa el video original del sitio.</p>
+          </React.Fragment>
+        ) : (
+          <React.Fragment>
+            <Text label="URL imagen desktop (1920×1080 · Cloudinary)" value={h.imageBgDesktop || ''} placeholder="https://res.cloudinary.com/..." onChange={v => update('hero.imageBgDesktop', v)} />
+            {h.imageBgDesktop && <img src={h.imageBgDesktop} alt="preview desktop" style={{ marginTop:8, maxWidth:'100%', maxHeight:120, borderRadius:4, display:'block', objectFit:'cover' }} />}
+            <Text label="URL imagen móvil (1080×1920 · Cloudinary)" value={h.imageBgMobile || ''} placeholder="https://res.cloudinary.com/..." onChange={v => update('hero.imageBgMobile', v)} />
+            {h.imageBgMobile && <img src={h.imageBgMobile} alt="preview móvil" style={{ marginTop:8, maxHeight:120, borderRadius:4, display:'block', objectFit:'cover' }} />}
+          </React.Fragment>
+        )}
+      </div>
+
     <div className="card">
       <div className="card__head"><h3>Hero principal</h3><span className="meta">A− / A+ para cambiar tamaño en vivo</span></div>
       <Text label="Eyebrow superior" value={h.eyebrow} onChange={v => update('hero.eyebrow', v)} />
@@ -770,6 +803,23 @@ function ViewProducts({ content, store }) {
                       onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, stockActual: Math.max(0, Math.min(parseInt(v) || 0, x.stockTotal || 0)) } : x))} />
                   </div>
                 )}
+
+                <div className="card" style={{ margin:'12px 0 0', padding:'12px 16px', background:'var(--surface2,#f5f5f3)' }}>
+                  <div className="card__head" style={{ marginBottom:10 }}><h4 style={{ margin:0, fontSize:12, letterSpacing:'0.05em' }}>POLÍTICA DE CAMBIOS</h4></div>
+                  <Toggle
+                    label="Sin derecho a cambio (ej: producto personalizado)"
+                    value={!!it.noReturn}
+                    onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, noReturn: v } : x))}
+                  />
+                  {!it.noReturn && (
+                    <Text
+                      label="Días para cambio de talla"
+                      hint="Default: 30 días"
+                      value={String(it.returnDays != null ? it.returnDays : 30)}
+                      onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, returnDays: Math.max(1, parseInt(v) || 30) } : x))}
+                    />
+                  )}
+                </div>
 
                 <Toggle
                   label="Mostrar en carrusel de inicio"

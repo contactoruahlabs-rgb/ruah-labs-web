@@ -1072,6 +1072,32 @@ section { padding-block: var(--section-pad-y); position: relative; }
   margin-top: 4px;
 }
 
+.hero__audience {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+.hero__aud-btn {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border: 1px solid rgba(245,241,232,0.35);
+  border-radius: 999px;
+  background: rgba(245,241,232,0.08);
+  color: rgba(245,241,232,0.75);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  backdrop-filter: blur(4px);
+}
+.hero__aud-btn:hover {
+  background: var(--amber);
+  color: var(--black);
+  border-color: var(--amber);
+}
+
 .empty-state {
   padding: 80px 0;
   text-align: center;
