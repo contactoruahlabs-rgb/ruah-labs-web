@@ -18,8 +18,7 @@ jobs:
 
       - run: node scripts/build-frontend.cjs
 
-      - uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: 06f24cf68b5f33a028fd7a3e0e65e211
-          wranglerVersion: "4.100.0"
+      - run: npx wrangler@4.100.0 deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: 06f24cf68b5f33a028fd7a3e0e65e211
