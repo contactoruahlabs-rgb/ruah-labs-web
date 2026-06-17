@@ -1757,6 +1757,9 @@ section { padding-block: var(--section-pad-y); position: relative; }
 @media (max-width: 600px) {
   .footer__grid { grid-template-columns: 1fr; }
   .about__pillars { grid-template-columns: 1fr; }
+  .prod__row { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .prod__price { font-size: 18px; }
+  .prod__buy { align-self: flex-start; }
 }
 
 /* ---------- Reduced motion ---------- */
