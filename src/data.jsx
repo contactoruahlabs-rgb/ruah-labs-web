@@ -160,7 +160,7 @@ const DEFAULT_CONTENT = {
     titleLine2: 'PUESTA EN',
     titleLine3: 'ACCIÓN',
     accentWord: 'ACCIÓN',
-    lede: 'Estampado y sublimación profesional para iglesias, marcas y eventos. Cada prenda que sale de nuestro taller activa el Protocolo 1×1 — una prenda vendida, una prenda donada a la calle.',
+    lede: 'Cada prenda que sale de nuestro taller activa el Protocolo 1×1\nEstampado y sublimación profesional para iglesias, marcas y eventos.\nUna prenda vendida ES una prenda donada a la calle.',
     primaryCta:   { label: 'Cotizar proyecto', href: '#contacto' },
     secondaryCta: { label: 'Ver productos',    href: '#productos' },
     marquee: 'ESTAMPADO PROFESIONAL · SUBLIMACIÓN · ASESORÍA CREATIVA · MERCH · IGLESIAS · EVENTOS · DROPS LIMITADOS',
@@ -736,6 +736,7 @@ function migrateContent(c) {
   if (!c.checkout.style) c.checkout.style = DEFAULT_CONTENT.checkout.style;
   if (!c.checkout.shippingFees) c.checkout.shippingFees = DEFAULT_CONTENT.checkout.shippingFees;
   if (!c.cuadros.comingSoonVideoDesktop) c.cuadros.comingSoonVideoDesktop = DEFAULT_CONTENT.cuadros.comingSoonVideoDesktop;
+  if (c.hero && c.hero.lede && !c.hero.lede.includes('\n')) c.hero.lede = DEFAULT_CONTENT.hero.lede;
   if (!c.launch) c.launch = DEFAULT_CONTENT.launch;
   if (!c.launch.imageMobile)  c.launch.imageMobile  = DEFAULT_CONTENT.launch.imageMobile;
   if (!c.launch.imageDesktop) c.launch.imageDesktop = DEFAULT_CONTENT.launch.imageDesktop;

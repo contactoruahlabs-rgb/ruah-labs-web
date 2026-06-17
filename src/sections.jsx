@@ -313,7 +313,7 @@ function Hero({ content }) {
 
         <div className="hero__bottom">
           <Reveal delay={500} className="hero__lede">
-            <p>{hero.lede}</p>
+            <p style={{whiteSpace:'pre-line'}}>{hero.lede}</p>
           </Reveal>
           <Reveal delay={650} className="hero__ctas">
             <a className="btn btn--amber" href={hero.primaryCta.href}>
