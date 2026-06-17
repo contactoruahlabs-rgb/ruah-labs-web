@@ -66,9 +66,14 @@ function processDir(srcDir, outDir) {
       copied++;
 
     } else {
-      // Copiar tal cual (CSS, assets, _headers, etc.)
-      fs.copyFileSync(srcPath, outPath);
-      copied++;
+      // Omitir archivos > 25 MB (límite de Cloudflare Workers)
+      const fileSizeMB = fs.statSync(srcPath).size / (1024 * 1024);
+      if (fileSizeMB > 25) {
+        console.warn(`  ⚠️  Omitido (${fileSizeMB.toFixed(1)} MB > 25 MB): ${entry.name}`);
+      } else {
+        fs.copyFileSync(srcPath, outPath);
+        copied++;
+      }
     }
   }
 }
