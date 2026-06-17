@@ -7,7 +7,9 @@
     "start": "node scripts/api-server.cjs",
     "build": "node scripts/build-frontend.cjs",
     "dev": "node server.js",
-    "migrate": "node scripts/migrate.js"
+    "migrate": "node scripts/migrate.js",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
@@ -22,6 +24,7 @@
     "@babel/preset-react": "^7.29.7",
     "dotenv": "^16.3.1",
     "http-server": "^14.1.1",
-    "pg": "^8.21.0"
+    "pg": "^8.21.0",
+    "wrangler": "^4.101.0"
   }
 }
