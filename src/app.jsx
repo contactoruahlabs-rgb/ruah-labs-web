@@ -312,6 +312,7 @@ function App() {
           imageDesktop={content.launch.imageDesktop}
         />
       )}
+      <WhatsAppFab />
     </React.Fragment>
   );
 }

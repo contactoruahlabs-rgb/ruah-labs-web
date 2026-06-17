@@ -316,16 +316,15 @@ function Hero({ content }) {
             <p style={{whiteSpace:'pre-line'}}>{hero.lede}</p>
           </Reveal>
           <Reveal delay={650} className="hero__ctas">
-            <a className="btn btn--amber" href={hero.primaryCta.href}>
-              {hero.primaryCta.label}
-              <span className="arrow">→</span>
-            </a>
-            <a className="btn btn--white" href={hero.secondaryCta.href}
+            <a className="btn btn--amber" href={hero.primaryCta.href}
                onClick={e => {
                  e.preventDefault();
                  window.dispatchEvent(new CustomEvent('ruah:navigateTo', { detail: { page: 'productos' } }));
-                 window.dispatchEvent(new CustomEvent('ruah:setCategory', { detail: { slug: 'todo' } }));
                }}>
+              {hero.primaryCta.label}
+              <span className="arrow">→</span>
+            </a>
+            <a className="btn btn--white" href={hero.secondaryCta.href}>
               {hero.secondaryCta.label}
             </a>
           </Reveal>
@@ -955,7 +954,7 @@ function Products({ content, onOpenProduct, initialCategory }) {
                   <div className="prod__verse">{it.verse}</div>
                   <h3 className="prod__title">{it.name}</h3>
                   <div className="prod__row">
-                    <div className="prod__price"><span className="clp">CLP</span>${it.price}</div>
+                    <div className="prod__price">{(!it.price || it.price === 0 || it.price === '0') ? <span className="clp">A CONSULTAR</span> : <React.Fragment><span className="clp">CLP</span>${it.price}</React.Fragment>}</div>
                     <button
                   className="prod__buy"
                   onClick={(e) => {e.stopPropagation();onOpenProduct(it.id);}}>

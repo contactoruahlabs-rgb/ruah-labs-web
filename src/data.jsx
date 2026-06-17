@@ -161,8 +161,8 @@ const DEFAULT_CONTENT = {
     titleLine3: 'ACCIÓN',
     accentWord: 'ACCIÓN',
     lede: 'Cada prenda que sale de nuestro taller activa el Protocolo 1×1\nEstampado y sublimación profesional para iglesias, marcas y eventos.\nUna prenda vendida ES una prenda donada a la calle.',
-    primaryCta:   { label: 'Cotizar proyecto', href: '#contacto' },
-    secondaryCta: { label: 'Ver productos',    href: '#productos' },
+    primaryCta:   { label: 'Ver productos',    href: '#productos' },
+    secondaryCta: { label: 'Cotizar proyecto', href: '#contacto' },
     marquee: 'ESTAMPADO PROFESIONAL · SUBLIMACIÓN · ASESORÍA CREATIVA · MERCH · IGLESIAS · EVENTOS · DROPS LIMITADOS',
   },
   about: {
