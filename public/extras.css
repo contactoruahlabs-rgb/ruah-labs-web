@@ -481,8 +481,7 @@
   filter: brightness(0.74) contrast(1.05);
 }
 .ig-proj__card.has-img::before { opacity: 0.5; }
-.ig-proj__card.has-img .ig-proj__code,
-.ig-proj__card.has-img .ig-proj__name { text-shadow: 0 1px 4px rgba(0,0,0,0.7); }
+.ig-proj__card.has-img .ig-proj__code { text-shadow: 0 1px 4px rgba(0,0,0,0.7); }
 
 /* Brief section */
 .cu-brief {
@@ -1057,11 +1056,11 @@
   text-transform: uppercase;
 }
 .ig-proj__foot {
-  position: relative; z-index: 2;
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   align-items: center;
   gap: 7px;
+  margin-top: 10px;
 }
 .ig-proj__bar { width: 4px; height: 11px; background: var(--amber); display: inline-block; }
 .ig-proj__name {
@@ -1201,6 +1200,30 @@
 .ig-submit:hover { background: var(--amber); border-color: var(--amber); }
 .ig-submit:active { transform: translateY(1px); }
 .ig-submit .arr { font-size: 15px; }
+
+/* WhatsApp link en form iglesias */
+.ig-wsp-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: #25d366; text-decoration: none;
+  padding: 10px 0; transition: opacity .2s;
+}
+.ig-wsp-btn:hover { opacity: 0.8; }
+
+/* WhatsApp FAB flotante */
+.wsp-fab {
+  position: fixed; bottom: 28px; right: 24px; z-index: 9000;
+  display: flex; align-items: center; gap: 10px;
+  background: #25d366; color: #fff;
+  padding: 14px 20px 14px 16px;
+  border-radius: 999px;
+  box-shadow: 0 4px 20px rgba(37,211,102,0.4);
+  text-decoration: none;
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.wsp-fab:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(37,211,102,0.55); }
+@media (max-width: 600px) { .wsp-fab__label { display: none; } .wsp-fab { padding: 14px; } }
 
 @media (max-width: 900px) {
   .ig-hero { grid-template-columns: 1fr; gap: 40px; }
@@ -1620,4 +1643,128 @@
 @media (min-width: 768px) {
   .ls-img--desktop { display: block; }
   .ls-img--mobile  { display: none; }
+}
+
+/* ── Email Popup ─────────────────────────────────────────── */
+.ep-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 8500;
+  background: rgba(10,10,10,0.6);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 0 32px;
+  animation: ep-fade-in 0.3s ease;
+}
+@keyframes ep-fade-in { from { opacity: 0 } to { opacity: 1 } }
+
+.ep-box {
+  position: relative;
+  background: var(--ivory);
+  color: var(--black);
+  border-radius: 16px 16px 0 0;
+  padding: 32px 28px 28px;
+  width: 100%;
+  max-width: 440px;
+  border-top: 2px solid var(--amber);
+  animation: ep-slide-up 0.35s cubic-bezier(.22,.68,0,1.2);
+}
+@keyframes ep-slide-up { from { transform: translateY(40px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+
+.ep-close {
+  position: absolute;
+  top: 14px; right: 18px;
+  background: none; border: none;
+  font-size: 22px; color: var(--gray);
+  cursor: pointer; line-height: 1;
+}
+.ep-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--amber);
+  margin-bottom: 10px;
+}
+.ep-title {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 10px;
+}
+.ep-sub {
+  font-size: 13px;
+  color: var(--gray);
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+.ep-form { display: flex; flex-direction: column; gap: 10px; }
+.ep-input {
+  padding: 13px 16px;
+  border: 1px solid rgba(10,10,10,0.2);
+  border-radius: 8px;
+  font-size: 15px;
+  background: #fff;
+  color: var(--black);
+  outline: none;
+}
+.ep-input:focus { border-color: var(--amber); }
+.ep-btn {
+  padding: 13px 20px;
+  background: var(--amber);
+  color: var(--black);
+  border: none;
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-weight: 700;
+}
+.ep-legal {
+  font-size: 11px;
+  color: var(--gray-soft);
+  margin-top: 10px;
+  text-align: center;
+}
+.ep-done { text-align: center; padding: 8px 0; }
+.ep-done__icon { font-size: 32px; color: var(--amber); margin-bottom: 10px; }
+.ep-done__title { font-size: 13px; color: var(--gray); margin-bottom: 6px; }
+.ep-done__code {
+  font-family: var(--mono);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--amber);
+  margin-bottom: 8px;
+}
+.ep-done__sub { font-size: 13px; color: var(--gray); }
+
+/* ── Payment logos (checkout) ────────────────────────────── */
+.ck-pay-logos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+.ck-pay-logo {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(10,10,10,0.15);
+  background: rgba(10,10,10,0.04);
+  color: var(--black);
+}
+.ck-pay-logo--mp {
+  background: #009EE3;
+  color: #fff;
+  border-color: #009EE3;
+  font-size: 12px;
+  padding: 6px 14px;
+  text-transform: none;
+  letter-spacing: 0.02em;
 }

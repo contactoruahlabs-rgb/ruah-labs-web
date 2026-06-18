@@ -834,11 +834,88 @@ function ViewHero({
     update
   } = store;
   const h = content.hero;
+  const bgType = h.bgType || 'video';
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(SectionTokens, {
     groupName: "Hero",
     content: content,
     store: store
   }), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      marginBottom: 16
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card__head"
+  }, /*#__PURE__*/React.createElement("h3", null, "Fondo del Hero"), /*#__PURE__*/React.createElement("span", {
+    className: "meta"
+  }, "Video o imagen a pantalla completa")), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontFamily: 'var(--mono)',
+      fontSize: 11,
+      color: 'var(--gray)',
+      marginBottom: 12,
+      lineHeight: 1.6
+    }
+  }, /*#__PURE__*/React.createElement("strong", null, "Desktop:"), " 1920\xD71080 px (16:9) \xB7 ", /*#__PURE__*/React.createElement("strong", null, "M\xF3vil:"), " 1080\xD71920 px (9:16)", /*#__PURE__*/React.createElement("br", null), "Formatos aceptados \u2014 Video: MP4 H.264 \xB7 Imagen: JPG, WebP, PNG"), /*#__PURE__*/React.createElement(Field, {
+    label: "Tipo de fondo"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 8
+    }
+  }, [['video', 'Video'], ['image', 'Imagen']].map(([val, lbl]) => /*#__PURE__*/React.createElement("button", {
+    key: val,
+    type: "button",
+    className: 'abtn sm ' + (bgType === val ? 'amber' : 'ghost'),
+    onClick: () => update('hero.bgType', val)
+  }, lbl)))), bgType === 'video' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Text, {
+    label: "URL video desktop (MP4 \xB7 Cloudinary)",
+    value: h.videoBgDesktop || '',
+    placeholder: "https://res.cloudinary.com/...",
+    onChange: v => update('hero.videoBgDesktop', v)
+  }), /*#__PURE__*/React.createElement(Text, {
+    label: "URL video m\xF3vil (MP4 \xB7 Cloudinary)",
+    value: h.videoBgMobile || '',
+    placeholder: "https://res.cloudinary.com/...",
+    onChange: v => update('hero.videoBgMobile', v)
+  }), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 11,
+      color: 'var(--gray)',
+      marginTop: 6
+    }
+  }, "Dejando en blanco se usa el video original del sitio.")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Text, {
+    label: "URL imagen desktop (1920\xD71080 \xB7 Cloudinary)",
+    value: h.imageBgDesktop || '',
+    placeholder: "https://res.cloudinary.com/...",
+    onChange: v => update('hero.imageBgDesktop', v)
+  }), h.imageBgDesktop && /*#__PURE__*/React.createElement("img", {
+    src: h.imageBgDesktop,
+    alt: "preview desktop",
+    style: {
+      marginTop: 8,
+      maxWidth: '100%',
+      maxHeight: 120,
+      borderRadius: 4,
+      display: 'block',
+      objectFit: 'cover'
+    }
+  }), /*#__PURE__*/React.createElement(Text, {
+    label: "URL imagen m\xF3vil (1080\xD71920 \xB7 Cloudinary)",
+    value: h.imageBgMobile || '',
+    placeholder: "https://res.cloudinary.com/...",
+    onChange: v => update('hero.imageBgMobile', v)
+  }), h.imageBgMobile && /*#__PURE__*/React.createElement("img", {
+    src: h.imageBgMobile,
+    alt: "preview m\xF3vil",
+    style: {
+      marginTop: 8,
+      maxHeight: 120,
+      borderRadius: 4,
+      display: 'block',
+      objectFit: 'cover'
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "card__head"
@@ -910,6 +987,10 @@ function ViewHero({
     value: h.secondaryCta.href,
     onChange: v => update('hero.secondaryCta.href', v)
   })), /*#__PURE__*/React.createElement(Text, {
+    label: "Precio ancla (ej: Desde $12.990 \xB7 Env\xEDo a todo Chile \u2014 dejar vac\xEDo para ocultar)",
+    value: h.heroPrice || '',
+    onChange: v => update('hero.heroPrice', v)
+  }), /*#__PURE__*/React.createElement(Text, {
     label: "Marquesina inferior (separa con \xB7)",
     value: h.marquee,
     onChange: v => update('hero.marquee', v),
@@ -1605,6 +1686,39 @@ function ViewProducts({
       onChange: v => updateList('products.items', l => l.map(x => x.id === it.id ? {
         ...x,
         stockActual: Math.max(0, Math.min(parseInt(v) || 0, x.stockTotal || 0))
+      } : x))
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "card",
+      style: {
+        margin: '12px 0 0',
+        padding: '12px 16px',
+        background: 'var(--surface2,#f5f5f3)'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "card__head",
+      style: {
+        marginBottom: 10
+      }
+    }, /*#__PURE__*/React.createElement("h4", {
+      style: {
+        margin: 0,
+        fontSize: 12,
+        letterSpacing: '0.05em'
+      }
+    }, "POL\xCDTICA DE CAMBIOS")), /*#__PURE__*/React.createElement(Toggle, {
+      label: "Sin derecho a cambio (ej: producto personalizado)",
+      value: !!it.noReturn,
+      onChange: v => updateList('products.items', l => l.map(x => x.id === it.id ? {
+        ...x,
+        noReturn: v
+      } : x))
+    }), !it.noReturn && /*#__PURE__*/React.createElement(Text, {
+      label: "D\xEDas para cambio de talla",
+      hint: "Default: 30 d\xEDas",
+      value: String(it.returnDays != null ? it.returnDays : 30),
+      onChange: v => updateList('products.items', l => l.map(x => x.id === it.id ? {
+        ...x,
+        returnDays: Math.max(1, parseInt(v) || 30)
       } : x))
     })), /*#__PURE__*/React.createElement(Toggle, {
       label: "Mostrar en carrusel de inicio",
@@ -2601,7 +2715,8 @@ function ViewTestimonials({
       quote: 'Nuevo testimonio…',
       name: 'NOMBRE',
       role: 'rol',
-      initial: 'X'
+      initial: 'X',
+      img: ''
     }])
   }, "+ Testimonio")), t.items.map((it, i) => /*#__PURE__*/React.createElement("div", {
     className: "testi-edit",
@@ -2642,6 +2757,13 @@ function ViewTestimonials({
     onChange: v => updateList('testimonials.items', l => l.map(x => x.id === it.id ? {
       ...x,
       initial: v.slice(0, 1).toUpperCase()
+    } : x))
+  }), /*#__PURE__*/React.createElement(Text, {
+    label: "Foto URL (Cloudinary \u2014 reemplaza la inicial)",
+    value: it.img || '',
+    onChange: v => updateList('testimonials.items', l => l.map(x => x.id === it.id ? {
+      ...x,
+      img: v
     } : x))
   }))), /*#__PURE__*/React.createElement("div", {
     className: "prod-edit__actions"

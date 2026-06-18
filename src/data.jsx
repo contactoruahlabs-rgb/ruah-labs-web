@@ -163,6 +163,7 @@ const DEFAULT_CONTENT = {
     primaryCta:   { label: 'Ver productos',    href: '#productos' },
     secondaryCta: { label: 'Cotizar proyecto', href: '#contacto' },
     marquee: 'ESTAMPADO PROFESIONAL · SUBLIMACIÓN · ASESORÍA CREATIVA · MERCH · IGLESIAS · EVENTOS · DROPS LIMITADOS',
+    heroPrice: 'Desde $12.990 · Envío a todo Chile',
   },
   about: {
     eyebrow: '[ 00 ] QUIÉNES SOMOS',
@@ -477,6 +478,7 @@ const DEFAULT_CONTENT = {
         name: 'PASTOR DANIEL VERA',
         role: 'Iglesia Vida Nueva — Maipú',
         initial: 'D',
+        img: '',
       },
       {
         id: 't2',
@@ -484,6 +486,7 @@ const DEFAULT_CONTENT = {
         name: 'CAMILA MUÑOZ',
         role: 'Café Almendro — Providencia',
         initial: 'C',
+        img: '',
       },
       {
         id: 't3',
@@ -491,6 +494,7 @@ const DEFAULT_CONTENT = {
         name: 'SEBASTIÁN ROJAS',
         role: 'Cliente Ruah Labs Club',
         initial: 'S',
+        img: '',
       },
     ],
   },

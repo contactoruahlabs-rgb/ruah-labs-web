@@ -614,6 +614,19 @@ section { padding-block: var(--section-pad-y); position: relative; }
   max-width: clamp(300px, 22.5vw, 460px);
 }
 .hero__lede strong { color: var(--amber); font-weight: 600; }
+.hero__price {
+  display: inline-block;
+  margin-top: 18px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--black);
+  background: var(--amber);
+  padding: 6px 14px;
+  border-radius: 2px;
+}
 .hero__ctas { display: flex; flex-wrap: wrap; gap: 12px; }
 
 .hero__marquee {
@@ -1055,6 +1068,49 @@ section { padding-block: var(--section-pad-y); position: relative; }
 }
 .prod__buy:hover { background: var(--amber); color: var(--black); border-color: var(--amber); }
 
+.prod__stock {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--gray);
+}
+.prod__stock--low { color: #c84a2a; }
+.prod__stock--out { color: var(--gray-soft); }
+
+.prod__guarantee {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--gray-soft);
+  margin-top: 4px;
+}
+
+.hero__audience {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+.hero__aud-btn {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border: 1px solid rgba(245,241,232,0.35);
+  border-radius: 999px;
+  background: rgba(245,241,232,0.08);
+  color: rgba(245,241,232,0.75);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  backdrop-filter: blur(4px);
+}
+.hero__aud-btn:hover {
+  background: var(--amber);
+  color: var(--black);
+  border-color: var(--amber);
+}
+
 .empty-state {
   padding: 80px 0;
   text-align: center;
@@ -1470,6 +1526,7 @@ section { padding-block: var(--section-pad-y); position: relative; }
   font-size: 20px;
   line-height: 1;
 }
+.testi__av img { width: 100%; height: 100%; object-fit: cover; border-radius: 999px; display: block; }
 .testi__who { display: flex; flex-direction: column; }
 .testi__name {
   font-family: var(--mono);
@@ -1757,6 +1814,9 @@ section { padding-block: var(--section-pad-y); position: relative; }
 @media (max-width: 600px) {
   .footer__grid { grid-template-columns: 1fr; }
   .about__pillars { grid-template-columns: 1fr; }
+  .prod__row { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .prod__price { font-size: 18px; }
+  .prod__buy { align-self: flex-start; }
 }
 
 /* ---------- Reduced motion ---------- */

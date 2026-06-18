@@ -607,6 +607,25 @@ function StepPay({
   }, /*#__PURE__*/React.createElement("h2", {
     className: "ck-h"
   }, ck.payTitle || 'Método de pago'), /*#__PURE__*/React.createElement("div", {
+    className: "ck-pay-logos",
+    "aria-label": "M\xE9todos de pago aceptados"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ck-pay-logo ck-pay-logo--mp"
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "14",
+    height: "14",
+    viewBox: "0 0 24 24",
+    fill: "currentColor",
+    "aria-hidden": "true",
+    style: {
+      verticalAlign: 'middle',
+      marginRight: 5
+    }
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "12"
+  })), "mercado pago")), /*#__PURE__*/React.createElement("div", {
     className: "ck-tabs"
   }, PAY_METHODS.map(m => /*#__PURE__*/React.createElement("button", {
     key: m.id,

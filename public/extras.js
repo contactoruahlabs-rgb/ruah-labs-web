@@ -229,6 +229,26 @@ function GalleryModal({
 // ============================================================
 // CUADROS
 // ============================================================
+function WhatsAppFab() {
+  return /*#__PURE__*/React.createElement("a", {
+    className: "wsp-fab",
+    href: "https://wa.me/56926237239?text=Hola%20RUAH%20LABS%2C%20quiero%20cotizar",
+    target: "_blank",
+    rel: "noopener noreferrer",
+    "aria-label": "Cotiza por WhatsApp"
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "26",
+    height: "26",
+    viewBox: "0 0 24 24",
+    fill: "currentColor"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M12 0C5.373 0 0 5.373 0 12c0 2.12.554 4.11 1.523 5.836L.057 23.57a.75.75 0 0 0 .916.919l5.85-1.496A11.95 11.95 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.728 9.728 0 0 1-4.953-1.355l-.355-.212-3.676.94.98-3.565-.232-.368A9.713 9.713 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"
+  })), /*#__PURE__*/React.createElement("span", {
+    className: "wsp-fab__label"
+  }, "Cotiza por WhatsApp"));
+}
 function LaunchScreen({
   imageMobile,
   imageDesktop
@@ -703,15 +723,15 @@ function Iglesias({
       className: "ig-proj__code"
     }, p.code)), /*#__PURE__*/React.createElement("div", {
       className: "ig-proj__pattern"
-    }), /*#__PURE__*/React.createElement("div", {
+    }), hasGallery && /*#__PURE__*/React.createElement("div", {
+      className: "ig-proj__gallery-badge"
+    }, (p.gallery || []).length, " foto", (p.gallery || []).length !== 1 ? 's' : '', " \u2192")), /*#__PURE__*/React.createElement("div", {
       className: "ig-proj__foot"
     }, /*#__PURE__*/React.createElement("span", {
       className: "ig-proj__bar"
     }), /*#__PURE__*/React.createElement("span", {
       className: "ig-proj__name"
-    }, p.name)), hasGallery && /*#__PURE__*/React.createElement("div", {
-      className: "ig-proj__gallery-badge"
-    }, (p.gallery || []).length, " foto", (p.gallery || []).length !== 1 ? 's' : '', " \u2192")), /*#__PURE__*/React.createElement("div", {
+    }, p.name)), /*#__PURE__*/React.createElement("div", {
       className: "ig-proj__meta"
     }, p.meta));
   }))), /*#__PURE__*/React.createElement("div", {
@@ -770,15 +790,102 @@ function Iglesias({
     disabled: submitted === 'sending'
   }, submitted === 'ok' ? '✓ GUARDADO EN BD' : submitted && submitted !== false ? '✗ ' + String(submitted).toUpperCase() : submitted ? '✓ SOLICITUD ENVIADA' : ig.formSubmit, !submitted && /*#__PURE__*/React.createElement("span", {
     className: "arr"
-  }, "\u2192"))))), galleryProject && /*#__PURE__*/React.createElement(GalleryModal, {
+  }, "\u2192")), /*#__PURE__*/React.createElement("a", {
+    className: "ig-wsp-btn",
+    href: "https://wa.me/56926237239?text=Hola%20RUAH%20LABS%2C%20quiero%20cotizar%20para%20mi%20iglesia",
+    target: "_blank",
+    rel: "noopener noreferrer"
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "18",
+    height: "18",
+    viewBox: "0 0 24 24",
+    fill: "currentColor"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M12 0C5.373 0 0 5.373 0 12c0 2.12.554 4.11 1.523 5.836L.057 23.57a.75.75 0 0 0 .916.919l5.85-1.496A11.95 11.95 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.728 9.728 0 0 1-4.953-1.355l-.355-.212-3.676.94.98-3.565-.232-.368A9.713 9.713 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"
+  })), "Prefiero WhatsApp")))), galleryProject && /*#__PURE__*/React.createElement(GalleryModal, {
     title: galleryProject.name,
     subtitle: galleryProject.code + ' · ' + galleryProject.meta,
     photos: galleryProject.gallery || [],
     onClose: () => setGalleryProject(null)
   }));
 }
+function EmailPopup() {
+  const STORAGE_KEY = 'ruah-email-popup-dismissed';
+  const [visible, setVisible] = React.useState(false);
+  const [email, setEmail] = React.useState('');
+  const [done, setDone] = React.useState(false);
+  React.useEffect(() => {
+    if (localStorage.getItem(STORAGE_KEY)) return;
+    const t = setTimeout(() => setVisible(true), 12000);
+    return () => clearTimeout(t);
+  }, []);
+  function dismiss() {
+    localStorage.setItem(STORAGE_KEY, '1');
+    setVisible(false);
+  }
+  function submit(e) {
+    e.preventDefault();
+    if (!email) return;
+    if (window.ruahDb) {
+      window.ruahDb.from('email_leads').upsert({
+        email,
+        source: 'popup',
+        created_at: new Date().toISOString()
+      }).catch(() => {});
+    }
+    setDone(true);
+    localStorage.setItem(STORAGE_KEY, '1');
+  }
+  if (!visible) return null;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ep-overlay",
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-label": "Descuento de bienvenida"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ep-box"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "ep-close",
+    onClick: dismiss,
+    "aria-label": "Cerrar"
+  }, "\xD7"), done ? /*#__PURE__*/React.createElement("div", {
+    className: "ep-done"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ep-done__icon"
+  }, "\u2713"), /*#__PURE__*/React.createElement("p", {
+    className: "ep-done__title"
+  }, "Tu c\xF3digo:"), /*#__PURE__*/React.createElement("p", {
+    className: "ep-done__code"
+  }, "BIENVENIDO10"), /*#__PURE__*/React.createElement("p", {
+    className: "ep-done__sub"
+  }, "10% off en tu primera compra. C\xF3pialo y \xFAsalo en el checkout.")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "ep-tag"
+  }, "PROTOCOLO 1\xD71 ACTIVO"), /*#__PURE__*/React.createElement("h2", {
+    className: "ep-title"
+  }, "Tu primera prenda,", /*#__PURE__*/React.createElement("br", null), "con 10% off."), /*#__PURE__*/React.createElement("p", {
+    className: "ep-sub"
+  }, "Suscr\xEDbete y recibe el c\xF3digo. Cada compra dona una prenda a alguien en situaci\xF3n de calle."), /*#__PURE__*/React.createElement("form", {
+    className: "ep-form",
+    onSubmit: submit
+  }, /*#__PURE__*/React.createElement("input", {
+    className: "ep-input",
+    type: "email",
+    placeholder: "tu@correo.cl",
+    value: email,
+    onChange: e => setEmail(e.target.value),
+    required: true
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "ep-btn",
+    type: "submit"
+  }, "Obtener descuento \u2192")), /*#__PURE__*/React.createElement("p", {
+    className: "ep-legal"
+  }, "Sin spam. Solo drops, rutas y novedades del movimiento."))));
+}
 Object.assign(window, {
   Cuadros,
   Iglesias,
-  GalleryModal
+  GalleryModal,
+  EmailPopup
 });

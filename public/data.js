@@ -104,45 +104,21 @@ const DEFAULT_CONTENT = {
   },
   nav: {
     links: [{
-      id: 'l0',
-      label: 'Quiénes Somos',
-      href: '#nosotros'
-    }, {
-      id: 'l3',
-      label: 'Protocolo 1×1',
-      href: '#protocolo'
-    }, {
       id: 'l2',
-      label: 'Productos',
+      label: 'Comprar',
       href: '#productos',
       dropdown: true
-    }, {
-      id: 'l1',
-      label: 'Servicios',
-      href: '#servicios'
-    }, {
-      id: 'l5',
-      label: 'Cuadros',
-      href: '#cuadros'
     }, {
       id: 'l6',
       label: 'Iglesias',
       href: '#iglesias'
     }, {
       id: 'l7',
-      label: 'Evento',
+      label: 'Eventos',
       href: '#evento'
-    }, {
-      id: 'l4',
-      label: 'Comunidad',
-      href: '#comunidad'
-    }, {
-      id: 'l8',
-      label: 'Personalizados',
-      href: '#design'
     }],
     cta: {
-      label: 'Cotizar',
+      label: 'Contacto',
       href: '#contacto'
     }
   },
@@ -193,21 +169,27 @@ const DEFAULT_CONTENT = {
     }]
   },
   hero: {
+    bgType: 'video',
+    videoBgDesktop: '',
+    videoBgMobile: '',
+    imageBgDesktop: '',
+    imageBgMobile: '',
     eyebrow: 'EST. SANTIAGO · CHILE',
     titleLine1: 'FE',
     titleLine2: 'PUESTA EN',
     titleLine3: 'ACCIÓN',
     accentWord: 'ACCIÓN',
-    lede: 'Estampado y sublimación profesional para iglesias, marcas y eventos. Cada prenda que sale de nuestro taller activa el Protocolo 1×1 — una prenda vendida, una prenda donada a la calle.',
+    lede: 'Cada prenda que sale de nuestro taller activa el Protocolo 1×1\nEstampado y sublimación profesional para iglesias, marcas y eventos.\nUna prenda vendida ES una prenda donada a la calle.',
     primaryCta: {
-      label: 'Cotizar proyecto',
-      href: '#contacto'
-    },
-    secondaryCta: {
       label: 'Ver productos',
       href: '#productos'
     },
-    marquee: 'ESTAMPADO PROFESIONAL · SUBLIMACIÓN · ASESORÍA CREATIVA · MERCH · IGLESIAS · EVENTOS · DROPS LIMITADOS'
+    secondaryCta: {
+      label: 'Cotizar proyecto',
+      href: '#contacto'
+    },
+    marquee: 'ESTAMPADO PROFESIONAL · SUBLIMACIÓN · ASESORÍA CREATIVA · MERCH · IGLESIAS · EVENTOS · DROPS LIMITADOS',
+    heroPrice: 'Desde $12.990 · Envío a todo Chile'
   },
   about: {
     eyebrow: '[ 00 ] QUIÉNES SOMOS',
@@ -408,6 +390,8 @@ const DEFAULT_CONTENT = {
       tagStyle: 'amber',
       img: '',
       gallery: [],
+      stockType: 'limitado',
+      stockTotal: 24,
       description: 'Polera de algodón premium estampada en serigrafía profesional. El versículo Salmo 23:1 trabajado tipográficamente con composición de autor — una pieza para vestir la palabra todos los días.',
       details: [{
         id: 'd1',
@@ -440,6 +424,8 @@ const DEFAULT_CONTENT = {
       tagStyle: 'amber',
       img: '',
       gallery: [],
+      stockType: 'limitado',
+      stockTotal: 12,
       description: 'Polerón con capucha de algodón perchado. Estampado frontal y dorsal con composición tipográfica del versículo. Pieza exclusiva del drop de invierno, producción limitada a 80 unidades.',
       details: [{
         id: 'd1',
@@ -496,6 +482,8 @@ const DEFAULT_CONTENT = {
       tagStyle: 'amber',
       img: '',
       gallery: [],
+      stockType: 'limitado',
+      stockTotal: 15,
       description: 'Conjunto de polerón y pantalón de algodón perchado. Estampado discreto en pierna y pecho. La palabra Selah — "pausa, escucha" — recorre el costado.',
       details: [{
         id: 'd1',
@@ -544,6 +532,8 @@ const DEFAULT_CONTENT = {
       tagStyle: 'amber',
       img: '',
       gallery: [],
+      stockType: 'limitado',
+      stockTotal: 8,
       description: 'Chaqueta sherpa con forro polar. Una pieza para resistir el invierno santiaguino. Tag bordado interior con Proverbios 15:3.',
       details: [{
         id: 'd1',
@@ -592,6 +582,8 @@ const DEFAULT_CONTENT = {
       tagStyle: 'amber',
       img: '',
       gallery: [],
+      stockType: 'limitado',
+      stockTotal: 5,
       description: 'Cuadro decorativo con marco de madera natural. Composición tipográfica minimalista impresa en papel algodón. Tres tamaños disponibles.',
       details: [{
         id: 'd1',
@@ -959,19 +951,22 @@ const DEFAULT_CONTENT = {
       quote: 'Pedimos 80 polerones para el retiro de jóvenes y el resultado fue mejor que cualquier marca grande. Plazos cumplidos al día.',
       name: 'PASTOR DANIEL VERA',
       role: 'Iglesia Vida Nueva — Maipú',
-      initial: 'D'
+      initial: 'D',
+      img: ''
     }, {
       id: 't2',
       quote: 'El diseño es serio. La calidad es seria. Y saber que detrás hay una causa real lo cambia todo. Volveremos.',
       name: 'CAMILA MUÑOZ',
       role: 'Café Almendro — Providencia',
-      initial: 'C'
+      initial: 'C',
+      img: ''
     }, {
       id: 't3',
       quote: 'Me llegó el video del chico que recibió mi prenda donada. Lloré. Es la primera vez que comprar ropa me hace sentir parte de algo.',
       name: 'SEBASTIÁN ROJAS',
       role: 'Cliente Ruah Labs Club',
-      initial: 'S'
+      initial: 'S',
+      img: ''
     }]
   },
   eventos: {
@@ -1362,7 +1357,7 @@ const DEFAULT_CONTENT = {
 };
 
 // ----- Store hook with localStorage persistence -----
-const STORAGE_KEY = 'ruah-content-v5';
+const STORAGE_KEY = 'ruah-content-v6';
 function loadContent() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -1405,7 +1400,10 @@ function migrateContent(c) {
   if (!c.checkout.style) c.checkout.style = DEFAULT_CONTENT.checkout.style;
   if (!c.checkout.shippingFees) c.checkout.shippingFees = DEFAULT_CONTENT.checkout.shippingFees;
   if (!c.cuadros.comingSoonVideoDesktop) c.cuadros.comingSoonVideoDesktop = DEFAULT_CONTENT.cuadros.comingSoonVideoDesktop;
+  if (c.hero && c.hero.lede && !c.hero.lede.includes('\n')) c.hero.lede = DEFAULT_CONTENT.hero.lede;
   if (!c.launch) c.launch = DEFAULT_CONTENT.launch;
+  if (!c.launch.imageMobile) c.launch.imageMobile = DEFAULT_CONTENT.launch.imageMobile;
+  if (!c.launch.imageDesktop) c.launch.imageDesktop = DEFAULT_CONTENT.launch.imageDesktop;
 
   // Página de Envíos y Devoluciones
   if (!c.envios) c.envios = DEFAULT_CONTENT.envios;

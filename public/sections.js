@@ -291,7 +291,7 @@ function Nav({
     (nav.links || []).forEach(function (l) {
       linkMap[l.id] = l;
     });
-    var mobileOrder = ['l0', 'l3', 'l2', 'l8', 'l1', 'l5', 'l7', 'l6', 'l4'];
+    var mobileOrder = ['l2', 'l6', 'l7'];
     return mobileOrder.map(function (id) {
       var l = linkMap[id];
       if (!l) return null;
@@ -343,12 +343,43 @@ function Hero({
   const {
     hero
   } = content;
+  const FALLBACK_VIDEO_DESKTOP = 'https://res.cloudinary.com/dh05zwrbp/video/upload/v1781323721/ruahlabs/dk5p5bmllg4bzap3kovl.mp4';
+  const FALLBACK_VIDEO_MOBILE = 'https://res.cloudinary.com/dh05zwrbp/video/upload/v1781323714/ruahlabs/kv8jqlkslwzfedpjcjia.mp4';
+  const bgType = hero.bgType || 'video';
+  const srcDesktop = bgType === 'image' ? hero.imageBgDesktop || '' : hero.videoBgDesktop || FALLBACK_VIDEO_DESKTOP;
+  const srcMobile = bgType === 'image' ? hero.imageBgMobile || '' : hero.videoBgMobile || FALLBACK_VIDEO_MOBILE;
+  const AUDIENCE = [{
+    label: 'Soy individuo',
+    page: 'productos'
+  }, {
+    label: 'Soy iglesia',
+    page: 'iglesias'
+  }, {
+    label: 'Soy empresa',
+    page: 'evento'
+  }];
   return /*#__PURE__*/React.createElement("section", {
     className: "hero",
     id: "top"
-  }, /*#__PURE__*/React.createElement("video", {
+  }, bgType === 'image' ? /*#__PURE__*/React.createElement(React.Fragment, null, srcDesktop && /*#__PURE__*/React.createElement("img", {
     className: "hero__video-bg hero__video-bg--desktop",
-    src: "https://res.cloudinary.com/dh05zwrbp/video/upload/v1781323721/ruahlabs/dk5p5bmllg4bzap3kovl.mp4",
+    src: srcDesktop,
+    alt: "",
+    "aria-hidden": "true",
+    style: {
+      objectFit: 'cover'
+    }
+  }), srcMobile && /*#__PURE__*/React.createElement("img", {
+    className: "hero__video-bg hero__video-bg--mobile",
+    src: srcMobile,
+    alt: "",
+    "aria-hidden": "true",
+    style: {
+      objectFit: 'cover'
+    }
+  }), !srcDesktop && !srcMobile && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("video", {
+    className: "hero__video-bg hero__video-bg--desktop",
+    src: FALLBACK_VIDEO_DESKTOP,
     autoPlay: true,
     muted: true,
     loop: true,
@@ -357,14 +388,32 @@ function Hero({
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("video", {
     className: "hero__video-bg hero__video-bg--mobile",
-    src: "https://res.cloudinary.com/dh05zwrbp/video/upload/v1781323714/ruahlabs/kv8jqlkslwzfedpjcjia.mp4",
+    src: FALLBACK_VIDEO_MOBILE,
     autoPlay: true,
     muted: true,
     loop: true,
     playsInline: true,
     preload: "metadata",
     "aria-hidden": "true"
-  }), /*#__PURE__*/React.createElement("div", {
+  }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("video", {
+    className: "hero__video-bg hero__video-bg--desktop",
+    src: srcDesktop,
+    autoPlay: true,
+    muted: true,
+    loop: true,
+    playsInline: true,
+    preload: "metadata",
+    "aria-hidden": "true"
+  }), /*#__PURE__*/React.createElement("video", {
+    className: "hero__video-bg hero__video-bg--mobile",
+    src: srcMobile,
+    autoPlay: true,
+    muted: true,
+    loop: true,
+    playsInline: true,
+    preload: "metadata",
+    "aria-hidden": "true"
+  })), /*#__PURE__*/React.createElement("div", {
     className: "hero__texture",
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("div", {
@@ -390,17 +439,18 @@ function Hero({
   }, /*#__PURE__*/React.createElement(Reveal, {
     delay: 500,
     className: "hero__lede"
-  }, /*#__PURE__*/React.createElement("p", null, hero.lede)), /*#__PURE__*/React.createElement(Reveal, {
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      whiteSpace: 'pre-line'
+    }
+  }, hero.lede), hero.heroPrice && /*#__PURE__*/React.createElement("span", {
+    className: "hero__price"
+  }, hero.heroPrice)), /*#__PURE__*/React.createElement(Reveal, {
     delay: 650,
     className: "hero__ctas"
   }, /*#__PURE__*/React.createElement("a", {
     className: "btn btn--amber",
-    href: hero.primaryCta.href
-  }, hero.primaryCta.label, /*#__PURE__*/React.createElement("span", {
-    className: "arrow"
-  }, "\u2192")), /*#__PURE__*/React.createElement("a", {
-    className: "btn btn--white",
-    href: hero.secondaryCta.href,
+    href: hero.primaryCta.href,
     onClick: e => {
       e.preventDefault();
       window.dispatchEvent(new CustomEvent('ruah:navigateTo', {
@@ -408,13 +458,25 @@ function Hero({
           page: 'productos'
         }
       }));
-      window.dispatchEvent(new CustomEvent('ruah:setCategory', {
-        detail: {
-          slug: 'todo'
-        }
-      }));
     }
-  }, hero.secondaryCta.label)))), /*#__PURE__*/React.createElement("div", {
+  }, hero.primaryCta.label, /*#__PURE__*/React.createElement("span", {
+    className: "arrow"
+  }, "\u2192")), /*#__PURE__*/React.createElement("a", {
+    className: "btn btn--white",
+    href: hero.secondaryCta.href
+  }, hero.secondaryCta.label)), /*#__PURE__*/React.createElement(Reveal, {
+    delay: 800,
+    className: "hero__audience"
+  }, AUDIENCE.map(a => /*#__PURE__*/React.createElement("button", {
+    key: a.page,
+    type: "button",
+    className: "hero__aud-btn",
+    onClick: () => window.dispatchEvent(new CustomEvent('ruah:navigateTo', {
+      detail: {
+        page: a.page
+      }
+    }))
+  }, a.label, " \u2192"))))), /*#__PURE__*/React.createElement("div", {
     className: "hero__marquee"
   }, /*#__PURE__*/React.createElement("div", {
     className: "marquee__track",
@@ -1119,19 +1181,32 @@ function Products({
     className: "prod__verse"
   }, it.verse), /*#__PURE__*/React.createElement("h3", {
     className: "prod__title"
-  }, it.name), /*#__PURE__*/React.createElement("div", {
+  }, it.name), it.stockType === 'limitado' && (() => {
+    const s = it.stockActual != null ? it.stockActual : it.stockTotal;
+    return s > 0 ? /*#__PURE__*/React.createElement("div", {
+      className: 'prod__stock' + (s <= 5 ? ' prod__stock--low' : '')
+    }, s <= 5 ? '⚠ Solo quedan ' + s : 'Quedan ' + s + ' unidades') : /*#__PURE__*/React.createElement("div", {
+      className: "prod__stock prod__stock--out"
+    }, "\u2014 Agotado");
+  })(), /*#__PURE__*/React.createElement("div", {
     className: "prod__row"
   }, /*#__PURE__*/React.createElement("div", {
     className: "prod__price"
-  }, /*#__PURE__*/React.createElement("span", {
+  }, !it.price || it.price === 0 || it.price === '0' ? /*#__PURE__*/React.createElement("span", {
     className: "clp"
-  }, "CLP"), "$", it.price), /*#__PURE__*/React.createElement("button", {
+  }, "A CONSULTAR") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+    className: "clp"
+  }, "CLP"), "$", it.price)), /*#__PURE__*/React.createElement("button", {
     className: "prod__buy",
     onClick: e => {
       e.stopPropagation();
       onOpenProduct(it.id);
     }
-  }, "Comprar ", /*#__PURE__*/React.createElement("span", null, "\u2192")))))))));
+  }, "Comprar y donar ", /*#__PURE__*/React.createElement("span", null, "\u2192"))), !it.noReturn && /*#__PURE__*/React.createElement("div", {
+    className: "prod__guarantee"
+  }, "\u2713 ", it.returnDays || 30, " d\xEDas cambio \xB7 \u2713 Protocolo 1\xD71 activo"), it.noReturn && /*#__PURE__*/React.createElement("div", {
+    className: "prod__guarantee"
+  }, "\u2713 Protocolo 1\xD71 activo")))))));
 }
 
 // --- Product Detail Modal ---
@@ -1418,7 +1493,10 @@ function Testimonials({
     className: "testi__foot"
   }, /*#__PURE__*/React.createElement("div", {
     className: "testi__av"
-  }, it.initial), /*#__PURE__*/React.createElement("div", {
+  }, it.img ? /*#__PURE__*/React.createElement("img", {
+    src: it.img,
+    alt: it.name
+  }) : it.initial), /*#__PURE__*/React.createElement("div", {
     className: "testi__who"
   }, /*#__PURE__*/React.createElement("span", {
     className: "testi__name"

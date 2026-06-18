@@ -524,6 +524,7 @@ function ViewHero({ content, store }) {
         <Text label="CTA secundaria — texto" value={h.secondaryCta.label} onChange={v => update('hero.secondaryCta.label', v)} />
         <Text label="CTA secundaria — enlace" value={h.secondaryCta.href} onChange={v => update('hero.secondaryCta.href', v)} />
       </div>
+      <Text label="Precio ancla (ej: Desde $12.990 · Envío a todo Chile — dejar vacío para ocultar)" value={h.heroPrice || ''} onChange={v => update('hero.heroPrice', v)} />
       <Text label="Marquesina inferior (separa con ·)" value={h.marquee} onChange={v => update('hero.marquee', v)} multiline rows={2} />
     </div>
     </React.Fragment>
@@ -1250,7 +1251,7 @@ function ViewTestimonials({ content, store }) {
       <div className="card">
         <div className="card__head">
           <h3>Testimonios</h3>
-          <button className="abtn amber sm" onClick={() => updateList('testimonials.items', l => [...l, { id: 't' + Date.now(), quote: 'Nuevo testimonio…', name: 'NOMBRE', role: 'rol', initial: 'X' }])}>+ Testimonio</button>
+          <button className="abtn amber sm" onClick={() => updateList('testimonials.items', l => [...l, { id: 't' + Date.now(), quote: 'Nuevo testimonio…', name: 'NOMBRE', role: 'rol', initial: 'X', img: '' }])}>+ Testimonio</button>
         </div>
         {t.items.map((it, i) => (
           <div className="testi-edit" key={it.id}>
@@ -1260,6 +1261,7 @@ function ViewTestimonials({ content, store }) {
                 <Text label="Nombre" value={it.name} onChange={v => updateList('testimonials.items', l => l.map(x => x.id === it.id ? { ...x, name: v } : x))} />
                 <Text label="Rol / Iglesia" value={it.role} onChange={v => updateList('testimonials.items', l => l.map(x => x.id === it.id ? { ...x, role: v } : x))} />
                 <Text label="Inicial avatar" value={it.initial} onChange={v => updateList('testimonials.items', l => l.map(x => x.id === it.id ? { ...x, initial: v.slice(0,1).toUpperCase() } : x))} />
+                <Text label="Foto URL (Cloudinary — reemplaza la inicial)" value={it.img || ''} onChange={v => updateList('testimonials.items', l => l.map(x => x.id === it.id ? { ...x, img: v } : x))} />
               </div>
             </div>
             <div className="prod-edit__actions">

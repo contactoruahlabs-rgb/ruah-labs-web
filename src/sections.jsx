@@ -339,6 +339,7 @@ function Hero({ content }) {
         <div className="hero__bottom">
           <Reveal delay={500} className="hero__lede">
             <p style={{whiteSpace:'pre-line'}}>{hero.lede}</p>
+            {hero.heroPrice && <span className="hero__price">{hero.heroPrice}</span>}
           </Reveal>
           <Reveal delay={650} className="hero__ctas">
             <a className="btn btn--amber" href={hero.primaryCta.href}
@@ -1250,7 +1251,7 @@ function Testimonials({ content }) {
                 <span className="amb">“</span>{it.quote}<span className="amb">”</span>
               </p>
               <div className="testi__foot">
-                <div className="testi__av">{it.initial}</div>
+                <div className="testi__av">{it.img ? <img src={it.img} alt={it.name} /> : it.initial}</div>
                 <div className="testi__who">
                   <span className="testi__name">{it.name}</span>
                   <span className="testi__role">{it.role}</span>
