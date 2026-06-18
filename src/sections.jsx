@@ -1206,9 +1206,8 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
               )}
             </div>
             }
+            <ProductFAQ isUnique={product.stockType === 'unica'} />
           </div>
-
-          <ProductFAQ isUnique={product.stockType === 'unica'} />
 
           <div className="pd__protocol">
             <span className="icon">1×</span>

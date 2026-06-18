@@ -678,13 +678,13 @@ function EmailPopup() {
       return;
     }
     setError('');
-    if (window.ruahDb) {
-      window.ruahDb
-        .from('email_leads')
+    var db = window.ruahDb || window._ruahSbClient;
+    if (db) {
+      db.from('email_leads')
         .insert({ email: trimmed, source: 'popup', created_at: new Date().toISOString() })
         .then(function(res) {
-          if (res.error && res.error.code !== '23505') {
-            console.warn('email_leads insert:', res.error.message);
+          if (res && res.error && res.error.code !== '23505') {
+            console.warn('email_leads insert error:', res.error.message || res.error);
           }
         });
     }

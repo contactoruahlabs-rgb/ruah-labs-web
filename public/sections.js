@@ -1467,9 +1467,9 @@ function ProductDetail({
     className: "lbl"
   }, d.label), /*#__PURE__*/React.createElement("span", {
     className: "val"
-  }, d.value))))), /*#__PURE__*/React.createElement(ProductFAQ, {
+  }, d.value)))), /*#__PURE__*/React.createElement(ProductFAQ, {
     isUnique: product.stockType === 'unica'
-  }), /*#__PURE__*/React.createElement("div", {
+  })), /*#__PURE__*/React.createElement("div", {
     className: "pd__protocol"
   }, /*#__PURE__*/React.createElement("span", {
     className: "icon"
