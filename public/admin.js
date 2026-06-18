@@ -1029,6 +1029,32 @@ function ViewHero({
     content: content,
     store: store
   }), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      padding: '16px 20px',
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 12,
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 8,
+      cursor: 'pointer',
+      fontFamily: 'var(--mono)',
+      fontSize: 12
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: h.primaryCta.show !== false,
+    onChange: e => update('hero.primaryCta.show', e.target.checked)
+  }), "Mostrar bot\xF3n primario")), /*#__PURE__*/React.createElement("div", {
     className: "row"
   }, /*#__PURE__*/React.createElement(Text, {
     label: "CTA primaria \u2014 texto",
@@ -1038,7 +1064,35 @@ function ViewHero({
     label: "CTA primaria \u2014 enlace",
     value: h.primaryCta.href,
     onChange: v => update('hero.primaryCta.href', v)
-  }), /*#__PURE__*/React.createElement(Text, {
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      padding: '16px 20px',
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 12,
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 8,
+      cursor: 'pointer',
+      fontFamily: 'var(--mono)',
+      fontSize: 12
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: h.secondaryCta.show !== false,
+    onChange: e => update('hero.secondaryCta.show', e.target.checked)
+  }), "Mostrar bot\xF3n secundario")), /*#__PURE__*/React.createElement("div", {
+    className: "row"
+  }, /*#__PURE__*/React.createElement(Text, {
     label: "CTA secundaria \u2014 texto",
     value: h.secondaryCta.label,
     onChange: v => update('hero.secondaryCta.label', v)
@@ -1046,7 +1100,7 @@ function ViewHero({
     label: "CTA secundaria \u2014 enlace",
     value: h.secondaryCta.href,
     onChange: v => update('hero.secondaryCta.href', v)
-  })), /*#__PURE__*/React.createElement(Text, {
+  }))), /*#__PURE__*/React.createElement(Text, {
     label: "Precio ancla (ej: Desde $12.990 \xB7 Env\xEDo a todo Chile \u2014 dejar vac\xEDo para ocultar)",
     value: h.heroPrice || '',
     onChange: v => update('hero.heroPrice', v)
@@ -5403,7 +5457,7 @@ function ViewEventos({
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "card__head"
-  }, /*#__PURE__*/React.createElement("h3", null, "Muestra de fotos (", (ev.gallery || []).length, ")"), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("h3", null, "Banner de portafolio (", (ev.gallery || []).length, " fotos)"), /*#__PURE__*/React.createElement("button", {
     className: "abtn amber sm",
     onClick: () => updateList('eventos.gallery', l => [...(l || []), {
       id: 'eg' + Date.now(),
@@ -5411,17 +5465,7 @@ function ViewEventos({
       caption: '',
       photos: []
     }])
-  }, "+ Foto")), /*#__PURE__*/React.createElement(Text, {
-    label: "T\xEDtulo de la secci\xF3n",
-    value: ev.galleryTitle || '',
-    onChange: v => update('eventos.galleryTitle', v)
-  }), /*#__PURE__*/React.createElement(Text, {
-    label: "Bajada",
-    value: ev.gallerySub || '',
-    onChange: v => update('eventos.gallerySub', v),
-    multiline: true,
-    rows: 2
-  }), (ev.gallery || []).map((g, i) => /*#__PURE__*/React.createElement("div", {
+  }, "+ Foto")), (ev.gallery || []).map((g, i) => /*#__PURE__*/React.createElement("div", {
     key: g.id,
     style: {
       border: '1px solid var(--border)',

@@ -556,11 +556,29 @@ function ViewHero({ content, store }) {
         <EditText label="Título — línea 3 (acento ámbar)" value={h.titleLine3} onChange={v => update('hero.titleLine3', v)} sizePath="heroMax" sizeMin={60} sizeMax={320} sizeStep={4} content={content} store={store} />
       </div>
       <EditText label="Bajada / Lede" value={h.lede} onChange={v => update('hero.lede', v)} multiline rows={4} sizePath="lede" sizeMin={12} sizeMax={28} content={content} store={store} />
-      <div className="row">
-        <Text label="CTA primaria — texto" value={h.primaryCta.label} onChange={v => update('hero.primaryCta.label', v)} />
-        <Text label="CTA primaria — enlace" value={h.primaryCta.href} onChange={v => update('hero.primaryCta.href', v)} />
-        <Text label="CTA secundaria — texto" value={h.secondaryCta.label} onChange={v => update('hero.secondaryCta.label', v)} />
-        <Text label="CTA secundaria — enlace" value={h.secondaryCta.href} onChange={v => update('hero.secondaryCta.href', v)} />
+      <div className="card" style={{ padding: '16px 20px', marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: 12 }}>
+            <input type="checkbox" checked={h.primaryCta.show !== false} onChange={e => update('hero.primaryCta.show', e.target.checked)} />
+            Mostrar botón primario
+          </label>
+        </div>
+        <div className="row">
+          <Text label="CTA primaria — texto" value={h.primaryCta.label} onChange={v => update('hero.primaryCta.label', v)} />
+          <Text label="CTA primaria — enlace" value={h.primaryCta.href} onChange={v => update('hero.primaryCta.href', v)} />
+        </div>
+      </div>
+      <div className="card" style={{ padding: '16px 20px', marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: 12 }}>
+            <input type="checkbox" checked={h.secondaryCta.show !== false} onChange={e => update('hero.secondaryCta.show', e.target.checked)} />
+            Mostrar botón secundario
+          </label>
+        </div>
+        <div className="row">
+          <Text label="CTA secundaria — texto" value={h.secondaryCta.label} onChange={v => update('hero.secondaryCta.label', v)} />
+          <Text label="CTA secundaria — enlace" value={h.secondaryCta.href} onChange={v => update('hero.secondaryCta.href', v)} />
+        </div>
       </div>
       <Text label="Precio ancla (ej: Desde $12.990 · Envío a todo Chile — dejar vacío para ocultar)" value={h.heroPrice || ''} onChange={v => update('hero.heroPrice', v)} />
       <Text label="Marquesina inferior (separa con ·)" value={h.marquee} onChange={v => update('hero.marquee', v)} multiline rows={2} />
@@ -2460,11 +2478,9 @@ function ViewEventos({ content, store }) {
 
       <div className="card">
         <div className="card__head">
-          <h3>Muestra de fotos ({(ev.gallery || []).length})</h3>
+          <h3>Banner de portafolio ({(ev.gallery || []).length} fotos)</h3>
           <button className="abtn amber sm" onClick={() => updateList('eventos.gallery', l => [...(l || []), { id: 'eg' + Date.now(), img: '', caption: '', photos: [] }])}>+ Foto</button>
         </div>
-        <Text label="Título de la sección" value={ev.galleryTitle || ''} onChange={v => update('eventos.galleryTitle', v)} />
-        <Text label="Bajada" value={ev.gallerySub || ''} onChange={v => update('eventos.gallerySub', v)} multiline rows={2} />
         {(ev.gallery || []).map((g, i) => (
           <div key={g.id} style={{ border: '1px solid var(--border)', borderRadius: 8, padding: 16, marginBottom: 12 }}>
             <div className="prod-edit" style={{ gridTemplateColumns: '120px 1fr auto' }}>

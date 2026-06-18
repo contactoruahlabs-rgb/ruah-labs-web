@@ -186,11 +186,13 @@ const DEFAULT_CONTENT = {
     lede: 'Cada prenda que sale de nuestro taller activa el Protocolo 1×1\nEstampado y sublimación profesional para iglesias, marcas y eventos.\nUna prenda vendida ES una prenda donada a la calle.',
     primaryCta: {
       label: 'Ver productos',
-      href: '#productos'
+      href: '#productos',
+      show: true
     },
     secondaryCta: {
       label: 'Cotizar proyecto',
-      href: '#contacto'
+      href: '#contacto',
+      show: false
     },
     marquee: 'ESTAMPADO PROFESIONAL · SUBLIMACIÓN · ASESORÍA CREATIVA · MERCH · IGLESIAS · EVENTOS · DROPS LIMITADOS',
     heroPrice: 'Desde $12.990 · Envío a todo Chile'

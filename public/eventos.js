@@ -30,28 +30,59 @@ function Eventos({
   }, ev.titleAfter))), /*#__PURE__*/React.createElement(Reveal, {
     delay: 380,
     className: "ev-sub"
-  }, /*#__PURE__*/React.createElement("p", null, ev.sub)))), /*#__PURE__*/React.createElement("div", {
-    className: "ev-twocol"
-  }, /*#__PURE__*/React.createElement(Reveal, {
-    className: "ev-block"
+  }, /*#__PURE__*/React.createElement("p", null, ev.sub)))), ev.gallery && ev.gallery.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "ev-banner"
+  }, ev.gallery.map((g, i) => /*#__PURE__*/React.createElement("div", {
+    key: g.id,
+    className: "ev-banner__slide"
+  }, g.img ? /*#__PURE__*/React.createElement("img", {
+    src: g.img,
+    alt: "",
+    className: "ev-banner__img"
+  }) : /*#__PURE__*/React.createElement("div", {
+    className: "ev-banner__ph"
+  }, /*#__PURE__*/React.createElement("span", null, "0", i + 1))))), activeGallery && /*#__PURE__*/React.createElement(GalleryModal, {
+    title: activeGallery.caption || 'Galería',
+    subtitle: null,
+    photos: activeGallery.photos || [],
+    onClose: () => setActiveGallery(null)
+  }), /*#__PURE__*/React.createElement(Reveal, {
+    className: "ev-packs ev-packs--standalone"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ev-packs__hd"
+  }, ev.packsTitle), /*#__PURE__*/React.createElement("div", {
+    className: "ev-packs__grid"
+  }, ev.packs.map((p, i) => /*#__PURE__*/React.createElement(Reveal, {
+    key: p.id,
+    delay: i * 80,
+    className: "ev-pack"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ev-pack__name"
+  }, p.name), /*#__PURE__*/React.createElement("div", {
+    className: "ev-pack__limit"
+  }, p.limit), /*#__PURE__*/React.createElement("div", {
+    className: "ev-pack__detail"
+  }, p.detail)))), /*#__PURE__*/React.createElement("p", {
+    className: "ev-packs__foot"
+  }, ev.packsFoot)), /*#__PURE__*/React.createElement(Reveal, {
+    className: "ev-wedo"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ev-block__eyebrow"
+  }, ev.weDoEyebrow), /*#__PURE__*/React.createElement("h3", {
+    className: "ev-wedo__title"
+  }, ev.weDoTitle), /*#__PURE__*/React.createElement("p", {
+    className: "ev-wedo__body"
+  }, ev.weDoBody), /*#__PURE__*/React.createElement("p", {
+    className: "ev-wedo__tagline"
+  }, ev.weDoTagline)), /*#__PURE__*/React.createElement(Reveal, {
+    className: "ev-block ev-block--solo"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ev-block__eyebrow"
   }, ev.problemEyebrow), /*#__PURE__*/React.createElement("h3", {
     className: "ev-block__title"
   }, ev.problemTitle), /*#__PURE__*/React.createElement("p", {
     className: "ev-block__body"
-  }, ev.problemBody)), /*#__PURE__*/React.createElement(Reveal, {
-    delay: 120,
-    className: "ev-block ev-block--amber"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ev-block__eyebrow"
-  }, ev.weDoEyebrow), /*#__PURE__*/React.createElement("h3", {
-    className: "ev-block__title"
-  }, ev.weDoTitle), /*#__PURE__*/React.createElement("p", {
-    className: "ev-block__body"
-  }, ev.weDoBody), /*#__PURE__*/React.createElement("p", {
-    className: "ev-block__tagline"
-  }, ev.weDoTagline))), /*#__PURE__*/React.createElement("div", {
+  }, ev.problemBody)), /*#__PURE__*/React.createElement("div", {
     className: "ev-pillars"
   }, ev.pillars.map((p, i) => /*#__PURE__*/React.createElement(Reveal, {
     key: p.id,
@@ -63,22 +94,13 @@ function Eventos({
     className: "ev-pillar__title"
   }, p.title), /*#__PURE__*/React.createElement("p", {
     className: "ev-pillar__desc"
-  }, p.desc)))), /*#__PURE__*/React.createElement("div", {
-    className: "ev-twocol"
-  }, /*#__PURE__*/React.createElement(Reveal, {
-    className: "ev-block ev-block--dark"
+  }, p.desc)))), /*#__PURE__*/React.createElement(Reveal, {
+    className: "ev-onwhat"
   }, /*#__PURE__*/React.createElement("h3", {
-    className: "ev-block__title"
-  }, ev.forWhatTitle), /*#__PURE__*/React.createElement("p", {
-    className: "ev-block__body"
-  }, ev.forWhatBody)), /*#__PURE__*/React.createElement(Reveal, {
-    delay: 120,
-    className: "ev-block ev-block--dark"
-  }, /*#__PURE__*/React.createElement("h3", {
-    className: "ev-block__title"
+    className: "ev-onwhat__title"
   }, ev.onWhatTitle), /*#__PURE__*/React.createElement("p", {
-    className: "ev-block__body"
-  }, ev.onWhatBody))), /*#__PURE__*/React.createElement(Reveal, {
+    className: "ev-onwhat__body"
+  }, ev.onWhatBody)), /*#__PURE__*/React.createElement(Reveal, {
     className: "ev-detail"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ev-detail__icon"
@@ -88,42 +110,7 @@ function Eventos({
     className: "ev-detail__title"
   }, ev.detailTitle), /*#__PURE__*/React.createElement("p", {
     className: "ev-detail__body"
-  }, ev.detailBody))), ev.gallery && ev.gallery.length > 0 && /*#__PURE__*/React.createElement("div", {
-    className: "ev-gallery"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ev-gallery__head"
-  }, /*#__PURE__*/React.createElement("h3", {
-    className: "ev-gallery__title"
-  }, ev.galleryTitle || 'MUESTRA DE EVENTOS'), ev.gallerySub && /*#__PURE__*/React.createElement("p", {
-    className: "ev-gallery__sub"
-  }, ev.gallerySub)), /*#__PURE__*/React.createElement("div", {
-    className: "ev-gallery__grid"
-  }, ev.gallery.map((g, i) => {
-    const hasPhotos = (g.photos || []).length > 0;
-    return /*#__PURE__*/React.createElement(Reveal, {
-      key: g.id,
-      delay: i * 80,
-      className: 'ev-gallery__card' + (g.img ? ' has-img' : '') + (hasPhotos ? ' clickable' : ''),
-      onClick: () => hasPhotos && setActiveGallery(g)
-    }, g.img ? /*#__PURE__*/React.createElement("img", {
-      src: g.img,
-      alt: g.caption || '',
-      className: "ev-gallery__img"
-    }) : /*#__PURE__*/React.createElement("div", {
-      className: "ev-gallery__ph"
-    }, /*#__PURE__*/React.createElement("span", null, "0", i + 1), /*#__PURE__*/React.createElement("span", {
-      className: "ev-gallery__ph-lbl"
-    }, "FOTO ", i + 1)), g.caption && /*#__PURE__*/React.createElement("div", {
-      className: "ev-gallery__cap"
-    }, g.caption), hasPhotos && /*#__PURE__*/React.createElement("div", {
-      className: "ev-gallery__badge"
-    }, (g.photos || []).length, " foto", (g.photos || []).length !== 1 ? 's' : '', " \u2192"));
-  }))), activeGallery && /*#__PURE__*/React.createElement(GalleryModal, {
-    title: activeGallery.caption || 'Galería',
-    subtitle: null,
-    photos: activeGallery.photos || [],
-    onClose: () => setActiveGallery(null)
-  }), /*#__PURE__*/React.createElement("div", {
+  }, ev.detailBody))), /*#__PURE__*/React.createElement("div", {
     className: "ev-receive"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ev-receive__left"
@@ -135,23 +122,7 @@ function Eventos({
     key: it.id
   }, /*#__PURE__*/React.createElement("span", {
     className: "ev-list__dot"
-  }, "\u25AA"), /*#__PURE__*/React.createElement("span", null, it.txt))))), /*#__PURE__*/React.createElement("div", {
-    className: "ev-packs"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ev-packs__hd"
-  }, ev.packsTitle), ev.packs.map((p, i) => /*#__PURE__*/React.createElement(Reveal, {
-    key: p.id,
-    delay: i * 80,
-    className: "ev-pack"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ev-pack__name"
-  }, p.name), /*#__PURE__*/React.createElement("div", {
-    className: "ev-pack__limit"
-  }, p.limit), /*#__PURE__*/React.createElement("div", {
-    className: "ev-pack__detail"
-  }, p.detail))), /*#__PURE__*/React.createElement("p", {
-    className: "ev-packs__foot"
-  }, ev.packsFoot))), /*#__PURE__*/React.createElement("div", {
+  }, "\u25AA"), /*#__PURE__*/React.createElement("span", null, it.txt)))))), /*#__PURE__*/React.createElement("div", {
     className: "ev-coverage"
   }, /*#__PURE__*/React.createElement("span", {
     className: "ev-coverage__lbl"

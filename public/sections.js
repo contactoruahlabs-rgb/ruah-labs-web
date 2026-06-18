@@ -452,20 +452,23 @@ function Hero({
   }, hero.heroPrice)), /*#__PURE__*/React.createElement(Reveal, {
     delay: 650,
     className: "hero__ctas"
-  }, /*#__PURE__*/React.createElement("a", {
+  }, hero.primaryCta.show !== false && /*#__PURE__*/React.createElement("a", {
     className: "btn btn--amber",
     href: hero.primaryCta.href,
     onClick: e => {
-      e.preventDefault();
-      window.dispatchEvent(new CustomEvent('ruah:navigateTo', {
-        detail: {
-          page: 'productos'
-        }
-      }));
+      const href = hero.primaryCta.href || '';
+      if (href.startsWith('#')) {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('ruah:navigateTo', {
+          detail: {
+            page: href.slice(1)
+          }
+        }));
+      }
     }
   }, hero.primaryCta.label, /*#__PURE__*/React.createElement("span", {
     className: "arrow"
-  }, "\u2192")), /*#__PURE__*/React.createElement("a", {
+  }, "\u2192")), hero.secondaryCta.show !== false && /*#__PURE__*/React.createElement("a", {
     className: "btn btn--white",
     href: hero.secondaryCta.href
   }, hero.secondaryCta.label)), /*#__PURE__*/React.createElement(Reveal, {

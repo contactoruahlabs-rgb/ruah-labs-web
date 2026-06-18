@@ -9,7 +9,7 @@ function Eventos({ content }) {
   return (
     <section className="evento" id="evento">
       <div className="shell">
-        {/* Hero */}
+        {/* Cabecera */}
         <div className="ev-head">
           <Reveal>
             <div className="sec-head__num ev-eyebrow">{ev.eyebrow}</div>
@@ -26,81 +26,16 @@ function Eventos({ content }) {
           </div>
         </div>
 
-        {/* Problem + What we do — 2 column split panel */}
-        <div className="ev-twocol">
-          <Reveal className="ev-block">
-            <div className="ev-block__eyebrow">{ev.problemEyebrow}</div>
-            <h3 className="ev-block__title">{ev.problemTitle}</h3>
-            <p className="ev-block__body">{ev.problemBody}</p>
-          </Reveal>
-          <Reveal delay={120} className="ev-block ev-block--amber">
-            <div className="ev-block__eyebrow">{ev.weDoEyebrow}</div>
-            <h3 className="ev-block__title">{ev.weDoTitle}</h3>
-            <p className="ev-block__body">{ev.weDoBody}</p>
-            <p className="ev-block__tagline">{ev.weDoTagline}</p>
-          </Reveal>
-        </div>
-
-        {/* Why it works — 4 pillars */}
-        <div className="ev-pillars">
-          {ev.pillars.map((p, i) => (
-            <Reveal key={p.id} delay={i * 70} className="ev-pillar">
-              <span className="ev-pillar__num">{p.num}</span>
-              <h4 className="ev-pillar__title">{p.title}</h4>
-              <p className="ev-pillar__desc">{p.desc}</p>
-            </Reveal>
-          ))}
-        </div>
-
-        {/* For what / On what — split */}
-        <div className="ev-twocol">
-          <Reveal className="ev-block ev-block--dark">
-            <h3 className="ev-block__title">{ev.forWhatTitle}</h3>
-            <p className="ev-block__body">{ev.forWhatBody}</p>
-          </Reveal>
-          <Reveal delay={120} className="ev-block ev-block--dark">
-            <h3 className="ev-block__title">{ev.onWhatTitle}</h3>
-            <p className="ev-block__body">{ev.onWhatBody}</p>
-          </Reveal>
-        </div>
-
-        {/* The detail that changes everything — featured row */}
-        <Reveal className="ev-detail">
-          <div className="ev-detail__icon">1×</div>
-          <div className="ev-detail__txt">
-            <h3 className="ev-detail__title">{ev.detailTitle}</h3>
-            <p className="ev-detail__body">{ev.detailBody}</p>
-          </div>
-        </Reveal>
-
-        {/* Photo gallery — muestra real de eventos */}
+        {/* Banner de portafolio — imágenes sin texto */}
         {(ev.gallery && ev.gallery.length > 0) && (
-          <div className="ev-gallery">
-            <div className="ev-gallery__head">
-              <h3 className="ev-gallery__title">{ev.galleryTitle || 'MUESTRA DE EVENTOS'}</h3>
-              {ev.gallerySub && <p className="ev-gallery__sub">{ev.gallerySub}</p>}
-            </div>
-            <div className="ev-gallery__grid">
-              {ev.gallery.map((g, i) => {
-                const hasPhotos = (g.photos || []).length > 0;
-                return (
-                  <Reveal key={g.id} delay={i * 80}
-                    className={'ev-gallery__card' + (g.img ? ' has-img' : '') + (hasPhotos ? ' clickable' : '')}
-                    onClick={() => hasPhotos && setActiveGallery(g)}>
-                    {g.img
-                      ? <img src={g.img} alt={g.caption || ''} className="ev-gallery__img" />
-                      : <div className="ev-gallery__ph">
-                          <span>0{i + 1}</span>
-                          <span className="ev-gallery__ph-lbl">FOTO {i + 1}</span>
-                        </div>}
-                    {g.caption && <div className="ev-gallery__cap">{g.caption}</div>}
-                    {hasPhotos && (
-                      <div className="ev-gallery__badge">{(g.photos || []).length} foto{(g.photos || []).length !== 1 ? 's' : ''} →</div>
-                    )}
-                  </Reveal>
-                );
-              })}
-            </div>
+          <div className="ev-banner">
+            {ev.gallery.map((g, i) => (
+              <div key={g.id} className="ev-banner__slide">
+                {g.img
+                  ? <img src={g.img} alt="" className="ev-banner__img" />
+                  : <div className="ev-banner__ph"><span>0{i + 1}</span></div>}
+              </div>
+            ))}
           </div>
         )}
 
@@ -113,7 +48,63 @@ function Eventos({ content }) {
           />
         )}
 
-        {/* What you receive + packages */}
+        {/* Paquetes — justo debajo del banner */}
+        <Reveal className="ev-packs ev-packs--standalone">
+          <div className="ev-packs__hd">{ev.packsTitle}</div>
+          <div className="ev-packs__grid">
+            {ev.packs.map((p, i) => (
+              <Reveal key={p.id} delay={i * 80} className="ev-pack">
+                <div className="ev-pack__name">{p.name}</div>
+                <div className="ev-pack__limit">{p.limit}</div>
+                <div className="ev-pack__detail">{p.detail}</div>
+              </Reveal>
+            ))}
+          </div>
+          <p className="ev-packs__foot">{ev.packsFoot}</p>
+        </Reveal>
+
+        {/* Lo que hacemos */}
+        <Reveal className="ev-wedo">
+          <div className="ev-block__eyebrow">{ev.weDoEyebrow}</div>
+          <h3 className="ev-wedo__title">{ev.weDoTitle}</h3>
+          <p className="ev-wedo__body">{ev.weDoBody}</p>
+          <p className="ev-wedo__tagline">{ev.weDoTagline}</p>
+        </Reveal>
+
+        {/* El problema */}
+        <Reveal className="ev-block ev-block--solo">
+          <div className="ev-block__eyebrow">{ev.problemEyebrow}</div>
+          <h3 className="ev-block__title">{ev.problemTitle}</h3>
+          <p className="ev-block__body">{ev.problemBody}</p>
+        </Reveal>
+
+        {/* Por qué funciona — 4 pilares */}
+        <div className="ev-pillars">
+          {ev.pillars.map((p, i) => (
+            <Reveal key={p.id} delay={i * 70} className="ev-pillar">
+              <span className="ev-pillar__num">{p.num}</span>
+              <h4 className="ev-pillar__title">{p.title}</h4>
+              <p className="ev-pillar__desc">{p.desc}</p>
+            </Reveal>
+          ))}
+        </div>
+
+        {/* Sobre qué estampamos — destacado, solo */}
+        <Reveal className="ev-onwhat">
+          <h3 className="ev-onwhat__title">{ev.onWhatTitle}</h3>
+          <p className="ev-onwhat__body">{ev.onWhatBody}</p>
+        </Reveal>
+
+        {/* El detalle que cambia todo */}
+        <Reveal className="ev-detail">
+          <div className="ev-detail__icon">1×</div>
+          <div className="ev-detail__txt">
+            <h3 className="ev-detail__title">{ev.detailTitle}</h3>
+            <p className="ev-detail__body">{ev.detailBody}</p>
+          </div>
+        </Reveal>
+
+        {/* Lo que recibes */}
         <div className="ev-receive">
           <div className="ev-receive__left">
             <h3 className="ev-block__title">{ev.receiveTitle}</h3>
@@ -126,26 +117,15 @@ function Eventos({ content }) {
               ))}
             </ul>
           </div>
-          <div className="ev-packs">
-            <div className="ev-packs__hd">{ev.packsTitle}</div>
-            {ev.packs.map((p, i) => (
-              <Reveal key={p.id} delay={i * 80} className="ev-pack">
-                <div className="ev-pack__name">{p.name}</div>
-                <div className="ev-pack__limit">{p.limit}</div>
-                <div className="ev-pack__detail">{p.detail}</div>
-              </Reveal>
-            ))}
-            <p className="ev-packs__foot">{ev.packsFoot}</p>
-          </div>
         </div>
 
-        {/* Coverage strip */}
+        {/* Cobertura */}
         <div className="ev-coverage">
           <span className="ev-coverage__lbl">{ev.coverageTitle}</span>
           <span className="ev-coverage__val">{ev.coverageBody}</span>
         </div>
 
-        {/* Final CTA */}
+        {/* CTA final */}
         <div className="ev-cta">
           <div className="mono-label">{ev.ctaEyebrow}</div>
           <h3 className="ev-cta__title">
@@ -163,7 +143,7 @@ function Eventos({ content }) {
           <p className="ev-cta__ig">Instagram: <strong>{ev.instagram}</strong></p>
         </div>
 
-        {/* Closing one-liner */}
+        {/* Cierre */}
         <p className="ev-closing">{ev.closing}</p>
       </div>
     </section>

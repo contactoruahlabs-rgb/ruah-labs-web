@@ -375,14 +375,145 @@
   .ev-detail { grid-template-columns: 1fr; gap: 18px; padding: 28px; }
   .ev-coverage { flex-direction: column; align-items: flex-start; gap: 8px; }
   .ev-gallery__grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .ev-banner { grid-template-columns: 1fr 1fr; }
+  .ev-packs__grid { grid-template-columns: 1fr; gap: 1px; }
+  .ev-packs--standalone { padding: 28px 20px; }
+  .ev-wedo { padding: 32px 20px; }
+  .ev-onwhat { padding: 40px 24px; }
 }
 @media (max-width: 560px) {
   .ev-pillars { grid-template-columns: 1fr; }
   .ev-gallery__grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ev-banner { grid-template-columns: 1fr; }
+  .ev-banner__slide { aspect-ratio: 16 / 9; }
 }
 
 /* ============================================================
-   Photo gallery (muestra de eventos)
+   Banner de portafolio — imágenes sin texto
+============================================================ */
+.ev-banner {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin-bottom: 72px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.ev-banner__slide {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: var(--black);
+  overflow: hidden;
+}
+.ev-banner__img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform .5s ease;
+}
+.ev-banner__slide:hover .ev-banner__img { transform: scale(1.04); }
+.ev-banner__ph {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: repeating-linear-gradient(135deg, #1a1a1a 0 18px, #0f0f0f 18px 19px);
+  font-family: var(--serif); font-size: 48px; color: var(--amber);
+}
+
+/* Paquetes standalone (debajo del banner) */
+.ev-packs--standalone {
+  margin-bottom: 64px;
+  padding: 40px;
+  background: var(--black);
+  color: var(--ivory);
+}
+.ev-packs--standalone .ev-packs__hd {
+  color: var(--ivory);
+  margin-bottom: 28px;
+}
+.ev-packs__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: rgba(255,255,255,0.1);
+  margin-bottom: 20px;
+}
+.ev-packs--standalone .ev-pack {
+  background: var(--black);
+  padding: 28px 24px;
+}
+.ev-packs--standalone .ev-pack__name { color: var(--amber); }
+.ev-packs--standalone .ev-pack__limit,
+.ev-packs--standalone .ev-pack__detail { color: rgba(245,241,232,0.72); }
+.ev-packs--standalone .ev-packs__foot { color: rgba(245,241,232,0.55); }
+
+/* Lo que hacemos — standalone */
+.ev-wedo {
+  margin-bottom: 64px;
+  padding: 48px 40px;
+  border: 1px solid var(--line);
+  background: var(--ivory);
+}
+.ev-wedo__title {
+  font-family: var(--serif);
+  font-size: clamp(28px, 4vw, 60px);
+  line-height: 1;
+  letter-spacing: -0.005em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin: 8px 0 16px;
+}
+.ev-wedo__body {
+  font-family: var(--mono);
+  font-size: clamp(14px, 1.2vw, 18px);
+  line-height: 1.6;
+  color: var(--gray);
+  max-width: 680px;
+  margin-bottom: 12px;
+}
+.ev-wedo__tagline {
+  font-family: var(--serif);
+  font-size: clamp(20px, 2.5vw, 36px);
+  color: var(--amber);
+  letter-spacing: 0.01em;
+}
+
+/* El problema — bloque solo */
+.ev-block--solo {
+  background: var(--ivory);
+  padding: 36px 0;
+  margin-bottom: 64px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  max-width: 700px;
+}
+
+/* Sobre qué estampamos — destacado */
+.ev-onwhat {
+  margin-bottom: 64px;
+  padding: 56px 40px;
+  background: var(--ink);
+  color: var(--ivory);
+  border-radius: 2px;
+}
+.ev-onwhat__title {
+  font-family: var(--serif);
+  font-size: clamp(32px, 5vw, 72px);
+  line-height: 0.92;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 20px;
+}
+.ev-onwhat__body {
+  font-family: var(--mono);
+  font-size: clamp(14px, 1.1vw, 17px);
+  line-height: 1.65;
+  color: rgba(245,241,232,0.8);
+  max-width: 720px;
+}
+
+/* ============================================================
+   Photo gallery (muestra de eventos) — kept for admin compat
 ============================================================ */
 .ev-gallery {
   margin: 0 0 80px;

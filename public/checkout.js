@@ -236,7 +236,10 @@ function Checkout({
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        cart: cart,
+        cart: cart.map(it => ({
+          ...it,
+          price: parsePrice(it.price)
+        })),
         info: info,
         discount: discountApplied ? discountApplied.code : null,
         shippingMethod: shipping

@@ -208,13 +208,31 @@ function App() {
   function openPage(page, cat) {
     setActivePage(page);
     if (cat) setPageCategory(cat);
+    window.history.pushState({ ruahPage: page, ruahCat: cat || null }, '', window.location.pathname);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function goHome() {
     setActivePage(null);
+    window.history.pushState({ ruahPage: null }, '', '/');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
+  // Back-button support for section pages
+  React.useEffect(() => {
+    function onPop(e) {
+      if (/^\/producto\//.test(window.location.pathname)) return; // handled by product effect
+      const state = e.state;
+      if (state && state.ruahPage) {
+        setActivePage(state.ruahPage);
+        if (state.ruahCat) setPageCategory(state.ruahCat);
+      } else {
+        setActivePage(null);
+      }
+    }
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
 
   function renderPage() {
     switch (activePage) {
@@ -225,7 +243,7 @@ function App() {
       case 'productos':
         return (
           <PageView title="PRODUCTOS" onBack={goHome}>
-            <Products content={content} onOpenProduct={(id) => setProductId(id)} initialCategory={pageCategory} />
+            <Products key={pageCategory} content={content} onOpenProduct={(id) => setProductId(id)} initialCategory={pageCategory} />
           </PageView>
         );
       case 'cuadros':

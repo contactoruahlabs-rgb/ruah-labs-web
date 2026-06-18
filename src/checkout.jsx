@@ -173,7 +173,7 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
     fetch('' + window.RUAH_API + '/api/checkout/create-preference', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cart: cart, info: info, discount: discountApplied ? discountApplied.code : null, shippingMethod: shipping }),
+      body: JSON.stringify({ cart: cart.map(it => ({ ...it, price: parsePrice(it.price) })), info: info, discount: discountApplied ? discountApplied.code : null, shippingMethod: shipping }),
     })
     .then(function(r) { return r.json(); })
     .then(function(data) {

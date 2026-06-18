@@ -343,17 +343,24 @@ function Hero({ content }) {
             {hero.heroPrice && <span className="hero__price">{hero.heroPrice}</span>}
           </Reveal>
           <Reveal delay={650} className="hero__ctas">
-            <a className="btn btn--amber" href={hero.primaryCta.href}
-               onClick={e => {
-                 e.preventDefault();
-                 window.dispatchEvent(new CustomEvent('ruah:navigateTo', { detail: { page: 'productos' } }));
-               }}>
-              {hero.primaryCta.label}
-              <span className="arrow">→</span>
-            </a>
-            <a className="btn btn--white" href={hero.secondaryCta.href}>
-              {hero.secondaryCta.label}
-            </a>
+            {hero.primaryCta.show !== false && (
+              <a className="btn btn--amber" href={hero.primaryCta.href}
+                 onClick={e => {
+                   const href = hero.primaryCta.href || '';
+                   if (href.startsWith('#')) {
+                     e.preventDefault();
+                     window.dispatchEvent(new CustomEvent('ruah:navigateTo', { detail: { page: href.slice(1) } }));
+                   }
+                 }}>
+                {hero.primaryCta.label}
+                <span className="arrow">→</span>
+              </a>
+            )}
+            {hero.secondaryCta.show !== false && (
+              <a className="btn btn--white" href={hero.secondaryCta.href}>
+                {hero.secondaryCta.label}
+              </a>
+            )}
           </Reveal>
           <Reveal delay={800} className="hero__audience">
             {AUDIENCE.map((a) => (
