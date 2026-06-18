@@ -1129,7 +1129,13 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
   const open = !!productId;
   const product = open ? content.products.items.find((p) => p.id === productId) : null;
   const [idx, setIdx] = React.useState(0);
-  const [zoomLevel, setZoomLevel] = React.useState(0);
+  const [pdScale, setPdScale] = React.useState(1);
+  const pdScaleRef    = React.useRef(1);
+  const [pdTranslate, setPdTranslate] = React.useState({ x: 0, y: 0 });
+  const pdTranslateRef = React.useRef({ x: 0, y: 0 });
+  const pdPinchRef    = React.useRef(null);
+  const pdDragRef     = React.useRef(null);
+  const pdMainRef     = React.useRef(null);
   const [selectedSize, setSelectedSize] = React.useState(null);
 
   const SIZES = {
@@ -1142,11 +1148,11 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
     if (!open) { document.body.style.overflow = ''; return; }
     const found = content.products.items.find((x) => x.id === productId);
     document.body.style.overflow = found ? 'hidden' : '';
-    setIdx(0); setZoomLevel(0); setSelectedSize(null);
+    setIdx(0); setPdScale(1); pdScaleRef.current = 1; setPdTranslate({ x: 0, y: 0 }); pdTranslateRef.current = { x: 0, y: 0 }; pdPinchRef.current = null; pdDragRef.current = null; setSelectedSize(null);
   }, [open, productId]);
 
-  // Reset zoom when image changes
-  React.useEffect(() => { setZoomLevel(0); }, [idx]);
+  // Reset zoom + pan when image changes
+  React.useEffect(() => { setPdScale(1); pdScaleRef.current = 1; setPdTranslate({ x: 0, y: 0 }); pdTranslateRef.current = { x: 0, y: 0 }; pdPinchRef.current = null; pdDragRef.current = null; }, [idx]);
 
   // Auto-close if productId doesn't match any product (prevents body-scroll freeze)
   React.useEffect(() => {
@@ -1155,6 +1161,33 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
 
   var pdTouchRef = React.useRef(null);
   var galleryLenRef = React.useRef(1);
+
+  // Native passive:false touchmove — pinch zoom + single-finger pan
+  React.useEffect(() => {
+    var el = pdMainRef.current;
+    if (!el || !open) return;
+    function onMove(e) {
+      if (e.touches.length >= 2 && pdPinchRef.current) {
+        e.preventDefault();
+        var t0 = e.touches[0], t1 = e.touches[1];
+        var dx = t0.clientX - t1.clientX, dy = t0.clientY - t1.clientY;
+        var dist = Math.sqrt(dx*dx + dy*dy);
+        var s = Math.max(1, Math.min(4, pdPinchRef.current.startScale * dist / pdPinchRef.current.startDist));
+        pdScaleRef.current = s; setPdScale(s);
+      } else if (e.touches.length === 1 && pdDragRef.current) {
+        e.preventDefault();
+        var ddx = e.touches[0].clientX - pdDragRef.current.startX;
+        var ddy = e.touches[0].clientY - pdDragRef.current.startY;
+        var s = pdScaleRef.current;
+        var maxTx = Math.max(0, el.clientWidth  * (s - 1) / 2);
+        var maxTy = Math.max(0, el.clientHeight * (s - 1) / 2);
+        pdTranslateRef.current = { x: Math.max(-maxTx, Math.min(maxTx, pdDragRef.current.startTx + ddx)), y: Math.max(-maxTy, Math.min(maxTy, pdDragRef.current.startTy + ddy)) };
+        setPdTranslate({ ...pdTranslateRef.current });
+      }
+    }
+    el.addEventListener('touchmove', onMove, { passive: false });
+    return function() { el.removeEventListener('touchmove', onMove); };
+  }, [open]);
 
   React.useEffect(() => {
     function onKey(e) {
@@ -1186,22 +1219,40 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
 
         <div className="pd__media">
           <div
+            ref={pdMainRef}
             className="pd__main"
-            style={{ cursor: zoomLevel > 0 ? 'zoom-out' : 'zoom-in' }}
-            onClick={() => setZoomLevel(l => (l + 1) % 3)}
-            onTouchStart={e => { pdTouchRef.current = e.touches[0].clientX; }}
+            style={{ cursor: pdScale > 1 ? 'move' : 'zoom-in' }}
+            onClick={() => { var S=[1,1.6,2.4]; var n=S.find(function(s){return s>pdScaleRef.current+0.05;})||1; setPdScale(n); pdScaleRef.current=n; setPdTranslate({x:0,y:0}); pdTranslateRef.current={x:0,y:0}; }}
+            onTouchStart={e => {
+              if (e.touches.length >= 2) {
+                pdTouchRef.current = null; pdDragRef.current = null;
+                var t0=e.touches[0],t1=e.touches[1],dxt=t0.clientX-t1.clientX,dyt=t0.clientY-t1.clientY;
+                pdPinchRef.current = { startDist: Math.sqrt(dxt*dxt+dyt*dyt), startScale: pdScaleRef.current };
+              } else if (pdScaleRef.current > 1) {
+                pdPinchRef.current = null; pdTouchRef.current = null;
+                pdDragRef.current = { startX: e.touches[0].clientX, startY: e.touches[0].clientY, startTx: pdTranslateRef.current.x, startTy: pdTranslateRef.current.y };
+              } else {
+                pdTouchRef.current = e.touches[0].clientX; pdPinchRef.current = null; pdDragRef.current = null;
+              }
+            }}
             onTouchEnd={e => {
+              if (pdPinchRef.current) {
+                if (pdScaleRef.current < 1.15) { setPdScale(1); pdScaleRef.current=1; setPdTranslate({x:0,y:0}); pdTranslateRef.current={x:0,y:0}; }
+                pdPinchRef.current = null; return;
+              }
+              if (pdDragRef.current) { pdDragRef.current = null; return; }
               var dx = e.changedTouches[0].clientX - (pdTouchRef.current || 0);
-              if (Math.abs(dx) > 40) { if (dx < 0) pdNext(e); else pdPrev(e); }
+              if (pdScaleRef.current <= 1 && Math.abs(dx) > 40) { if (dx < 0) pdNext(e); else pdPrev(e); }
+              pdTouchRef.current = null;
             }}
           >
             {currentImg ?
-            <img src={currentImg} alt={product.name} style={{ transform: 'scale(' + [1,1.6,2.4][zoomLevel] + ')', transition: 'transform 0.3s ease', transformOrigin: 'center center' }} /> :
+            <img src={currentImg} alt={product.name} style={{ transform: 'translate('+pdTranslate.x+'px,'+pdTranslate.y+'px) scale('+pdScale+')', transition: (pdPinchRef.current||pdDragRef.current) ? 'none' : 'transform 0.3s ease', transformOrigin: 'center center', willChange: 'transform' }} /> :
             <div className="pd__ph">{product.name.split(' ').slice(-1)[0].slice(0, 2)}</div>}
             <div className="pd__zoom-ctrl" onClick={e => e.stopPropagation()}>
-              <button className="pd__zoom-btn" onClick={() => setZoomLevel(l => Math.max(0, l - 1))} disabled={zoomLevel === 0}>−</button>
-              <span className="pd__zoom-lv">{[1,1.6,2.4][zoomLevel]}×</span>
-              <button className="pd__zoom-btn" onClick={() => setZoomLevel(l => Math.min(2, l + 1))} disabled={zoomLevel === 2}>+</button>
+              <button className="pd__zoom-btn" onClick={() => { var S=[1,1.6,2.4],p=S.filter(function(s){return s<pdScaleRef.current-0.05;}).pop()||1; setPdScale(p); pdScaleRef.current=p; setPdTranslate({x:0,y:0}); pdTranslateRef.current={x:0,y:0}; }} disabled={pdScale<=1}>−</button>
+              <span className="pd__zoom-lv">{pdScale.toFixed(1)}×</span>
+              <button className="pd__zoom-btn" onClick={() => { var S=[1,1.6,2.4],n=S.find(function(s){return s>pdScaleRef.current+0.05;})||2.4; setPdScale(n); pdScaleRef.current=n; setPdTranslate({x:0,y:0}); pdTranslateRef.current={x:0,y:0}; }} disabled={pdScale>=2.4}>+</button>
             </div>
             {gallery.length > 1 && (
               <React.Fragment>
