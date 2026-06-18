@@ -107,9 +107,10 @@ const DEFAULT_CONTENT = {
   },
   nav: {
     links: [
-      { id: 'l2', label: 'Comprar',   href: '#productos', dropdown: true },
-      { id: 'l6', label: 'Iglesias',  href: '#iglesias' },
-      { id: 'l7', label: 'Eventos',   href: '#evento' },
+      { id: 'l2', label: 'Comprar',        href: '#productos', dropdown: true },
+      { id: 'l6', label: 'Iglesias',        href: '#iglesias' },
+      { id: 'l7', label: 'Eventos',         href: '#evento' },
+      { id: 'l8', label: 'Personalizados', href: '#design' },
     ],
     cta: { label: 'Contacto', href: '#contacto' },
   },

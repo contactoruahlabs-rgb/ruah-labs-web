@@ -1261,7 +1261,7 @@ function ViewTestimonials({ content, store }) {
                 <Text label="Nombre" value={it.name} onChange={v => updateList('testimonials.items', l => l.map(x => x.id === it.id ? { ...x, name: v } : x))} />
                 <Text label="Rol / Iglesia" value={it.role} onChange={v => updateList('testimonials.items', l => l.map(x => x.id === it.id ? { ...x, role: v } : x))} />
                 <Text label="Inicial avatar" value={it.initial} onChange={v => updateList('testimonials.items', l => l.map(x => x.id === it.id ? { ...x, initial: v.slice(0,1).toUpperCase() } : x))} />
-                <Text label="Foto URL (Cloudinary — reemplaza la inicial)" value={it.img || ''} onChange={v => updateList('testimonials.items', l => l.map(x => x.id === it.id ? { ...x, img: v } : x))} />
+                <ImgPicker label="Foto (reemplaza la inicial)" ratio="1/1" value={it.img || ''} onChange={v => updateList('testimonials.items', l => l.map(x => x.id === it.id ? { ...x, img: v } : x))} />
               </div>
             </div>
             <div className="prod-edit__actions">

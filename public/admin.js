@@ -2758,8 +2758,9 @@ function ViewTestimonials({
       ...x,
       initial: v.slice(0, 1).toUpperCase()
     } : x))
-  }), /*#__PURE__*/React.createElement(Text, {
-    label: "Foto URL (Cloudinary \u2014 reemplaza la inicial)",
+  }), /*#__PURE__*/React.createElement(ImgPicker, {
+    label: "Foto (reemplaza la inicial)",
+    ratio: "1/1",
     value: it.img || '',
     onChange: v => updateList('testimonials.items', l => l.map(x => x.id === it.id ? {
       ...x,

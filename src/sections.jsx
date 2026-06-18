@@ -249,7 +249,7 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
             {(function() {
               var linkMap = {};
               (nav.links || []).forEach(function(l) { linkMap[l.id] = l; });
-              var mobileOrder = ['l2','l6','l7'];
+              var mobileOrder = ['l2','l6','l7','l8'];
               return mobileOrder.map(function(id) {
                 var l = linkMap[id];
                 if (!l) return null;
@@ -971,7 +971,16 @@ function Products({ content, onOpenProduct, initialCategory }) {
           </div>
         </Reveal>
 
-        {items.length === 0 ?
+        {activeSlug === 'cuadros' ? (
+          <div className="cuadros-soon">
+            <video className="cuadros-soon__vid cuadros-soon__vid--mobile"  src={content.cuadros.comingSoonVideo}        autoPlay muted loop playsInline />
+            <video className="cuadros-soon__vid cuadros-soon__vid--desktop" src={content.cuadros.comingSoonVideoDesktop} autoPlay muted loop playsInline />
+            <div className="cuadros-soon__over">
+              <span className="cuadros-soon__title">EN CONSTRUCCIÓN</span>
+              <p className="cuadros-soon__sub">Esta sección está siendo preparada con mucho cuidado</p>
+            </div>
+          </div>
+        ) : items.length === 0 ?
         <div className="empty-state">— SIN PRODUCTOS EN ESTA CATEGORÍA POR AHORA —</div> :
 
         <div className="prod-grid">

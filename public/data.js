@@ -116,6 +116,10 @@ const DEFAULT_CONTENT = {
       id: 'l7',
       label: 'Eventos',
       href: '#evento'
+    }, {
+      id: 'l8',
+      label: 'Personalizados',
+      href: '#design'
     }],
     cta: {
       label: 'Contacto',

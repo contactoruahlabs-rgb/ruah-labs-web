@@ -1111,6 +1111,16 @@ section { padding-block: var(--section-pad-y); position: relative; }
   border-color: var(--amber);
 }
 
+.cuadros-soon { position: relative; width: 100%; aspect-ratio: 16/9; overflow: hidden; border-radius: 4px; margin-top: 32px; }
+.cuadros-soon__vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cuadros-soon__vid--desktop { display: none; }
+@media (min-width: 768px) {
+  .cuadros-soon__vid--mobile  { display: none; }
+  .cuadros-soon__vid--desktop { display: block; }
+}
+.cuadros-soon__over { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: rgba(0,0,0,0.45); }
+.cuadros-soon__title { font-family: var(--serif); font-size: clamp(28px, 5vw, 72px); color: var(--ivory); letter-spacing: 0.06em; text-align: center; }
+.cuadros-soon__sub { font-family: var(--mono); font-size: 12px; color: var(--amber); letter-spacing: 0.12em; text-transform: uppercase; text-align: center; padding: 0 16px; }
 .empty-state {
   padding: 80px 0;
   text-align: center;
