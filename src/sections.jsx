@@ -592,7 +592,17 @@ function DesignGallery({ content }) {
 
   return (
     <section id="design" className="dg">
-      <div className="dg__eyebrow">PERSONALIZADOS</div>
+      <div className="dg__head">
+        <div className="dg__head-left">
+          <h2 className="dg__eyebrow">PERSONALIZADOS</h2>
+          <p className="dg__proto-tag">▪ Cada personalizado activa el Protocolo 1×1 — una prenda donada</p>
+        </div>
+        <a
+          href="mailto:contacto@ruahlabs.cl?subject=Cotización%20diseño%20personalizado"
+          className="dg__cotizar-circle"
+          aria-label="Cotizar personalizado"
+        >COTIZAR</a>
+      </div>
 
       {/* ── Catalog grid ── */}
       <div className="dg__catalog">
@@ -1054,7 +1064,7 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
   const open = !!productId;
   const product = open ? content.products.items.find((p) => p.id === productId) : null;
   const [idx, setIdx] = React.useState(0);
-  const [zoomed, setZoomed] = React.useState(false);
+  const [zoomLevel, setZoomLevel] = React.useState(0);
   const [selectedSize, setSelectedSize] = React.useState(null);
 
   const SIZES = {
@@ -1067,11 +1077,11 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
     if (!open) { document.body.style.overflow = ''; return; }
     const found = content.products.items.find((x) => x.id === productId);
     document.body.style.overflow = found ? 'hidden' : '';
-    setIdx(0); setZoomed(false); setSelectedSize(null);
+    setIdx(0); setZoomLevel(0); setSelectedSize(null);
   }, [open, productId]);
 
   // Reset zoom when image changes
-  React.useEffect(() => { setZoomed(false); }, [idx]);
+  React.useEffect(() => { setZoomLevel(0); }, [idx]);
 
   // Auto-close if productId doesn't match any product (prevents body-scroll freeze)
   React.useEffect(() => {
@@ -1111,8 +1121,9 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
 
         <div className="pd__media">
           <div
-            className={'pd__main' + (zoomed ? ' pd__main--zoomed' : '')}
-            onClick={() => setZoomed(z => !z)}
+            className="pd__main"
+            style={{ cursor: zoomLevel > 0 ? 'zoom-out' : 'zoom-in' }}
+            onClick={() => setZoomLevel(l => (l + 1) % 3)}
             onTouchStart={e => { pdTouchRef.current = e.touches[0].clientX; }}
             onTouchEnd={e => {
               var dx = e.changedTouches[0].clientX - (pdTouchRef.current || 0);
@@ -1120,8 +1131,13 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
             }}
           >
             {currentImg ?
-            <img src={currentImg} alt={product.name} /> :
+            <img src={currentImg} alt={product.name} style={{ transform: 'scale(' + [1,1.6,2.4][zoomLevel] + ')', transition: 'transform 0.3s ease', transformOrigin: 'center center' }} /> :
             <div className="pd__ph">{product.name.split(' ').slice(-1)[0].slice(0, 2)}</div>}
+            <div className="pd__zoom-ctrl" onClick={e => e.stopPropagation()}>
+              <button className="pd__zoom-btn" onClick={() => setZoomLevel(l => Math.max(0, l - 1))} disabled={zoomLevel === 0}>−</button>
+              <span className="pd__zoom-lv">{[1,1.6,2.4][zoomLevel]}×</span>
+              <button className="pd__zoom-btn" onClick={() => setZoomLevel(l => Math.min(2, l + 1))} disabled={zoomLevel === 2}>+</button>
+            </div>
             {gallery.length > 1 && (
               <React.Fragment>
                 <button className="pd__arr pd__arr--prev" onClick={pdPrev} aria-label="Anterior">&#8249;</button>
