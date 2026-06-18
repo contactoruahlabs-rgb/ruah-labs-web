@@ -557,19 +557,24 @@ function DesignGallery({ content }) {
   const [modal, setModal] = React.useState(null);
   const modalRef      = React.useRef(null);
   const modalTouchRef = React.useRef(null);
-  const modalPinchRef = React.useRef(null);
-  const imgWrapRef    = React.useRef(null);
+  const modalPinchRef    = React.useRef(null);
+  const modalDragRef     = React.useRef(null);
+  const imgWrapRef       = React.useRef(null);
   const [imgScale, setImgScale] = React.useState(1);
-  const imgScaleRef   = React.useRef(1);
+  const imgScaleRef      = React.useRef(1);
+  const [imgTranslate, setImgTranslate] = React.useState({ x: 0, y: 0 });
+  const imgTranslateRef  = React.useRef({ x: 0, y: 0 });
 
   React.useEffect(() => { modalRef.current = modal; }, [modal]);
 
-  // Reset pinch zoom when image changes
+  // Reset zoom + pan when image changes
   React.useEffect(() => {
-    setImgScale(1); imgScaleRef.current = 1; modalPinchRef.current = null;
+    setImgScale(1); imgScaleRef.current = 1;
+    setImgTranslate({ x: 0, y: 0 }); imgTranslateRef.current = { x: 0, y: 0 };
+    modalPinchRef.current = null; modalDragRef.current = null;
   }, [modal ? modal.imgIdx : null]);
 
-  // Native passive:false touchmove so e.preventDefault() blocks viewport zoom during pinch
+  // Native passive:false touchmove — pinch zoom + single-finger pan, both block viewport zoom
   React.useEffect(() => {
     var el = imgWrapRef.current;
     if (!el || !modal) return;
@@ -582,6 +587,17 @@ function DesignGallery({ content }) {
         var s = Math.max(1, Math.min(4, modalPinchRef.current.startScale * dist / modalPinchRef.current.startDist));
         imgScaleRef.current = s;
         setImgScale(s);
+      } else if (e.touches.length === 1 && modalDragRef.current) {
+        e.preventDefault();
+        var ddx = e.touches[0].clientX - modalDragRef.current.startX;
+        var ddy = e.touches[0].clientY - modalDragRef.current.startY;
+        var s = imgScaleRef.current;
+        var maxTx = Math.max(0, el.clientWidth  * (s - 1) / 2);
+        var maxTy = Math.max(0, el.clientHeight * (s - 1) / 2);
+        var newTx = Math.max(-maxTx, Math.min(maxTx, modalDragRef.current.startTx + ddx));
+        var newTy = Math.max(-maxTy, Math.min(maxTy, modalDragRef.current.startTy + ddy));
+        imgTranslateRef.current = { x: newTx, y: newTy };
+        setImgTranslate({ x: newTx, y: newTy });
       }
     }
     el.addEventListener('touchmove', onMove, { passive: false });
@@ -694,21 +710,29 @@ function DesignGallery({ content }) {
                   className="museum__modal-imgwrap"
                   onTouchStart={e => {
                     if (e.touches.length >= 2) {
-                      modalTouchRef.current = null;
+                      modalTouchRef.current = null; modalDragRef.current = null;
                       var t0 = e.touches[0], t1 = e.touches[1];
                       var dxt = t0.clientX - t1.clientX, dyt = t0.clientY - t1.clientY;
                       modalPinchRef.current = { startDist: Math.sqrt(dxt*dxt+dyt*dyt), startScale: imgScaleRef.current };
+                    } else if (imgScaleRef.current > 1) {
+                      // Zoomed in → single finger pans
+                      modalPinchRef.current = null; modalTouchRef.current = null;
+                      modalDragRef.current = { startX: e.touches[0].clientX, startY: e.touches[0].clientY, startTx: imgTranslateRef.current.x, startTy: imgTranslateRef.current.y };
                     } else {
+                      // Normal scale → single finger swipes to navigate
                       modalTouchRef.current = e.touches[0].clientX;
-                      modalPinchRef.current = null;
+                      modalPinchRef.current = null; modalDragRef.current = null;
                     }
                   }}
                   onTouchEnd={e => {
                     if (modalPinchRef.current) {
-                      if (imgScaleRef.current < 1.15) { setImgScale(1); imgScaleRef.current = 1; }
-                      modalPinchRef.current = null;
-                      return;
+                      if (imgScaleRef.current < 1.15) {
+                        setImgScale(1); imgScaleRef.current = 1;
+                        setImgTranslate({ x: 0, y: 0 }); imgTranslateRef.current = { x: 0, y: 0 };
+                      }
+                      modalPinchRef.current = null; return;
                     }
+                    if (modalDragRef.current) { modalDragRef.current = null; return; }
                     var dx = e.changedTouches[0].clientX - (modalTouchRef.current || 0);
                     if (imgScaleRef.current <= 1 && Math.abs(dx) > 60 && totalImgs > 1) {
                       if (dx < 0) modalNext(); else modalPrev();
@@ -717,7 +741,7 @@ function DesignGallery({ content }) {
                   }}>
                   {imgs.length > 0
                     ? <img src={imgs[modal.imgIdx] || imgs[0]} alt={'Detalle ' + (modal.imgIdx + 1)} loading="lazy"
-                        style={{ transform: 'scale(' + imgScale + ')', transformOrigin: 'center center', transition: imgScale === 1 ? 'transform 0.2s ease' : 'none' }} />
+                        style={{ transform: 'translate(' + imgTranslate.x + 'px,' + imgTranslate.y + 'px) scale(' + imgScale + ')', transformOrigin: 'center center', transition: (modalPinchRef.current || modalDragRef.current) ? 'none' : 'transform 0.2s ease', willChange: 'transform' }} />
                     : <div className="museum__modal-ph">{(modal.pieza.nombre || 'RL').slice(0, 2)}</div>}
                   {totalImgs > 1 && (
                     <React.Fragment>
