@@ -376,7 +376,6 @@
   .ev-coverage { flex-direction: column; align-items: flex-start; gap: 8px; }
   .ev-gallery__grid { grid-template-columns: 1fr 1fr; gap: 12px; }
   .ev-banner__slide { width: clamp(200px, 55vw, 380px); }
-  .ev-packs__grid { grid-template-columns: 1fr; gap: 1px; }
   .ev-packs--standalone { padding: 28px 20px; }
   .ev-wedo { padding: 32px 20px; }
   .ev-onwhat { padding: 40px 24px; }
@@ -609,4 +608,13 @@
   letter-spacing: 0.06em;
   padding: 28px 18px 14px;
   line-height: 1.45;
+}
+
+/* ── Responsive overrides (must come after base styles) ── */
+@media (max-width: 900px) {
+  .ev-packs__grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .ev-pack { grid-template-columns: 1fr; }
+  .ev-pack__limit { text-align: left; }
 }
