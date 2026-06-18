@@ -694,7 +694,7 @@ const DEFAULT_CONTENT = {
 };
 
 // ----- Store hook with localStorage persistence -----
-const STORAGE_KEY = 'ruah-content-v5';
+const STORAGE_KEY = 'ruah-content-v6';
 
 function loadContent() {
   try {
