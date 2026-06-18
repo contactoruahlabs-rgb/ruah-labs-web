@@ -1441,6 +1441,16 @@ function migrateContent(c) {
   // porque eso reinyectaría categorías borradas por el usuario.
   // Solo inicializar si no existe la lista.
   if (!Array.isArray(c.products.categories)) c.products.categories = DEFAULT_CONTENT.products.categories;
+  // Cuadros (c5) siempre debe existir — se inserta antes de Accesorios (c6) si falta.
+  if (!c.products.categories.find(cat => cat.id === 'c5')) {
+    const idx6 = c.products.categories.findIndex(cat => cat.id === 'c6');
+    const entry = {
+      id: 'c5',
+      name: 'Cuadros',
+      slug: 'cuadros'
+    };
+    if (idx6 >= 0) c.products.categories.splice(idx6, 0, entry);else c.products.categories.push(entry);
+  }
 
   // Backfill cuadros expansions
   if (c.cuadros) {

@@ -1023,6 +1023,42 @@ function Products({ content, onOpenProduct, initialCategory }) {
 }
 
 // --- Product Detail Modal ---
+var PRODUCT_FAQ = [
+  { q: '¿Cuánto demora el envío?',           a: 'Despachamos en 2 a 5 días hábiles desde Santiago. Llegada estimada: 2 a 5 días hábiles adicionales según región. Envío gratis en pedidos sobre $100.000 CLP.' },
+  { q: '¿Las tallas son oversize o exactas?', a: 'Fit oversize relajado. Si usas M convencional, quédate en M. Si prefieres más entallado, baja una talla. Dudas: escríbenos por WhatsApp antes de comprar.' },
+  { q: '¿El estampado aguanta los lavados?',  a: 'Sí. Serigrafía profesional y DTF de alta durabilidad. Lavar al revés, agua fría, sin secadora. Con ese cuidado básico dura años.' },
+  { q: '¿Puedo cambiar de talla o devolver?', a: 'Cambios de talla en 10 días desde recepción, prenda sin uso y con etiqueta (reenvío a cargo del cliente). Reembolso en 30 días por defecto de fábrica. Las piezas únicas no tienen reembolso — está indicado en su descripción.', hideForUnique: true },
+  { q: '¿Sin reembolso en esta pieza?',        a: 'Esta es una pieza única. Por su naturaleza irrepetible no aplica reembolso. Sí aceptamos cambio de talla en 10 días si hay stock disponible.', onlyUnique: true },
+  { q: '¿Hacen prendas personalizadas?',       a: 'Sí. Diseñamos tu versículo, frase o imagen sobre cualquier prenda. Visita Personalizados para ver trabajos anteriores o contáctanos directamente.' },
+  { q: '¿Cómo funciona el Protocolo 1×1?',    a: 'Cada prenda vendida activa la donación de una prenda filtrada y lavada a alguien en situación de calle. Te llega un registro del operativo entre 7 y 15 días después de tu compra.' },
+];
+
+function ProductFAQ({ isUnique }) {
+  var [openIdx, setOpenIdx] = React.useState(null);
+  var items = PRODUCT_FAQ.filter(function(it) {
+    if (isUnique && it.hideForUnique) return false;
+    if (!isUnique && it.onlyUnique) return false;
+    return true;
+  });
+  return (
+    <div className="pd-faq">
+      <div className="pd-faq__title">PREGUNTAS FRECUENTES</div>
+      {items.map(function(it, i) {
+        var isOpen = openIdx === i;
+        return (
+          <div key={i} className={'pd-faq__item' + (isOpen ? ' open' : '')}>
+            <button type="button" className="pd-faq__q" onClick={function() { setOpenIdx(isOpen ? null : i); }}>
+              <span>{it.q}</span>
+              <span className="pd-faq__arr">{isOpen ? '−' : '+'}</span>
+            </button>
+            {isOpen && <div className="pd-faq__a">{it.a}</div>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, overrideImg }) {
   const open = !!productId;
   const product = open ? content.products.items.find((p) => p.id === productId) : null;
@@ -1179,6 +1215,8 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
             </div>
             }
           </div>
+
+          <ProductFAQ isUnique={product.stockType === 'unica'} />
 
           <div className="pd__protocol">
             <span className="icon">1×</span>
