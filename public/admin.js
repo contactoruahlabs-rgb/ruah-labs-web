@@ -6191,10 +6191,33 @@ function PiezaEditor({
       objectFit: 'cover',
       borderRadius: 2
     }
-  }), /*#__PURE__*/React.createElement("button", {
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "abtn ghost",
+    style: {
+      cursor: 'pointer',
+      display: 'inline-block'
+    }
+  }, uploading ? 'Subiendo…' : '↑ Cambiar imagen', /*#__PURE__*/React.createElement("input", {
+    type: "file",
+    accept: "image/*",
+    style: {
+      display: 'none'
+    },
+    onChange: e => {
+      const f = e.target.files && e.target.files[0];
+      if (f) uploadMain(f);
+      e.target.value = '';
+    }
+  })), /*#__PURE__*/React.createElement("button", {
     className: "abtn ghost",
     onClick: () => set('imagen_principal', '')
-  }, "\u2715 Quitar")) : null, /*#__PURE__*/React.createElement("label", {
+  }, "\u2715 Quitar"))) : /*#__PURE__*/React.createElement("label", {
     className: "abtn ghost",
     style: {
       cursor: 'pointer',

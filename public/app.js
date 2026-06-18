@@ -15,7 +15,13 @@ function App() {
   const [cuadroId, setCuadroId] = React.useState(null);
   const [toast, setToast] = React.useState(null);
   // Page navigation: null = home, or section key ('nosotros','servicios','productos','cuadros','iglesias','evento','protocolo','comunidad')
-  const [activePage, setActivePage] = React.useState(null);
+  const [activePage, setActivePage] = React.useState(() => {
+    try {
+      return sessionStorage.getItem('ruah-page') || null;
+    } catch (_) {
+      return null;
+    }
+  });
   const [pageCategory, setPageCategory] = React.useState('todo');
 
   // -------- Cart + checkout --------
@@ -227,6 +233,11 @@ function App() {
     comunidad: 'COMUNIDAD',
     envios: 'ENVÍOS Y DEVOLUCIONES'
   };
+  React.useEffect(() => {
+    try {
+      if (activePage) sessionStorage.setItem('ruah-page', activePage);else sessionStorage.removeItem('ruah-page');
+    } catch (_) {}
+  }, [activePage]);
   function openPage(page, cat) {
     setActivePage(page);
     if (cat) setPageCategory(cat);

@@ -2766,15 +2766,21 @@ function PiezaEditor({ pieza: initial, onSave, onCancel }) {
         {p.imagen_principal
           ? <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 }}>
               <img src={p.imagen_principal} alt="" style={{ width: 80, height: 106, objectFit: 'cover', borderRadius: 2 }} />
-              <button className="abtn ghost" onClick={() => set('imagen_principal', '')}>✕ Quitar</button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label className="abtn ghost" style={{ cursor: 'pointer', display: 'inline-block' }}>
+                  {uploading ? 'Subiendo…' : '↑ Cambiar imagen'}
+                  <input type="file" accept="image/*" style={{ display: 'none' }}
+                    onChange={e => { const f = e.target.files && e.target.files[0]; if (f) uploadMain(f); e.target.value = ''; }} />
+                </label>
+                <button className="abtn ghost" onClick={() => set('imagen_principal', '')}>✕ Quitar</button>
+              </div>
             </div>
-          : null
+          : <label className="abtn ghost" style={{ cursor: 'pointer', display: 'inline-block' }}>
+              {uploading ? 'Subiendo…' : '↑ Subir imagen principal'}
+              <input type="file" accept="image/*" style={{ display: 'none' }}
+                onChange={e => { const f = e.target.files && e.target.files[0]; if (f) uploadMain(f); e.target.value = ''; }} />
+            </label>
         }
-        <label className="abtn ghost" style={{ cursor: 'pointer', display: 'inline-block' }}>
-          {uploading ? 'Subiendo…' : '↑ Subir imagen principal'}
-          <input type="file" accept="image/*" style={{ display: 'none' }}
-            onChange={e => { const f = e.target.files && e.target.files[0]; if (f) uploadMain(f); e.target.value = ''; }} />
-        </label>
       </Field>
       <Field label={'Imágenes de detalle (' + (p.imagenes_detalle || []).length + ')'}>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>

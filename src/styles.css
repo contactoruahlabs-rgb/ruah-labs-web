@@ -1054,8 +1054,8 @@ section { padding-block: var(--section-pad-y); position: relative; }
 .prod__price .clp { font-family: var(--mono); font-size: 12px; color: var(--gray-soft); letter-spacing: 0.16em; margin-right: 4px; vertical-align: middle; }
 .prod__buy {
   font-family: var(--mono);
-  font-size: 13px;
-  letter-spacing: 0.16em;
+  font-size: 11px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   display: inline-flex; align-items: center; gap: 8px;
   padding: 12px 16px;
@@ -1145,6 +1145,7 @@ section { padding-block: var(--section-pad-y); position: relative; }
   align-items: center;
   justify-content: center;
   padding: 16px;
+  touch-action: none;
 }
 .pd-overlay.open { opacity: 1; pointer-events: auto; }
 .pd {
@@ -2200,6 +2201,16 @@ section { padding-block: var(--section-pad-y); position: relative; }
   position: relative;
 }
 
+/* ── Section eyebrow label ───────────────────────────────── */
+.dg__eyebrow {
+  font-family: var(--serif);
+  font-size: clamp(11px, 0.9vw, 14px);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(10,10,10,0.38);
+  padding: 0 var(--gutter) 20px;
+}
+
 /* ── Catalog grid ─────────────────────────────────────────── */
 .dg__catalog {
   display: grid;
@@ -2791,6 +2802,7 @@ section { padding-block: var(--section-pad-y); position: relative; }
   display: flex; align-items: center; justify-content: center;
   padding: 16px;
   animation: mOverlayIn 0.28s ease;
+  touch-action: none;
 }
 .museum__modal {
   position: relative;
@@ -2827,6 +2839,7 @@ section { padding-block: var(--section-pad-y); position: relative; }
   overflow: hidden;
   display: flex; align-items: center; justify-content: center;
   background: #0a0a09;
+  touch-action: none;
 }
 .museum__modal-imgwrap img {
   max-width: 100%; max-height: 100%;

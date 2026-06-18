@@ -400,6 +400,14 @@
   gap: 6px;
   width: max-content;
   animation: banner-scroll 28s linear infinite;
+  will-change: transform;
+}
+/* Keep banner scrolling even when user has reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .ev-banner__track {
+    animation-duration: 60s !important;
+    animation-iteration-count: infinite !important;
+  }
 }
 .ev-banner__wrap:hover .ev-banner__track { animation-play-state: paused; }
 .ev-banner__slide {

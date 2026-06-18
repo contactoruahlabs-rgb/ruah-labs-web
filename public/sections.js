@@ -453,8 +453,19 @@ function Hero({
     style: {
       whiteSpace: 'pre-line'
     }
-  }, hero.lede), hero.heroPrice && /*#__PURE__*/React.createElement("span", {
-    className: "hero__price"
+  }, hero.lede), hero.heroPrice && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "hero__price",
+    style: {
+      border: 'none',
+      cursor: 'pointer',
+      fontFamily: 'inherit'
+    },
+    onClick: () => window.dispatchEvent(new CustomEvent('ruah:navigateTo', {
+      detail: {
+        page: 'productos'
+      }
+    }))
   }, hero.heroPrice)), /*#__PURE__*/React.createElement(Reveal, {
     delay: 650,
     className: "hero__ctas"
@@ -705,6 +716,27 @@ function DesignGallery({
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
+  React.useEffect(() => {
+    function onKey(e) {
+      const m = modalRef.current;
+      if (!m) return;
+      if (e.key === 'Escape') {
+        setModal(null);
+        return;
+      }
+      const imgs = m.pieza.imagenes_detalle && m.pieza.imagenes_detalle.length > 0 ? m.pieza.imagenes_detalle : m.pieza.imagen_principal ? [m.pieza.imagen_principal] : [];
+      if (e.key === 'ArrowLeft') setModal(x => x ? {
+        ...x,
+        imgIdx: Math.max(0, x.imgIdx - 1)
+      } : x);
+      if (e.key === 'ArrowRight') setModal(x => x ? {
+        ...x,
+        imgIdx: Math.min(imgs.length - 1, x.imgIdx + 1)
+      } : x);
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
   function openModal(pieza) {
     setModal({
       pieza,
@@ -722,6 +754,8 @@ function DesignGallery({
     id: "design",
     className: "dg"
   }, /*#__PURE__*/React.createElement("div", {
+    className: "dg__eyebrow"
+  }, "PERSONALIZADOS"), /*#__PURE__*/React.createElement("div", {
     className: "dg__catalog"
   }, items.map((p, i) => {
     const name = isPlaceholderMode ? p : p.nombre;
@@ -1018,7 +1052,18 @@ function Protocol({
     className: "pr-team__dot"
   }, "\u258D"), /*#__PURE__*/React.createElement("span", null, p.teamCaption))), /*#__PURE__*/React.createElement("a", {
     href: p.activateHref || '#productos',
-    className: "pr-activate"
+    className: "pr-activate",
+    onClick: e => {
+      const href = p.activateHref || '#productos';
+      if (href.startsWith('#')) {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('ruah:navigateTo', {
+          detail: {
+            page: href.slice(1)
+          }
+        }));
+      }
+    }
   }, /*#__PURE__*/React.createElement("span", null, p.activateCta), /*#__PURE__*/React.createElement("span", {
     className: "pr-activate__arr"
   }, "\u2192"))))));
@@ -1261,6 +1306,11 @@ function ProductDetail({
     setZoomed(false);
     setSelectedSize(null);
   }, [open, productId]);
+
+  // Reset zoom when image changes
+  React.useEffect(() => {
+    setZoomed(false);
+  }, [idx]);
 
   // Auto-close if productId doesn't match any product (prevents body-scroll freeze)
   React.useEffect(() => {

@@ -346,7 +346,13 @@ function Hero({ content }) {
         <div className="hero__bottom">
           <Reveal delay={500} className="hero__lede">
             <p style={{whiteSpace:'pre-line'}}>{hero.lede}</p>
-            {hero.heroPrice && <span className="hero__price">{hero.heroPrice}</span>}
+            {hero.heroPrice && (
+              <button type="button" className="hero__price"
+                style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                onClick={() => window.dispatchEvent(new CustomEvent('ruah:navigateTo', { detail: { page: 'productos' } }))}>
+                {hero.heroPrice}
+              </button>
+            )}
           </Reveal>
           <Reveal delay={650} className="hero__ctas">
             {hero.primaryCta.show !== false && (
@@ -560,6 +566,21 @@ function DesignGallery({ content }) {
     return () => window.removeEventListener('popstate', onPop);
   }, []);
 
+  React.useEffect(() => {
+    function onKey(e) {
+      const m = modalRef.current;
+      if (!m) return;
+      if (e.key === 'Escape') { setModal(null); return; }
+      const imgs = m.pieza.imagenes_detalle && m.pieza.imagenes_detalle.length > 0
+        ? m.pieza.imagenes_detalle
+        : m.pieza.imagen_principal ? [m.pieza.imagen_principal] : [];
+      if (e.key === 'ArrowLeft')  setModal(x => x ? { ...x, imgIdx: Math.max(0, x.imgIdx - 1) } : x);
+      if (e.key === 'ArrowRight') setModal(x => x ? { ...x, imgIdx: Math.min(imgs.length - 1, x.imgIdx + 1) } : x);
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   function openModal(pieza) {
     setModal({ pieza, imgIdx: 0 });
     window.history.pushState({ ruahPage: 'design', ruahModal: true }, '', window.location.pathname);
@@ -571,6 +592,7 @@ function DesignGallery({ content }) {
 
   return (
     <section id="design" className="dg">
+      <div className="dg__eyebrow">PERSONALIZADOS</div>
 
       {/* ── Catalog grid ── */}
       <div className="dg__catalog">
@@ -833,7 +855,14 @@ function Protocol({ content }) {
               </div>
             </div>
 
-            <a href={p.activateHref || '#productos'} className="pr-activate">
+            <a href={p.activateHref || '#productos'} className="pr-activate"
+               onClick={e => {
+                 const href = p.activateHref || '#productos';
+                 if (href.startsWith('#')) {
+                   e.preventDefault();
+                   window.dispatchEvent(new CustomEvent('ruah:navigateTo', { detail: { page: href.slice(1) } }));
+                 }
+               }}>
               <span>{p.activateCta}</span>
               <span className="pr-activate__arr">→</span>
             </a>
@@ -1040,6 +1069,9 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
     document.body.style.overflow = found ? 'hidden' : '';
     setIdx(0); setZoomed(false); setSelectedSize(null);
   }, [open, productId]);
+
+  // Reset zoom when image changes
+  React.useEffect(() => { setZoomed(false); }, [idx]);
 
   // Auto-close if productId doesn't match any product (prevents body-scroll freeze)
   React.useEffect(() => {
