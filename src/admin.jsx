@@ -2829,8 +2829,19 @@ function ViewDesign({ content, store }) {
     ? { id: 'pz-' + Date.now(), nombre: '', cliente: '', fecha_creacion: new Date().getFullYear().toString(), imagen_principal: '', imagenes_detalle: [], descripcion_breve: '', descripcion_historia: '', tipo_marco: 1, orden: piezas.length, estado: 'visible' }
     : (editId ? piezas.find(p => p.id === editId) : null);
 
+  const eyebrowSize = (content.design && content.design.eyebrowSize) || 90;
+
   return (
     <div>
+      <div className="card" style={{ marginBottom: 12 }}>
+        <div className="card__head"><h3>Apariencia de la sección</h3></div>
+        <Field label={'Tamaño título PERSONALIZADOS · ' + eyebrowSize + 'px'}>
+          <input type="range" min={40} max={160} step={5}
+            value={eyebrowSize}
+            onChange={e => store.update('design.eyebrowSize', Number(e.target.value))}
+            style={{ accentColor: 'var(--amber)', width: '100%' }} />
+        </Field>
+      </div>
       <div className="card">
         <div className="card__head">
           <h3>Galería Design — {piezas.length} {piezas.length === 1 ? 'pieza' : 'piezas'}</h3>

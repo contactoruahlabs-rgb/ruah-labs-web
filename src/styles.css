@@ -1192,11 +1192,12 @@ section { padding-block: var(--section-pad-y); position: relative; }
   cursor: zoom-in;
 }
 .pd__zoom-ctrl {
-  position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+  position: absolute; top: 14px; right: 14px;
   display: flex; align-items: center; gap: 8px;
-  background: rgba(13,13,11,0.75); border: 1px solid rgba(245,241,232,0.16);
-  border-radius: 24px; padding: 6px 14px; z-index: 5;
+  background: rgba(13,13,11,0.82); border: 1px solid rgba(245,241,232,0.22);
+  border-radius: 24px; padding: 6px 14px; z-index: 20;
 }
+@media (max-width: 768px) { .pd__zoom-ctrl { display: none; } }
 .pd__zoom-btn {
   width: 28px; height: 28px;
   border: 1px solid rgba(245,241,232,0.3); background: transparent;

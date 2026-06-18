@@ -339,7 +339,7 @@ function App() {
           imageDesktop={content.launch.imageDesktop}
         />
       )}
-      <WhatsAppFab />
+      <WhatsAppFab isDesign={activePage === 'design'} />
       <EmailPopup />
     </React.Fragment>
   );

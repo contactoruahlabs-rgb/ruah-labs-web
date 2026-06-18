@@ -555,10 +555,38 @@ function DesignGallery({ content }) {
     .sort((a, b) => (a.orden || 0) - (b.orden || 0));
 
   const [modal, setModal] = React.useState(null);
-  const modalRef     = React.useRef(null);
+  const modalRef      = React.useRef(null);
   const modalTouchRef = React.useRef(null);
+  const modalPinchRef = React.useRef(null);
+  const imgWrapRef    = React.useRef(null);
+  const [imgScale, setImgScale] = React.useState(1);
+  const imgScaleRef   = React.useRef(1);
 
   React.useEffect(() => { modalRef.current = modal; }, [modal]);
+
+  // Reset pinch zoom when image changes
+  React.useEffect(() => {
+    setImgScale(1); imgScaleRef.current = 1; modalPinchRef.current = null;
+  }, [modal ? modal.imgIdx : null]);
+
+  // Native passive:false touchmove so e.preventDefault() blocks viewport zoom during pinch
+  React.useEffect(() => {
+    var el = imgWrapRef.current;
+    if (!el || !modal) return;
+    function onMove(e) {
+      if (e.touches.length >= 2 && modalPinchRef.current) {
+        e.preventDefault();
+        var t0 = e.touches[0], t1 = e.touches[1];
+        var dx = t0.clientX - t1.clientX, dy = t0.clientY - t1.clientY;
+        var dist = Math.sqrt(dx*dx + dy*dy);
+        var s = Math.max(1, Math.min(4, modalPinchRef.current.startScale * dist / modalPinchRef.current.startDist));
+        imgScaleRef.current = s;
+        setImgScale(s);
+      }
+    }
+    el.addEventListener('touchmove', onMove, { passive: false });
+    return function() { el.removeEventListener('touchmove', onMove); };
+  }, [modal]);
 
   React.useEffect(() => {
     function onPop() { if (modalRef.current) setModal(null); }
@@ -594,7 +622,7 @@ function DesignGallery({ content }) {
     <section id="design" className="dg">
       <div className="dg__head">
         <div className="dg__head-left">
-          <h2 className="dg__eyebrow">PERSONALIZADOS</h2>
+          {(() => { var sz = (content.design && content.design.eyebrowSize) || 90; return <h2 className="dg__eyebrow" style={{ fontSize: 'clamp(' + Math.round(sz*0.4) + 'px,' + (sz/16).toFixed(2) + 'vw,' + sz + 'px)' }}>PERSONALIZADOS</h2>; })()}
           <p className="dg__proto-tag">▪ Cada personalizado activa el Protocolo 1×1 — una prenda donada</p>
         </div>
         <a
@@ -641,13 +669,6 @@ function DesignGallery({ content }) {
           <p className="dg__footer-kicker">diseños que predican</p>
           <h2 className="dg__footer-word">PERSONALIZADOS</h2>
         </div>
-        <div className="dg__footer-right">
-          <p className="dg__footer-desc">Hacemos piezas únicas centradas en Cristo. Tú eliges el versículo, el estilo y el formato.</p>
-          <a
-            href="mailto:contacto@ruahlabs.cl?subject=Cotización%20diseño%20personalizado"
-            className="dg__footer-cta"
-          >COTIZAR →</a>
-        </div>
       </div>
 
       {/* ── Modal ── */}
@@ -669,14 +690,34 @@ function DesignGallery({ content }) {
               function modalPrev() { if (totalImgs > 1) setModal(m => ({ ...m, imgIdx: (m.imgIdx - 1 + totalImgs) % totalImgs })); }
               function modalNext() { if (totalImgs > 1) setModal(m => ({ ...m, imgIdx: (m.imgIdx + 1) % totalImgs })); }
               return (
-                <div className="museum__modal-imgwrap"
-                  onTouchStart={e => { modalTouchRef.current = e.touches[0].clientX; }}
+                <div ref={imgWrapRef}
+                  className="museum__modal-imgwrap"
+                  onTouchStart={e => {
+                    if (e.touches.length >= 2) {
+                      modalTouchRef.current = null;
+                      var t0 = e.touches[0], t1 = e.touches[1];
+                      var dxt = t0.clientX - t1.clientX, dyt = t0.clientY - t1.clientY;
+                      modalPinchRef.current = { startDist: Math.sqrt(dxt*dxt+dyt*dyt), startScale: imgScaleRef.current };
+                    } else {
+                      modalTouchRef.current = e.touches[0].clientX;
+                      modalPinchRef.current = null;
+                    }
+                  }}
                   onTouchEnd={e => {
+                    if (modalPinchRef.current) {
+                      if (imgScaleRef.current < 1.15) { setImgScale(1); imgScaleRef.current = 1; }
+                      modalPinchRef.current = null;
+                      return;
+                    }
                     var dx = e.changedTouches[0].clientX - (modalTouchRef.current || 0);
-                    if (Math.abs(dx) > 40) { if (dx < 0) modalNext(); else modalPrev(); }
+                    if (imgScaleRef.current <= 1 && Math.abs(dx) > 60 && totalImgs > 1) {
+                      if (dx < 0) modalNext(); else modalPrev();
+                    }
+                    modalTouchRef.current = null;
                   }}>
                   {imgs.length > 0
-                    ? <img src={imgs[modal.imgIdx] || imgs[0]} alt={'Detalle ' + (modal.imgIdx + 1)} loading="lazy" />
+                    ? <img src={imgs[modal.imgIdx] || imgs[0]} alt={'Detalle ' + (modal.imgIdx + 1)} loading="lazy"
+                        style={{ transform: 'scale(' + imgScale + ')', transformOrigin: 'center center', transition: imgScale === 1 ? 'transform 0.2s ease' : 'none' }} />
                     : <div className="museum__modal-ph">{(modal.pieza.nombre || 'RL').slice(0, 2)}</div>}
                   {totalImgs > 1 && (
                     <React.Fragment>
