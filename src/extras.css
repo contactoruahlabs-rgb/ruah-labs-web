@@ -1740,6 +1740,9 @@
   margin-bottom: 8px;
 }
 .ep-done__sub { font-size: 13px; color: var(--gray); }
+.ep-copy { margin: 10px auto 4px; display: block; background: var(--amber); color: var(--black); border: none; border-radius: 2px; font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 10px 20px; cursor: pointer; transition: opacity .2s; width: 100%; }
+.ep-copy:hover { opacity: .85; }
+.ep-error { font-family: var(--mono); font-size: 11px; color: #e05a5a; margin: 4px 0 0; letter-spacing: 0.03em; }
 
 /* ── Payment logos (checkout) ────────────────────────────── */
 .ck-pay-logos {

@@ -183,8 +183,10 @@ function Toggle({ label, value, onChange }) {
   );
 }
 
-// Subir imagen a Cloudinary con firma del servidor (signed upload)
-async function uploadToCloudinary(file) {
+// Subir archivo a Cloudinary con firma del servidor (signed upload)
+// resourceType: 'image' | 'video'
+async function uploadToCloudinary(file, resourceType) {
+  var rt = resourceType || (file.type.startsWith('video/') ? 'video' : 'image');
   var api = (window.RUAH_API || '') + '/api/images/sign';
   var adminKey = (typeof getAdminToken === 'function') ? await getAdminToken() : (sessionStorage.getItem('ruah-admin-session') || '');
 
@@ -203,7 +205,7 @@ async function uploadToCloudinary(file) {
   fd.append('signature', sign.signature);
   fd.append('folder',    sign.folder);
 
-  var res = await fetch('https://api.cloudinary.com/v1_1/' + sign.cloudName + '/image/upload', {
+  var res = await fetch('https://api.cloudinary.com/v1_1/' + sign.cloudName + '/' + rt + '/upload', {
     method: 'POST', body: fd,
   });
   var data = await res.json();
@@ -244,6 +246,45 @@ function ImgPicker({ label, value, onChange, hint, ratio = '4 / 3' }) {
             <input type="file" accept="image/*" onChange={onFile} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
           </label>
           {value && <button type="button" className="abtn danger sm" onClick={() => onChange('')}>Quitar foto</button>}
+        </div>
+      </div>
+    </Field>
+  );
+}
+
+// FilePicker — igual que ImgPicker pero acepta video y detecta tipo automáticamente
+function FilePicker({ label, value, onChange, hint, accept, ratio }) {
+  var [uploading, setUploading] = React.useState(false);
+  var isVideo = value ? /\.(mp4|mov|webm)(\?|$)/i.test(value) : (accept || '').includes('video');
+  var acceptAttr = accept || 'image/*,video/mp4';
+  async function onFile(e) {
+    var f = e.target.files && e.target.files[0];
+    if (!f) return;
+    setUploading(true);
+    try {
+      var url = await uploadToCloudinary(f);
+      onChange(url);
+    } catch(err) {
+      alert('Error subiendo archivo: ' + err.message);
+    } finally {
+      setUploading(false);
+    }
+  }
+  return (
+    <Field label={label} hint={hint}>
+      <div className="img-picker">
+        <div className={'img-picker__slot' + (value ? ' has' : '') + (uploading ? ' uploading' : '')} style={{ aspectRatio: ratio || '16/9' }}>
+          {uploading ? <span className="img-picker__ph">Subiendo…</span>
+            : value && isVideo ? <video src={value} muted autoPlay loop playsInline style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
+            : value ? <img src={value} alt="" />
+            : <span className="img-picker__ph">+ Subir archivo</span>}
+        </div>
+        <div className="img-picker__actions">
+          <label className="abtn ghost sm" style={{ position:'relative', cursor:'pointer' }}>
+            {value ? 'Reemplazar' : 'Elegir archivo'}
+            <input type="file" accept={acceptAttr} onChange={onFile} disabled={uploading} style={{ position:'absolute', inset:0, opacity:0, cursor:'pointer' }} />
+          </label>
+          {value && <button type="button" className="abtn danger sm" onClick={() => onChange('')}>Quitar</button>}
         </div>
       </div>
     </Field>
@@ -495,16 +536,13 @@ function ViewHero({ content, store }) {
         </Field>
         {bgType === 'video' ? (
           <React.Fragment>
-            <Text label="URL video desktop (MP4 · Cloudinary)" value={h.videoBgDesktop || ''} placeholder="https://res.cloudinary.com/..." onChange={v => update('hero.videoBgDesktop', v)} />
-            <Text label="URL video móvil (MP4 · Cloudinary)" value={h.videoBgMobile || ''} placeholder="https://res.cloudinary.com/..." onChange={v => update('hero.videoBgMobile', v)} />
-            <p style={{ fontSize: 11, color: 'var(--gray)', marginTop: 6 }}>Dejando en blanco se usa el video original del sitio.</p>
+            <FilePicker label="Video desktop (MP4 · 1920×1080)" accept="video/mp4" ratio="16/9" value={h.videoBgDesktop || ''} onChange={v => update('hero.videoBgDesktop', v)} hint="Dejar vacío usa el video original del sitio." />
+            <FilePicker label="Video móvil (MP4 · 1080×1920)"  accept="video/mp4" ratio="9/16" value={h.videoBgMobile  || ''} onChange={v => update('hero.videoBgMobile',  v)} />
           </React.Fragment>
         ) : (
           <React.Fragment>
-            <Text label="URL imagen desktop (1920×1080 · Cloudinary)" value={h.imageBgDesktop || ''} placeholder="https://res.cloudinary.com/..." onChange={v => update('hero.imageBgDesktop', v)} />
-            {h.imageBgDesktop && <img src={h.imageBgDesktop} alt="preview desktop" style={{ marginTop:8, maxWidth:'100%', maxHeight:120, borderRadius:4, display:'block', objectFit:'cover' }} />}
-            <Text label="URL imagen móvil (1080×1920 · Cloudinary)" value={h.imageBgMobile || ''} placeholder="https://res.cloudinary.com/..." onChange={v => update('hero.imageBgMobile', v)} />
-            {h.imageBgMobile && <img src={h.imageBgMobile} alt="preview móvil" style={{ marginTop:8, maxHeight:120, borderRadius:4, display:'block', objectFit:'cover' }} />}
+            <FilePicker label="Imagen desktop (JPG/WebP · 1920×1080)" accept="image/*" ratio="16/9" value={h.imageBgDesktop || ''} onChange={v => update('hero.imageBgDesktop', v)} />
+            <FilePicker label="Imagen móvil (JPG/WebP · 1080×1920)"   accept="image/*" ratio="9/16" value={h.imageBgMobile  || ''} onChange={v => update('hero.imageBgMobile',  v)} />
           </React.Fragment>
         )}
       </div>

@@ -631,11 +631,16 @@ function Iglesias({ content }) {
   );
 }
 
+var EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+var DISCOUNT_CODE = 'BIENVENIDO10';
+
 function EmailPopup() {
   const STORAGE_KEY = 'ruah-email-popup-dismissed';
-  const [visible, setVisible] = React.useState(false);
-  const [email, setEmail]     = React.useState('');
-  const [done, setDone]       = React.useState(false);
+  const [visible,  setVisible]  = React.useState(false);
+  const [email,    setEmail]    = React.useState('');
+  const [error,    setError]    = React.useState('');
+  const [done,     setDone]     = React.useState(false);
+  const [copied,   setCopied]   = React.useState(false);
 
   React.useEffect(() => {
     if (localStorage.getItem(STORAGE_KEY)) return;
@@ -648,11 +653,40 @@ function EmailPopup() {
     setVisible(false);
   }
 
+  function copyCode() {
+    navigator.clipboard.writeText(DISCOUNT_CODE).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }).catch(() => {
+      // fallback for older browsers
+      var el = document.createElement('textarea');
+      el.value = DISCOUNT_CODE;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  }
+
   function submit(e) {
     e.preventDefault();
-    if (!email) return;
+    var trimmed = email.trim();
+    if (!EMAIL_REGEX.test(trimmed)) {
+      setError('Ingresa un correo válido (ej: nombre@dominio.cl)');
+      return;
+    }
+    setError('');
     if (window.ruahDb) {
-      window.ruahDb.from('email_leads').upsert({ email, source: 'popup', created_at: new Date().toISOString() }).catch(() => {});
+      window.ruahDb
+        .from('email_leads')
+        .insert({ email: trimmed, source: 'popup', created_at: new Date().toISOString() })
+        .then(function(res) {
+          if (res.error && res.error.code !== '23505') {
+            console.warn('email_leads insert:', res.error.message);
+          }
+        });
     }
     setDone(true);
     localStorage.setItem(STORAGE_KEY, '1');
@@ -668,8 +702,11 @@ function EmailPopup() {
           <div className="ep-done">
             <div className="ep-done__icon">✓</div>
             <p className="ep-done__title">Tu código:</p>
-            <p className="ep-done__code">BIENVENIDO10</p>
-            <p className="ep-done__sub">10% off en tu primera compra. Cópialo y úsalo en el checkout.</p>
+            <p className="ep-done__code">{DISCOUNT_CODE}</p>
+            <button type="button" className="ep-copy" onClick={copyCode}>
+              {copied ? '¡Copiado!' : 'Copiar código →'}
+            </button>
+            <p className="ep-done__sub">10% off en tu primera compra. Úsalo en el checkout.</p>
           </div>
         ) : (
           <React.Fragment>
@@ -682,9 +719,9 @@ function EmailPopup() {
                 type="email"
                 placeholder="tu@correo.cl"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
+                onChange={e => { setEmail(e.target.value); setError(''); }}
               />
+              {error && <p className="ep-error">{error}</p>}
               <button className="ep-btn" type="submit">Obtener descuento →</button>
             </form>
             <p className="ep-legal">Sin spam. Solo drops, rutas y novedades del movimiento.</p>

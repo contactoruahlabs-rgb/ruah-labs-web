@@ -254,8 +254,10 @@ function Toggle({
   }), /*#__PURE__*/React.createElement("span", null, label));
 }
 
-// Subir imagen a Cloudinary con firma del servidor (signed upload)
-async function uploadToCloudinary(file) {
+// Subir archivo a Cloudinary con firma del servidor (signed upload)
+// resourceType: 'image' | 'video'
+async function uploadToCloudinary(file, resourceType) {
+  var rt = resourceType || (file.type.startsWith('video/') ? 'video' : 'image');
   var api = (window.RUAH_API || '') + '/api/images/sign';
   var adminKey = typeof getAdminToken === 'function' ? await getAdminToken() : sessionStorage.getItem('ruah-admin-session') || '';
   var signRes = await fetch(api, {
@@ -276,7 +278,7 @@ async function uploadToCloudinary(file) {
   fd.append('timestamp', String(sign.timestamp));
   fd.append('signature', sign.signature);
   fd.append('folder', sign.folder);
-  var res = await fetch('https://api.cloudinary.com/v1_1/' + sign.cloudName + '/image/upload', {
+  var res = await fetch('https://api.cloudinary.com/v1_1/' + sign.cloudName + '/' + rt + '/upload', {
     method: 'POST',
     body: fd
   });
@@ -352,6 +354,86 @@ function ImgPicker({
     className: "abtn danger sm",
     onClick: () => onChange('')
   }, "Quitar foto"))));
+}
+
+// FilePicker — igual que ImgPicker pero acepta video y detecta tipo automáticamente
+function FilePicker({
+  label,
+  value,
+  onChange,
+  hint,
+  accept,
+  ratio
+}) {
+  var [uploading, setUploading] = React.useState(false);
+  var isVideo = value ? /\.(mp4|mov|webm)(\?|$)/i.test(value) : (accept || '').includes('video');
+  var acceptAttr = accept || 'image/*,video/mp4';
+  async function onFile(e) {
+    var f = e.target.files && e.target.files[0];
+    if (!f) return;
+    setUploading(true);
+    try {
+      var url = await uploadToCloudinary(f);
+      onChange(url);
+    } catch (err) {
+      alert('Error subiendo archivo: ' + err.message);
+    } finally {
+      setUploading(false);
+    }
+  }
+  return /*#__PURE__*/React.createElement(Field, {
+    label: label,
+    hint: hint
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "img-picker"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: 'img-picker__slot' + (value ? ' has' : '') + (uploading ? ' uploading' : ''),
+    style: {
+      aspectRatio: ratio || '16/9'
+    }
+  }, uploading ? /*#__PURE__*/React.createElement("span", {
+    className: "img-picker__ph"
+  }, "Subiendo\u2026") : value && isVideo ? /*#__PURE__*/React.createElement("video", {
+    src: value,
+    muted: true,
+    autoPlay: true,
+    loop: true,
+    playsInline: true,
+    style: {
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover',
+      display: 'block'
+    }
+  }) : value ? /*#__PURE__*/React.createElement("img", {
+    src: value,
+    alt: ""
+  }) : /*#__PURE__*/React.createElement("span", {
+    className: "img-picker__ph"
+  }, "+ Subir archivo")), /*#__PURE__*/React.createElement("div", {
+    className: "img-picker__actions"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "abtn ghost sm",
+    style: {
+      position: 'relative',
+      cursor: 'pointer'
+    }
+  }, value ? 'Reemplazar' : 'Elegir archivo', /*#__PURE__*/React.createElement("input", {
+    type: "file",
+    accept: acceptAttr,
+    onChange: onFile,
+    disabled: uploading,
+    style: {
+      position: 'absolute',
+      inset: 0,
+      opacity: 0,
+      cursor: 'pointer'
+    }
+  })), value && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "abtn danger sm",
+    onClick: () => onChange('')
+  }, "Quitar"))));
 }
 
 // ----- View: Dashboard -----
@@ -868,53 +950,31 @@ function ViewHero({
     type: "button",
     className: 'abtn sm ' + (bgType === val ? 'amber' : 'ghost'),
     onClick: () => update('hero.bgType', val)
-  }, lbl)))), bgType === 'video' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Text, {
-    label: "URL video desktop (MP4 \xB7 Cloudinary)",
+  }, lbl)))), bgType === 'video' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(FilePicker, {
+    label: "Video desktop (MP4 \xB7 1920\xD71080)",
+    accept: "video/mp4",
+    ratio: "16/9",
     value: h.videoBgDesktop || '',
-    placeholder: "https://res.cloudinary.com/...",
-    onChange: v => update('hero.videoBgDesktop', v)
-  }), /*#__PURE__*/React.createElement(Text, {
-    label: "URL video m\xF3vil (MP4 \xB7 Cloudinary)",
+    onChange: v => update('hero.videoBgDesktop', v),
+    hint: "Dejar vac\xEDo usa el video original del sitio."
+  }), /*#__PURE__*/React.createElement(FilePicker, {
+    label: "Video m\xF3vil (MP4 \xB7 1080\xD71920)",
+    accept: "video/mp4",
+    ratio: "9/16",
     value: h.videoBgMobile || '',
-    placeholder: "https://res.cloudinary.com/...",
     onChange: v => update('hero.videoBgMobile', v)
-  }), /*#__PURE__*/React.createElement("p", {
-    style: {
-      fontSize: 11,
-      color: 'var(--gray)',
-      marginTop: 6
-    }
-  }, "Dejando en blanco se usa el video original del sitio.")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Text, {
-    label: "URL imagen desktop (1920\xD71080 \xB7 Cloudinary)",
+  })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(FilePicker, {
+    label: "Imagen desktop (JPG/WebP \xB7 1920\xD71080)",
+    accept: "image/*",
+    ratio: "16/9",
     value: h.imageBgDesktop || '',
-    placeholder: "https://res.cloudinary.com/...",
     onChange: v => update('hero.imageBgDesktop', v)
-  }), h.imageBgDesktop && /*#__PURE__*/React.createElement("img", {
-    src: h.imageBgDesktop,
-    alt: "preview desktop",
-    style: {
-      marginTop: 8,
-      maxWidth: '100%',
-      maxHeight: 120,
-      borderRadius: 4,
-      display: 'block',
-      objectFit: 'cover'
-    }
-  }), /*#__PURE__*/React.createElement(Text, {
-    label: "URL imagen m\xF3vil (1080\xD71920 \xB7 Cloudinary)",
+  }), /*#__PURE__*/React.createElement(FilePicker, {
+    label: "Imagen m\xF3vil (JPG/WebP \xB7 1080\xD71920)",
+    accept: "image/*",
+    ratio: "9/16",
     value: h.imageBgMobile || '',
-    placeholder: "https://res.cloudinary.com/...",
     onChange: v => update('hero.imageBgMobile', v)
-  }), h.imageBgMobile && /*#__PURE__*/React.createElement("img", {
-    src: h.imageBgMobile,
-    alt: "preview m\xF3vil",
-    style: {
-      marginTop: 8,
-      maxHeight: 120,
-      borderRadius: 4,
-      display: 'block',
-      objectFit: 'cover'
-    }
   }))), /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {

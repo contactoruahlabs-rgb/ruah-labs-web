@@ -177,6 +177,10 @@ function Nav({
   function navigateCategory(slug) {
     setOpenDrop(null);
     setMobileOpen(false);
+    if (slug === 'cuadros' && onNavigate) {
+      onNavigate('cuadros');
+      return;
+    }
     if (onNavigate) onNavigate('productos', slug);
   }
 
@@ -1156,29 +1160,7 @@ function Products({
     "aria-selected": activeSlug === c.slug
   }, c.name, /*#__PURE__*/React.createElement("span", {
     className: "count"
-  }, countFor(c)))))), activeSlug === 'cuadros' ? /*#__PURE__*/React.createElement("div", {
-    className: "cuadros-soon"
-  }, /*#__PURE__*/React.createElement("video", {
-    className: "cuadros-soon__vid cuadros-soon__vid--mobile",
-    src: content.cuadros.comingSoonVideo,
-    autoPlay: true,
-    muted: true,
-    loop: true,
-    playsInline: true
-  }), /*#__PURE__*/React.createElement("video", {
-    className: "cuadros-soon__vid cuadros-soon__vid--desktop",
-    src: content.cuadros.comingSoonVideoDesktop,
-    autoPlay: true,
-    muted: true,
-    loop: true,
-    playsInline: true
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "cuadros-soon__over"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "cuadros-soon__title"
-  }, "EN CONSTRUCCI\xD3N"), /*#__PURE__*/React.createElement("p", {
-    className: "cuadros-soon__sub"
-  }, "Esta secci\xF3n est\xE1 siendo preparada con mucho cuidado"))) : items.length === 0 ? /*#__PURE__*/React.createElement("div", {
+  }, countFor(c)))))), items.length === 0 ? /*#__PURE__*/React.createElement("div", {
     className: "empty-state"
   }, "\u2014 SIN PRODUCTOS EN ESTA CATEGOR\xCDA POR AHORA \u2014") : /*#__PURE__*/React.createElement("div", {
     className: "prod-grid"

@@ -135,6 +135,7 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
   function navigateCategory(slug) {
     setOpenDrop(null);
     setMobileOpen(false);
+    if (slug === 'cuadros' && onNavigate) { onNavigate('cuadros'); return; }
     if (onNavigate) onNavigate('productos', slug);
   }
 
@@ -971,16 +972,7 @@ function Products({ content, onOpenProduct, initialCategory }) {
           </div>
         </Reveal>
 
-        {activeSlug === 'cuadros' ? (
-          <div className="cuadros-soon">
-            <video className="cuadros-soon__vid cuadros-soon__vid--mobile"  src={content.cuadros.comingSoonVideo}        autoPlay muted loop playsInline />
-            <video className="cuadros-soon__vid cuadros-soon__vid--desktop" src={content.cuadros.comingSoonVideoDesktop} autoPlay muted loop playsInline />
-            <div className="cuadros-soon__over">
-              <span className="cuadros-soon__title">EN CONSTRUCCIÓN</span>
-              <p className="cuadros-soon__sub">Esta sección está siendo preparada con mucho cuidado</p>
-            </div>
-          </div>
-        ) : items.length === 0 ?
+        {items.length === 0 ?
         <div className="empty-state">— SIN PRODUCTOS EN ESTA CATEGORÍA POR AHORA —</div> :
 
         <div className="prod-grid">
