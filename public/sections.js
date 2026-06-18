@@ -4,6 +4,12 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
 // RUAH LABS — Public site sections
 // ============================================================
 
+// Format Chilean peso price: "14990" or "14.990" → "14.990"
+function fmtPrice(p) {
+  var n = parseInt(String(p || '0').replace(/[^0-9]/g, ''), 10) || 0;
+  return new Intl.NumberFormat('es-CL').format(n);
+}
+
 // --- Reveal helpers ---
 function useInView(threshold = 0.15) {
   const ref = React.useRef(null);
@@ -556,7 +562,7 @@ function FeaturedDuo({
     className: "feat-card__price"
   }, /*#__PURE__*/React.createElement("span", {
     className: "clp"
-  }, "CLP"), "$", item.price), /*#__PURE__*/React.createElement("button", {
+  }, "CLP"), "$", fmtPrice(item.price)), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "btn btn--amber feat-card__cta",
     onClick: e => {
@@ -661,7 +667,7 @@ function HomeCategoryCarousel({
     className: "c3d__info-price"
   }, /*#__PURE__*/React.createElement("span", {
     className: "clp"
-  }, "CLP"), " $", current.price), /*#__PURE__*/React.createElement("button", {
+  }, "CLP"), " $", fmtPrice(current.price)), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "c3d__info-btn",
     onClick: () => window.dispatchEvent(new CustomEvent('ruah:navigateTo', {
@@ -1203,7 +1209,7 @@ function Products({
     className: "clp"
   }, "A CONSULTAR") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
     className: "clp"
-  }, "CLP"), "$", it.price)), /*#__PURE__*/React.createElement("button", {
+  }, "CLP"), "$", fmtPrice(it.price))), /*#__PURE__*/React.createElement("button", {
     className: "prod__buy",
     onClick: e => {
       e.stopPropagation();
@@ -1400,7 +1406,7 @@ function ProductDetail({
     className: "pd__price"
   }, /*#__PURE__*/React.createElement("span", {
     className: "clp"
-  }, "CLP"), "$", product.price), (() => {
+  }, "CLP"), "$", fmtPrice(product.price)), (() => {
     const st = product.stockType || 'permanente';
     const avail = product.stockActual != null ? product.stockActual : product.stockTotal || 0;
     if (st === 'limitado') return /*#__PURE__*/React.createElement("div", {

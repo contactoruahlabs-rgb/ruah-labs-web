@@ -3,6 +3,12 @@
 // RUAH LABS — Public site sections
 // ============================================================
 
+// Format Chilean peso price: "14990" or "14.990" → "14.990"
+function fmtPrice(p) {
+  var n = parseInt(String(p || '0').replace(/[^0-9]/g, ''), 10) || 0;
+  return new Intl.NumberFormat('es-CL').format(n);
+}
+
 // --- Reveal helpers ---
 function useInView(threshold = 0.15) {
   const ref = React.useRef(null);
@@ -430,7 +436,7 @@ function FeaturedDuo({ content, onOpenProduct }) {
               <div className="feat-card__body">
                 <h3 className="feat-card__name">{item.name}</h3>
                 <div className="feat-card__row">
-                  <span className="feat-card__price"><span className="clp">CLP</span>${item.price}</span>
+                  <span className="feat-card__price"><span className="clp">CLP</span>${fmtPrice(item.price)}</span>
                   <button
                     type="button"
                     className="btn btn--amber feat-card__cta"
@@ -517,7 +523,7 @@ function HomeCategoryCarousel({ content, onOpenProduct }) {
         <div className="c3d__info-cat">{current.catName}</div>
         <h3 className="c3d__info-name">{current.name}</h3>
         {current.description && <p className="c3d__info-desc">{current.description}</p>}
-        <div className="c3d__info-price"><span className="clp">CLP</span> ${current.price}</div>
+        <div className="c3d__info-price"><span className="clp">CLP</span> ${fmtPrice(current.price)}</div>
         <button type="button" className="c3d__info-btn" onClick={() => window.dispatchEvent(new CustomEvent('ruah:navigateTo', { detail: { page: 'productos', category: current.catSlug } }))}>Ver categoría &#8594;</button>
       </div>
 
@@ -1002,7 +1008,7 @@ function Products({ content, onOpenProduct, initialCategory }) {
                       : <div className="prod__stock prod__stock--out">— Agotado</div>;
                   })()}
                   <div className="prod__row">
-                    <div className="prod__price">{(!it.price || it.price === 0 || it.price === '0') ? <span className="clp">A CONSULTAR</span> : <React.Fragment><span className="clp">CLP</span>${it.price}</React.Fragment>}</div>
+                    <div className="prod__price">{(!it.price || it.price === 0 || it.price === '0') ? <span className="clp">A CONSULTAR</span> : <React.Fragment><span className="clp">CLP</span>${fmtPrice(it.price)}</React.Fragment>}</div>
                     <button
                   className="prod__buy"
                   onClick={(e) => {e.stopPropagation();onOpenProduct(it.id);}}>
@@ -1154,7 +1160,7 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
         <div className="pd__body">
           <div className="pd__verse">{product.verse} {product.tag ? '· ' + product.tag : ''}</div>
           <h2 className="pd__title">{product.name}</h2>
-          <div className="pd__price"><span className="clp">CLP</span>${product.price}</div>
+          <div className="pd__price"><span className="clp">CLP</span>${fmtPrice(product.price)}</div>
 
           {/* Badge de stock */}
           {(() => {
