@@ -385,6 +385,8 @@
   .ev-pillars { grid-template-columns: 1fr; }
   .ev-gallery__grid { grid-template-columns: 1fr 1fr; gap: 10px; }
   .ev-banner__slide { width: clamp(160px, 78vw, 320px); aspect-ratio: 16 / 9; }
+  .ev-pack { grid-template-columns: 1fr; }
+  .ev-pack__limit { text-align: left; }
 }
 
 /* ============================================================
