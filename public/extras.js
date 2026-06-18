@@ -657,7 +657,9 @@ function Iglesias({
   }, ig.title2))), /*#__PURE__*/React.createElement(Reveal, {
     delay: 350,
     className: "ig-hero__lede"
-  }, /*#__PURE__*/React.createElement("p", null, ig.lede))), /*#__PURE__*/React.createElement(Reveal, {
+  }, /*#__PURE__*/React.createElement("p", null, ig.lede))), /*#__PURE__*/React.createElement("div", {
+    className: "ig-feat-wrap"
+  }, /*#__PURE__*/React.createElement(Reveal, {
     delay: 120,
     className: 'ig-feat' + (ig.featureImg ? ' has-img' : '')
   }, ig.featureImg && /*#__PURE__*/React.createElement("img", {
@@ -665,20 +667,20 @@ function Iglesias({
     alt: ig.featureName,
     className: "ig-feat__img"
   }), /*#__PURE__*/React.createElement("div", {
-    className: "ig-feat__top"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "ig-feat__sq"
-  }, "\u25AA"), /*#__PURE__*/React.createElement("span", {
-    className: "ig-feat__tag"
-  }, ig.featureTag)), /*#__PURE__*/React.createElement("div", {
     className: "ig-feat__pattern"
-  }), /*#__PURE__*/React.createElement("div", {
+  })), /*#__PURE__*/React.createElement("div", {
     className: "ig-feat__foot"
   }, /*#__PURE__*/React.createElement("span", {
     className: "ig-feat__bar"
   }), /*#__PURE__*/React.createElement("span", {
     className: "ig-feat__name"
-  }, ig.featureName)))), /*#__PURE__*/React.createElement("div", {
+  }, ig.featureName)), /*#__PURE__*/React.createElement("div", {
+    className: "ig-feat__top"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ig-feat__sq"
+  }, "\u25AA"), /*#__PURE__*/React.createElement("span", {
+    className: "ig-feat__tag"
+  }, ig.featureTag)))), /*#__PURE__*/React.createElement("div", {
     className: "ig-svcs"
   }, ig.services.map((s, i) => /*#__PURE__*/React.createElement(Reveal, {
     key: s.id,

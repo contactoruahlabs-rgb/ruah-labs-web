@@ -692,111 +692,65 @@ function DesignGallery({
   content
 }) {
   const piezas = (content.design && content.design.piezas || []).filter(p => p.estado === 'visible').sort((a, b) => (a.orden || 0) - (b.orden || 0));
-  const [idx, setIdx] = React.useState(0);
   const [modal, setModal] = React.useState(null);
-  const pausedRef = React.useRef(false);
-  const touchRef = React.useRef(null);
+  const modalRef = React.useRef(null);
   const modalTouchRef = React.useRef(null);
-  const total = piezas.length;
   React.useEffect(() => {
-    if (total < 2) return;
-    const id = setInterval(() => {
-      if (!pausedRef.current) setIdx(i => (i + 1) % total);
-    }, 7000);
-    return () => clearInterval(id);
-  }, [total]);
+    modalRef.current = modal;
+  }, [modal]);
   React.useEffect(() => {
-    function onKey(e) {
-      if (e.key === 'ArrowLeft') {
-        pausedRef.current = true;
-        setIdx(i => (i - 1 + total) % total);
-      }
-      if (e.key === 'ArrowRight') {
-        pausedRef.current = true;
-        setIdx(i => (i + 1) % total);
-      }
+    function onPop() {
+      if (modalRef.current) setModal(null);
     }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [total]);
-  function goTo(i) {
-    pausedRef.current = true;
-    setIdx((i % total + total) % total);
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+  function openModal(pieza) {
+    setModal({
+      pieza,
+      imgIdx: 0
+    });
+    window.history.pushState({
+      ruahPage: 'design',
+      ruahModal: true
+    }, '', window.location.pathname);
   }
-  const pieza = piezas[idx] || null;
-
-  /* ── PLACEHOLDER cards when gallery is empty ── */
   const placeholders = ['MINIMAL', 'TIPOGRAFÍA', 'COLLAGE', 'ABSTRACTO', 'BÍBLICO', 'RETRATO'];
+  const items = piezas.length > 0 ? piezas : placeholders;
+  const isPlaceholderMode = piezas.length === 0;
   return /*#__PURE__*/React.createElement("section", {
     id: "design",
-    className: "dg",
-    onMouseEnter: () => {
-      pausedRef.current = true;
-    },
-    onMouseLeave: () => {
-      pausedRef.current = false;
-    },
-    onTouchStart: e => {
-      touchRef.current = e.touches[0].clientX;
-    },
-    onTouchEnd: e => {
-      const dx = e.changedTouches[0].clientX - (touchRef.current || 0);
-      if (Math.abs(dx) > 44) {
-        if (dx < 0) goTo(idx + 1);else goTo(idx - 1);
-      }
-    }
+    className: "dg"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "dg__stage"
-  }, (total > 0 ? piezas : placeholders).map((p, i) => {
-    const isPlaceholder = total === 0;
-    const name = isPlaceholder ? p : p.nombre;
-    const numStr = String(i + 1).padStart(2, '0');
-    const offset = i - (isPlaceholder ? 2 : idx);
-    const isCenter = offset === 0;
-    const absOff = Math.abs(offset);
-    const cls = ['dg__item', isCenter ? 'dg__item--active' : '', absOff === 1 ? 'dg__item--near' : '', absOff === 2 ? 'dg__item--far' : '', absOff >= 3 ? 'dg__item--out' : ''].filter(Boolean).join(' ');
-    return /*#__PURE__*/React.createElement("div", {
-      key: isPlaceholder ? i : p.id,
-      className: cls,
-      onClick: () => {
-        if (isPlaceholder) return;
-        isCenter ? setModal({
-          pieza: p,
-          imgIdx: 0
-        }) : goTo(i);
-      },
-      role: isPlaceholder ? undefined : 'button',
-      tabIndex: isCenter && !isPlaceholder ? 0 : -1,
-      "aria-label": isPlaceholder ? name : isCenter ? 'Ver: ' + name : 'Ir a ' + name
+    className: "dg__catalog"
+  }, items.map((p, i) => {
+    const name = isPlaceholderMode ? p : p.nombre;
+    const desc = isPlaceholderMode ? null : p.descripcion_breve || null;
+    const img = isPlaceholderMode ? null : p.imagen_principal;
+    return /*#__PURE__*/React.createElement(Reveal, {
+      key: isPlaceholderMode ? i : p.id,
+      delay: i * 50,
+      className: 'dg__cat-item' + (isPlaceholderMode ? ' dg__cat-item--ph' : ''),
+      onClick: () => !isPlaceholderMode && openModal(p),
+      role: isPlaceholderMode ? undefined : 'button',
+      tabIndex: isPlaceholderMode ? -1 : 0,
+      "aria-label": isPlaceholderMode ? name : 'Ver: ' + name
     }, /*#__PURE__*/React.createElement("div", {
-      className: "dg__item-label"
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "dg__item-name"
-    }, name), /*#__PURE__*/React.createElement("span", {
-      className: "dg__item-num"
-    }, numStr)), /*#__PURE__*/React.createElement("div", {
-      className: "dg__card"
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "dg__card-corner dg__card-corner--tl"
-    }, "1\xD7", /*#__PURE__*/React.createElement("br", null), "\u25B2"), /*#__PURE__*/React.createElement("div", {
-      className: "dg__card-img"
-    }, !isPlaceholder && p.imagen_principal ? /*#__PURE__*/React.createElement("img", {
-      src: p.imagen_principal,
+      className: "dg__cat-img"
+    }, img ? /*#__PURE__*/React.createElement("img", {
+      src: img,
       alt: name,
       loading: "lazy"
     }) : /*#__PURE__*/React.createElement("div", {
-      className: "dg__card-ph"
-    }, name.slice(0, 2).toUpperCase())), /*#__PURE__*/React.createElement("span", {
-      className: "dg__card-corner dg__card-corner--br"
-    }, "1\xD7", /*#__PURE__*/React.createElement("br", null), "\u25B2")));
-  })), total > 1 && /*#__PURE__*/React.createElement("div", {
-    className: "dg__dots"
-  }, piezas.map((_, i) => /*#__PURE__*/React.createElement("button", {
-    key: i,
-    className: 'dg__dot' + (i === idx ? ' active' : ''),
-    onClick: () => goTo(i),
-    "aria-label": 'Pieza ' + (i + 1)
-  }))), /*#__PURE__*/React.createElement("div", {
+      className: "dg__cat-ph"
+    }, name.slice(0, 2).toUpperCase())), /*#__PURE__*/React.createElement("div", {
+      className: "dg__cat-info"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "dg__cat-name"
+    }, name), desc && /*#__PURE__*/React.createElement("span", {
+      className: "dg__cat-desc"
+    }, desc)));
+  })), /*#__PURE__*/React.createElement("div", {
     className: "dg__footer"
   }, /*#__PURE__*/React.createElement("div", {
     className: "dg__footer-left"

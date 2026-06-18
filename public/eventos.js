@@ -31,9 +31,11 @@ function Eventos({
     delay: 380,
     className: "ev-sub"
   }, /*#__PURE__*/React.createElement("p", null, ev.sub)))), ev.gallery && ev.gallery.length > 0 && /*#__PURE__*/React.createElement("div", {
-    className: "ev-banner"
-  }, ev.gallery.map((g, i) => /*#__PURE__*/React.createElement("div", {
-    key: g.id,
+    className: "ev-banner__wrap"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ev-banner__track"
+  }, [...ev.gallery, ...ev.gallery, ...ev.gallery].map((g, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
     className: "ev-banner__slide"
   }, g.img ? /*#__PURE__*/React.createElement("img", {
     src: g.img,
@@ -41,7 +43,7 @@ function Eventos({
     className: "ev-banner__img"
   }) : /*#__PURE__*/React.createElement("div", {
     className: "ev-banner__ph"
-  }, /*#__PURE__*/React.createElement("span", null, "0", i + 1))))), activeGallery && /*#__PURE__*/React.createElement(GalleryModal, {
+  }, /*#__PURE__*/React.createElement("span", null, "0", i % ev.gallery.length + 1)))))), activeGallery && /*#__PURE__*/React.createElement(GalleryModal, {
     title: activeGallery.caption || 'Galería',
     subtitle: null,
     photos: activeGallery.photos || [],

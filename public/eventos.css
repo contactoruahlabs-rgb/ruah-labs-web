@@ -375,7 +375,7 @@
   .ev-detail { grid-template-columns: 1fr; gap: 18px; padding: 28px; }
   .ev-coverage { flex-direction: column; align-items: flex-start; gap: 8px; }
   .ev-gallery__grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-  .ev-banner { grid-template-columns: 1fr 1fr; }
+  .ev-banner__slide { width: clamp(200px, 55vw, 380px); }
   .ev-packs__grid { grid-template-columns: 1fr; gap: 1px; }
   .ev-packs--standalone { padding: 28px 20px; }
   .ev-wedo { padding: 32px 20px; }
@@ -384,24 +384,27 @@
 @media (max-width: 560px) {
   .ev-pillars { grid-template-columns: 1fr; }
   .ev-gallery__grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .ev-banner { grid-template-columns: 1fr; }
-  .ev-banner__slide { aspect-ratio: 16 / 9; }
+  .ev-banner__slide { width: clamp(160px, 78vw, 320px); aspect-ratio: 16 / 9; }
 }
 
 /* ============================================================
-   Banner de portafolio — imágenes sin texto
+   Banner de portafolio — carrusel infinito lateral
 ============================================================ */
-.ev-banner {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-  margin-bottom: 72px;
-  border-radius: 2px;
+.ev-banner__wrap {
   overflow: hidden;
+  margin-bottom: 72px;
 }
+.ev-banner__track {
+  display: flex;
+  gap: 6px;
+  width: max-content;
+  animation: banner-scroll 28s linear infinite;
+}
+.ev-banner__wrap:hover .ev-banner__track { animation-play-state: paused; }
 .ev-banner__slide {
-  position: relative;
-  aspect-ratio: 4 / 3;
+  flex-shrink: 0;
+  width: clamp(280px, 38vw, 540px);
+  aspect-ratio: 3 / 2;
   background: var(--black);
   overflow: hidden;
 }
@@ -413,10 +416,14 @@
 }
 .ev-banner__slide:hover .ev-banner__img { transform: scale(1.04); }
 .ev-banner__ph {
-  position: absolute; inset: 0;
+  width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
   background: repeating-linear-gradient(135deg, #1a1a1a 0 18px, #0f0f0f 18px 19px);
   font-family: var(--serif); font-size: 48px; color: var(--amber);
+}
+@keyframes banner-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-33.333%); }
 }
 
 /* Paquetes standalone (debajo del banner) */
@@ -427,8 +434,13 @@
   color: var(--ivory);
 }
 .ev-packs--standalone .ev-packs__hd {
+  font-family: var(--serif);
+  font-size: clamp(48px, 10vw, 90px);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1;
   color: var(--ivory);
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 .ev-packs__grid {
   display: grid;

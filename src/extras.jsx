@@ -531,18 +531,20 @@ function Iglesias({ content }) {
             </h3>
             <Reveal delay={350} className="ig-hero__lede"><p>{ig.lede}</p></Reveal>
           </div>
-          <Reveal delay={120} className={'ig-feat' + (ig.featureImg ? ' has-img' : '')}>
-            {ig.featureImg && <img src={ig.featureImg} alt={ig.featureName} className="ig-feat__img" />}
-            <div className="ig-feat__top">
-              <span className="ig-feat__sq">▪</span>
-              <span className="ig-feat__tag">{ig.featureTag}</span>
-            </div>
-            <div className="ig-feat__pattern"></div>
+          <div className="ig-feat-wrap">
+            <Reveal delay={120} className={'ig-feat' + (ig.featureImg ? ' has-img' : '')}>
+              {ig.featureImg && <img src={ig.featureImg} alt={ig.featureName} className="ig-feat__img" />}
+              <div className="ig-feat__pattern"></div>
+            </Reveal>
             <div className="ig-feat__foot">
               <span className="ig-feat__bar"></span>
               <span className="ig-feat__name">{ig.featureName}</span>
             </div>
-          </Reveal>
+            <div className="ig-feat__top">
+              <span className="ig-feat__sq">▪</span>
+              <span className="ig-feat__tag">{ig.featureTag}</span>
+            </div>
+          </div>
         </div>
 
         <div className="ig-svcs">

@@ -51,6 +51,9 @@
   padding-bottom: 8px;
   text-align: right;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 /* Light variant — used inside cuadros section (light bg) */
@@ -876,6 +879,7 @@
   color: var(--ivory);
   padding-block: var(--section-pad-y);
   position: relative;
+  overflow-x: hidden;
 }
 
 /* Hero: title left + feature card right */
@@ -905,15 +909,16 @@
   color: var(--c-iglesiasLede, rgba(245,241,232,0.65));
 }
 
+.ig-feat-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 .ig-feat {
   position: relative;
   aspect-ratio: 16 / 10;
   border: 1px solid rgba(245,241,232,0.15);
   background: #101010;
-  padding: 18px 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
   overflow: hidden;
 }
 .ig-feat::before {
@@ -924,7 +929,6 @@
   pointer-events: none;
 }
 .ig-feat__top {
-  position: relative; z-index: 2;
   display: flex; align-items: center; gap: 8px;
 }
 .ig-feat__sq { color: var(--amber); font-size: 11px; }
@@ -937,9 +941,7 @@
   text-transform: uppercase;
 }
 .ig-feat__foot {
-  position: relative; z-index: 2;
   display: flex;
-  justify-content: flex-end;
   align-items: center;
   gap: 8px;
 }
@@ -1232,7 +1234,7 @@
   .ig-formWrap { grid-template-columns: 1fr; gap: 30px; }
   .ig-form { grid-template-columns: 1fr; }
   .sec-bar { grid-template-columns: 1fr; gap: 8px; }
-  .sec-bar__right { text-align: left; }
+  .sec-bar__right { text-align: left; white-space: normal; overflow: visible; }
   .sec-bar__index::before { display: none; }
 }
 @media (max-width: 560px) {

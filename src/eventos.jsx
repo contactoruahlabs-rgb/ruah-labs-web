@@ -26,16 +26,18 @@ function Eventos({ content }) {
           </div>
         </div>
 
-        {/* Banner de portafolio — imágenes sin texto */}
+        {/* Banner de portafolio — carrusel infinito lateral */}
         {(ev.gallery && ev.gallery.length > 0) && (
-          <div className="ev-banner">
-            {ev.gallery.map((g, i) => (
-              <div key={g.id} className="ev-banner__slide">
-                {g.img
-                  ? <img src={g.img} alt="" className="ev-banner__img" />
-                  : <div className="ev-banner__ph"><span>0{i + 1}</span></div>}
-              </div>
-            ))}
+          <div className="ev-banner__wrap">
+            <div className="ev-banner__track">
+              {[...ev.gallery, ...ev.gallery, ...ev.gallery].map((g, i) => (
+                <div key={i} className="ev-banner__slide">
+                  {g.img
+                    ? <img src={g.img} alt="" className="ev-banner__img" />
+                    : <div className="ev-banner__ph"><span>0{(i % ev.gallery.length) + 1}</span></div>}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

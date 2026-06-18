@@ -548,101 +548,60 @@ function DesignGallery({ content }) {
     .filter(p => p.estado === 'visible')
     .sort((a, b) => (a.orden || 0) - (b.orden || 0));
 
-  const [idx,   setIdx]  = React.useState(0);
   const [modal, setModal] = React.useState(null);
-  const pausedRef    = React.useRef(false);
-  const touchRef     = React.useRef(null);
+  const modalRef     = React.useRef(null);
   const modalTouchRef = React.useRef(null);
-  const total = piezas.length;
+
+  React.useEffect(() => { modalRef.current = modal; }, [modal]);
 
   React.useEffect(() => {
-    if (total < 2) return;
-    const id = setInterval(() => {
-      if (!pausedRef.current) setIdx(i => (i + 1) % total);
-    }, 7000);
-    return () => clearInterval(id);
-  }, [total]);
+    function onPop() { if (modalRef.current) setModal(null); }
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
 
-  React.useEffect(() => {
-    function onKey(e) {
-      if (e.key === 'ArrowLeft')  { pausedRef.current = true; setIdx(i => (i - 1 + total) % total); }
-      if (e.key === 'ArrowRight') { pausedRef.current = true; setIdx(i => (i + 1) % total); }
-    }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [total]);
+  function openModal(pieza) {
+    setModal({ pieza, imgIdx: 0 });
+    window.history.pushState({ ruahPage: 'design', ruahModal: true }, '', window.location.pathname);
+  }
 
-  function goTo(i) { pausedRef.current = true; setIdx(((i % total) + total) % total); }
-
-  const pieza = piezas[idx] || null;
-
-  /* ── PLACEHOLDER cards when gallery is empty ── */
   const placeholders = ['MINIMAL', 'TIPOGRAFÍA', 'COLLAGE', 'ABSTRACTO', 'BÍBLICO', 'RETRATO'];
+  const items = piezas.length > 0 ? piezas : placeholders;
+  const isPlaceholderMode = piezas.length === 0;
 
   return (
-    <section
-      id="design"
-      className="dg"
-      onMouseEnter={() => { pausedRef.current = true; }}
-      onMouseLeave={() => { pausedRef.current = false; }}
-      onTouchStart={e => { touchRef.current = e.touches[0].clientX; }}
-      onTouchEnd={e => {
-        const dx = e.changedTouches[0].clientX - (touchRef.current || 0);
-        if (Math.abs(dx) > 44) { if (dx < 0) goTo(idx + 1); else goTo(idx - 1); }
-      }}
-    >
-      {/* ── Card stage ── */}
-      <div className="dg__stage">
-        {(total > 0 ? piezas : placeholders).map((p, i) => {
-          const isPlaceholder = total === 0;
-          const name   = isPlaceholder ? p : p.nombre;
-          const numStr = String(i + 1).padStart(2, '0');
-          const offset = i - (isPlaceholder ? 2 : idx);
-          const isCenter = offset === 0;
-          const absOff = Math.abs(offset);
-          const cls = ['dg__item',
-            isCenter ? 'dg__item--active' : '',
-            absOff === 1 ? 'dg__item--near' : '',
-            absOff === 2 ? 'dg__item--far'  : '',
-            absOff >= 3  ? 'dg__item--out'  : '',
-          ].filter(Boolean).join(' ');
+    <section id="design" className="dg">
 
+      {/* ── Catalog grid ── */}
+      <div className="dg__catalog">
+        {items.map((p, i) => {
+          const name = isPlaceholderMode ? p : p.nombre;
+          const desc = isPlaceholderMode ? null : (p.descripcion_breve || null);
+          const img  = isPlaceholderMode ? null : p.imagen_principal;
           return (
-            <div
-              key={isPlaceholder ? i : p.id}
-              className={cls}
-              onClick={() => { if (isPlaceholder) return; isCenter ? setModal({ pieza: p, imgIdx: 0 }) : goTo(i); }}
-              role={isPlaceholder ? undefined : 'button'}
-              tabIndex={isCenter && !isPlaceholder ? 0 : -1}
-              aria-label={isPlaceholder ? name : (isCenter ? 'Ver: ' + name : 'Ir a ' + name)}
+            <Reveal
+              key={isPlaceholderMode ? i : p.id}
+              delay={i * 50}
+              className={'dg__cat-item' + (isPlaceholderMode ? ' dg__cat-item--ph' : '')}
+              onClick={() => !isPlaceholderMode && openModal(p)}
+              role={isPlaceholderMode ? undefined : 'button'}
+              tabIndex={isPlaceholderMode ? -1 : 0}
+              aria-label={isPlaceholderMode ? name : 'Ver: ' + name}
             >
-              <div className="dg__item-label">
-                <span className="dg__item-name">{name}</span>
-                <span className="dg__item-num">{numStr}</span>
+              <div className="dg__cat-img">
+                {img
+                  ? <img src={img} alt={name} loading="lazy" />
+                  : <div className="dg__cat-ph">{name.slice(0, 2).toUpperCase()}</div>
+                }
               </div>
-              <div className="dg__card">
-                <span className="dg__card-corner dg__card-corner--tl">1×<br/>▲</span>
-                <div className="dg__card-img">
-                  {(!isPlaceholder && p.imagen_principal)
-                    ? <img src={p.imagen_principal} alt={name} loading="lazy" />
-                    : <div className="dg__card-ph">{name.slice(0, 2).toUpperCase()}</div>
-                  }
-                </div>
-                <span className="dg__card-corner dg__card-corner--br">1×<br/>▲</span>
+              <div className="dg__cat-info">
+                <span className="dg__cat-name">{name}</span>
+                {desc && <span className="dg__cat-desc">{desc}</span>}
               </div>
-            </div>
+            </Reveal>
           );
         })}
       </div>
-
-      {/* ── Dots ── */}
-      {total > 1 && (
-        <div className="dg__dots">
-          {piezas.map((_, i) => (
-            <button key={i} className={'dg__dot' + (i === idx ? ' active' : '')} onClick={() => goTo(i)} aria-label={'Pieza ' + (i + 1)} />
-          ))}
-        </div>
-      )}
 
       {/* ── Footer ── */}
       <div className="dg__footer">
@@ -659,7 +618,7 @@ function DesignGallery({ content }) {
         </div>
       </div>
 
-      {/* ── Modal (imagen pantalla completa + info abajo) ── */}
+      {/* ── Modal ── */}
       {modal && (
         <div
           className="museum__modal-overlay"
@@ -670,7 +629,6 @@ function DesignGallery({ content }) {
           <div className="museum__modal" onClick={e => e.stopPropagation()}>
             <button className="museum__modal-x" onClick={() => setModal(null)} aria-label="Cerrar">&#x2715;</button>
 
-            {/* Imagen principal con swipe y flechas */}
             {(() => {
               const imgs = modal.pieza.imagenes_detalle && modal.pieza.imagenes_detalle.length > 0
                 ? modal.pieza.imagenes_detalle
@@ -699,7 +657,6 @@ function DesignGallery({ content }) {
               );
             })()}
 
-            {/* Info strip en la parte inferior */}
             <div className="museum__modal-info">
               <div className="museum__modal-meta">
                 {(modal.pieza.cliente || modal.pieza.fecha_creacion) && (
