@@ -560,6 +560,7 @@ function DesignGallery({ content }) {
   const modalPinchRef    = React.useRef(null);
   const modalDragRef     = React.useRef(null);
   const imgWrapRef       = React.useRef(null);
+  const imgMouseDragRef  = React.useRef(null);
   const [imgScale, setImgScale] = React.useState(1);
   const imgScaleRef      = React.useRef(1);
   const [imgTranslate, setImgTranslate] = React.useState({ x: 0, y: 0 });
@@ -687,105 +688,127 @@ function DesignGallery({ content }) {
         </div>
       </div>
 
-      {/* ── Modal ── */}
-      {modal && (
-        <div
-          className="museum__modal-overlay"
-          onClick={() => setModal(null)}
-          role="dialog" aria-modal="true"
-          aria-label={'Ver: ' + modal.pieza.nombre}
-        >
-          <div className="museum__modal" onClick={e => e.stopPropagation()}>
-            <button className="museum__modal-x" onClick={() => setModal(null)} aria-label="Cerrar">&#x2715;</button>
+      {/* ── Modal — mismo layout que ProductDetail ── */}
+      {modal && (function() {
+        const imgs = modal.pieza.imagenes_detalle && modal.pieza.imagenes_detalle.length > 0
+          ? modal.pieza.imagenes_detalle
+          : modal.pieza.imagen_principal ? [modal.pieza.imagen_principal] : [];
+        const totalImgs = imgs.length;
+        function modalPrev() { if (totalImgs > 1) setModal(m => ({ ...m, imgIdx: (m.imgIdx - 1 + totalImgs) % totalImgs })); }
+        function modalNext() { if (totalImgs > 1) setModal(m => ({ ...m, imgIdx: (m.imgIdx + 1) % totalImgs })); }
+        return (
+          <div className="pd-overlay open" onClick={() => setModal(null)} role="dialog" aria-modal="true">
+            <div className="pd" onClick={e => e.stopPropagation()}>
+              <button className="pd__close" onClick={() => setModal(null)} aria-label="Cerrar">×</button>
 
-            {(() => {
-              const imgs = modal.pieza.imagenes_detalle && modal.pieza.imagenes_detalle.length > 0
-                ? modal.pieza.imagenes_detalle
-                : modal.pieza.imagen_principal ? [modal.pieza.imagen_principal] : [];
-              const totalImgs = imgs.length;
-              function modalPrev() { if (totalImgs > 1) setModal(m => ({ ...m, imgIdx: (m.imgIdx - 1 + totalImgs) % totalImgs })); }
-              function modalNext() { if (totalImgs > 1) setModal(m => ({ ...m, imgIdx: (m.imgIdx + 1) % totalImgs })); }
-              return (
-                <div ref={imgWrapRef}
-                  className="museum__modal-imgwrap"
+              {/* Columna izquierda — imagen */}
+              <div className="pd__media">
+                <div
+                  ref={imgWrapRef}
+                  className="pd__main"
+                  style={{ cursor: imgScale > 1 ? 'grab' : 'zoom-in', userSelect: 'none' }}
+                  onMouseDown={e => {
+                    if (imgScaleRef.current <= 1) return;
+                    e.preventDefault();
+                    imgMouseDragRef.current = { startX: e.clientX, startY: e.clientY, startTx: imgTranslateRef.current.x, startTy: imgTranslateRef.current.y, moved: false };
+                    if (imgWrapRef.current) imgWrapRef.current.style.cursor = 'grabbing';
+                  }}
+                  onMouseMove={e => {
+                    if (!imgMouseDragRef.current) return;
+                    var ddx = e.clientX - imgMouseDragRef.current.startX;
+                    var ddy = e.clientY - imgMouseDragRef.current.startY;
+                    if (Math.abs(ddx) > 3 || Math.abs(ddy) > 3) imgMouseDragRef.current.moved = true;
+                    var el = imgWrapRef.current;
+                    var s = imgScaleRef.current;
+                    var maxTx = Math.max(0, el.clientWidth * (s-1) / 2);
+                    var maxTy = Math.max(0, el.clientHeight * (s-1) / 2);
+                    imgTranslateRef.current = { x: Math.max(-maxTx, Math.min(maxTx, imgMouseDragRef.current.startTx + ddx)), y: Math.max(-maxTy, Math.min(maxTy, imgMouseDragRef.current.startTy + ddy)) };
+                    setImgTranslate({ ...imgTranslateRef.current });
+                  }}
+                  onMouseUp={() => {
+                    var d = imgMouseDragRef.current; imgMouseDragRef.current = null;
+                    if (imgWrapRef.current) imgWrapRef.current.style.cursor = imgScaleRef.current > 1 ? 'grab' : 'zoom-in';
+                    if (d && d.moved) return;
+                    var S=[1,1.6,2.4]; var n=S.find(function(s){return s>imgScaleRef.current+0.05;})||1;
+                    setImgScale(n); imgScaleRef.current=n; setImgTranslate({x:0,y:0}); imgTranslateRef.current={x:0,y:0};
+                    if (imgWrapRef.current) imgWrapRef.current.style.cursor = n > 1 ? 'grab' : 'zoom-in';
+                  }}
+                  onMouseLeave={() => { imgMouseDragRef.current = null; if (imgWrapRef.current) imgWrapRef.current.style.cursor = imgScaleRef.current > 1 ? 'grab' : 'zoom-in'; }}
                   onTouchStart={e => {
                     if (e.touches.length >= 2) {
                       modalTouchRef.current = null; modalDragRef.current = null;
-                      var t0 = e.touches[0], t1 = e.touches[1];
-                      var dxt = t0.clientX - t1.clientX, dyt = t0.clientY - t1.clientY;
+                      var t0=e.touches[0],t1=e.touches[1],dxt=t0.clientX-t1.clientX,dyt=t0.clientY-t1.clientY;
                       modalPinchRef.current = { startDist: Math.sqrt(dxt*dxt+dyt*dyt), startScale: imgScaleRef.current };
                     } else if (imgScaleRef.current > 1) {
-                      // Zoomed in → single finger pans
                       modalPinchRef.current = null; modalTouchRef.current = null;
                       modalDragRef.current = { startX: e.touches[0].clientX, startY: e.touches[0].clientY, startTx: imgTranslateRef.current.x, startTy: imgTranslateRef.current.y };
                     } else {
-                      // Normal scale → single finger swipes to navigate
                       modalTouchRef.current = e.touches[0].clientX;
                       modalPinchRef.current = null; modalDragRef.current = null;
                     }
                   }}
                   onTouchEnd={e => {
                     if (modalPinchRef.current) {
-                      if (imgScaleRef.current < 1.15) {
-                        setImgScale(1); imgScaleRef.current = 1;
-                        setImgTranslate({ x: 0, y: 0 }); imgTranslateRef.current = { x: 0, y: 0 };
-                      }
+                      if (imgScaleRef.current < 1.15) { setImgScale(1); imgScaleRef.current=1; setImgTranslate({x:0,y:0}); imgTranslateRef.current={x:0,y:0}; }
                       modalPinchRef.current = null; return;
                     }
                     if (modalDragRef.current) { modalDragRef.current = null; return; }
                     var dx = e.changedTouches[0].clientX - (modalTouchRef.current || 0);
-                    if (imgScaleRef.current <= 1 && Math.abs(dx) > 60 && totalImgs > 1) {
-                      if (dx < 0) modalNext(); else modalPrev();
-                    }
+                    if (imgScaleRef.current <= 1 && Math.abs(dx) > 60 && totalImgs > 1) { if (dx < 0) modalNext(); else modalPrev(); }
                     modalTouchRef.current = null;
-                  }}>
+                  }}
+                >
                   {imgs.length > 0
-                    ? <img src={imgs[modal.imgIdx] || imgs[0]} alt={'Detalle ' + (modal.imgIdx + 1)} loading="lazy"
-                        style={{ transform: 'translate(' + imgTranslate.x + 'px,' + imgTranslate.y + 'px) scale(' + imgScale + ')', transformOrigin: 'center center', transition: (modalPinchRef.current || modalDragRef.current) ? 'none' : 'transform 0.2s ease', willChange: 'transform' }} />
-                    : <div className="museum__modal-ph">{(modal.pieza.nombre || 'RL').slice(0, 2)}</div>}
+                    ? <img src={imgs[modal.imgIdx] || imgs[0]} alt={modal.pieza.nombre} loading="lazy"
+                        style={{ transform: 'translate('+imgTranslate.x+'px,'+imgTranslate.y+'px) scale('+imgScale+')', transformOrigin: 'center center', transition: (modalPinchRef.current||modalDragRef.current) ? 'none' : 'transform 0.2s ease', willChange: 'transform' }} />
+                    : <div className="pd__ph">{(modal.pieza.nombre||'RL').slice(0,2)}</div>}
+                  <div className="pd__zoom-ctrl" onClick={e => e.stopPropagation()}>
+                    <button className="pd__zoom-btn" onClick={() => { var S=[1,1.6,2.4],p=S.filter(function(s){return s<imgScaleRef.current-0.05;}).pop()||1; setImgScale(p); imgScaleRef.current=p; setImgTranslate({x:0,y:0}); imgTranslateRef.current={x:0,y:0}; }} disabled={imgScale<=1}>−</button>
+                    <span className="pd__zoom-lv">{imgScale.toFixed(1)}×</span>
+                    <button className="pd__zoom-btn" onClick={() => { var S=[1,1.6,2.4],n=S.find(function(s){return s>imgScaleRef.current+0.05;})||2.4; setImgScale(n); imgScaleRef.current=n; setImgTranslate({x:0,y:0}); imgTranslateRef.current={x:0,y:0}; }} disabled={imgScale>=2.4}>+</button>
+                  </div>
                   {totalImgs > 1 && (
                     <React.Fragment>
-                      <button className="museum__modal-arr museum__modal-arr--prev" onClick={e => { e.stopPropagation(); modalPrev(); }} aria-label="Anterior">&#8249;</button>
-                      <button className="museum__modal-arr museum__modal-arr--next" onClick={e => { e.stopPropagation(); modalNext(); }} aria-label="Siguiente">&#8250;</button>
-                      <div className="museum__modal-count">{(modal.imgIdx || 0) + 1} / {totalImgs}</div>
+                      <button className="pd__arr pd__arr--prev" onClick={e => { e.stopPropagation(); modalPrev(); }} aria-label="Anterior">&#8249;</button>
+                      <button className="pd__arr pd__arr--next" onClick={e => { e.stopPropagation(); modalNext(); }} aria-label="Siguiente">&#8250;</button>
+                      <div className="pd__arr-count">{(modal.imgIdx||0)+1} / {totalImgs}</div>
                     </React.Fragment>
                   )}
                 </div>
-              );
-            })()}
-
-            <div className="museum__modal-info">
-              <div className="museum__modal-meta">
-                {(modal.pieza.cliente || modal.pieza.fecha_creacion) && (
-                  <p className="museum__modal-eyebrow">
-                    {[modal.pieza.cliente, modal.pieza.fecha_creacion].filter(Boolean).join(' · ')}
-                  </p>
-                )}
-                <h2 className="museum__modal-title">{modal.pieza.nombre}</h2>
-                {(modal.pieza.descripcion_historia || modal.pieza.descripcion_breve) && (
-                  <p className="museum__modal-desc">
-                    {modal.pieza.descripcion_historia || modal.pieza.descripcion_breve}
-                  </p>
+                {totalImgs > 1 && (
+                  <div className="pd__thumbs">
+                    {imgs.map((url, ti) => (
+                      <button key={ti} className={'pd__thumb'+(ti===modal.imgIdx?' active':'')}
+                        onClick={() => setModal(m => ({...m, imgIdx: ti}))} aria-label={'Detalle '+(ti+1)}>
+                        <img src={url} alt="" loading="lazy" />
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
-              {modal.pieza.imagenes_detalle && modal.pieza.imagenes_detalle.length > 1 && (
-                <div className="museum__modal-thumbs">
-                  {modal.pieza.imagenes_detalle.map((url, ti) => (
-                    <button
-                      key={ti}
-                      className={'museum__modal-thumb' + (ti === modal.imgIdx ? ' active' : '')}
-                      onClick={() => setModal(m => ({ ...m, imgIdx: ti }))}
-                      aria-label={'Detalle ' + (ti + 1)}
-                    >
-                      <img src={url} alt={'Detalle ' + (ti + 1)} loading="lazy" />
-                    </button>
-                  ))}
+
+              {/* Columna derecha — info */}
+              <div className="pd__body">
+                {(modal.pieza.cliente || modal.pieza.fecha_creacion) && (
+                  <div className="pd__verse">{[modal.pieza.cliente, modal.pieza.fecha_creacion].filter(Boolean).join(' · ')}</div>
+                )}
+                <h2 className="pd__title">{modal.pieza.nombre}</h2>
+                {(modal.pieza.descripcion_historia || modal.pieza.descripcion_breve) && (
+                  <div className="pd__scrollable">
+                    <p className="pd__desc">{modal.pieza.descripcion_historia || modal.pieza.descripcion_breve}</p>
+                  </div>
+                )}
+                <div style={{ marginTop: 'auto', paddingTop: 24 }}>
+                  <a
+                    href="mailto:contacto@ruahlabs.cl?subject=Cotización%20diseño%20personalizado"
+                    className="pd__buy" style={{ display: 'inline-flex', textDecoration: 'none' }}
+                  >Cotizar este diseño →</a>
                 </div>
-              )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </section>
   );
 }
@@ -1133,9 +1156,10 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
   const pdScaleRef    = React.useRef(1);
   const [pdTranslate, setPdTranslate] = React.useState({ x: 0, y: 0 });
   const pdTranslateRef = React.useRef({ x: 0, y: 0 });
-  const pdPinchRef    = React.useRef(null);
-  const pdDragRef     = React.useRef(null);
-  const pdMainRef     = React.useRef(null);
+  const pdPinchRef      = React.useRef(null);
+  const pdDragRef       = React.useRef(null);
+  const pdMouseDragRef  = React.useRef(null);
+  const pdMainRef       = React.useRef(null);
   const [selectedSize, setSelectedSize] = React.useState(null);
 
   const SIZES = {
@@ -1221,8 +1245,34 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
           <div
             ref={pdMainRef}
             className="pd__main"
-            style={{ cursor: pdScale > 1 ? 'move' : 'zoom-in' }}
-            onClick={() => { var S=[1,1.6,2.4]; var n=S.find(function(s){return s>pdScaleRef.current+0.05;})||1; setPdScale(n); pdScaleRef.current=n; setPdTranslate({x:0,y:0}); pdTranslateRef.current={x:0,y:0}; }}
+            style={{ cursor: pdScale > 1 ? 'grab' : 'zoom-in', userSelect: 'none' }}
+            onMouseDown={e => {
+              if (pdScaleRef.current <= 1) return;
+              e.preventDefault();
+              pdMouseDragRef.current = { startX: e.clientX, startY: e.clientY, startTx: pdTranslateRef.current.x, startTy: pdTranslateRef.current.y, moved: false };
+              if (pdMainRef.current) pdMainRef.current.style.cursor = 'grabbing';
+            }}
+            onMouseMove={e => {
+              if (!pdMouseDragRef.current) return;
+              var ddx = e.clientX - pdMouseDragRef.current.startX;
+              var ddy = e.clientY - pdMouseDragRef.current.startY;
+              if (Math.abs(ddx) > 3 || Math.abs(ddy) > 3) pdMouseDragRef.current.moved = true;
+              var el = pdMainRef.current;
+              var s = pdScaleRef.current;
+              var maxTx = Math.max(0, el.clientWidth * (s-1) / 2);
+              var maxTy = Math.max(0, el.clientHeight * (s-1) / 2);
+              pdTranslateRef.current = { x: Math.max(-maxTx, Math.min(maxTx, pdMouseDragRef.current.startTx + ddx)), y: Math.max(-maxTy, Math.min(maxTy, pdMouseDragRef.current.startTy + ddy)) };
+              setPdTranslate({ ...pdTranslateRef.current });
+            }}
+            onMouseUp={() => {
+              var d = pdMouseDragRef.current; pdMouseDragRef.current = null;
+              if (pdMainRef.current) pdMainRef.current.style.cursor = pdScaleRef.current > 1 ? 'grab' : 'zoom-in';
+              if (d && d.moved) return;
+              var S=[1,1.6,2.4]; var n=S.find(function(s){return s>pdScaleRef.current+0.05;})||1;
+              setPdScale(n); pdScaleRef.current=n; setPdTranslate({x:0,y:0}); pdTranslateRef.current={x:0,y:0};
+              if (pdMainRef.current) pdMainRef.current.style.cursor = n > 1 ? 'grab' : 'zoom-in';
+            }}
+            onMouseLeave={() => { pdMouseDragRef.current = null; if (pdMainRef.current) pdMainRef.current.style.cursor = pdScaleRef.current > 1 ? 'grab' : 'zoom-in'; }}
             onTouchStart={e => {
               if (e.touches.length >= 2) {
                 pdTouchRef.current = null; pdDragRef.current = null;

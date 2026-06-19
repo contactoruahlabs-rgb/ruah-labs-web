@@ -257,6 +257,17 @@ app.post('/api/checkout/create-preference', rateLimit('checkout', 10, 60 * 1000)
       return res.status(400).json({ error: 'Precio o producto inválido' });
     }
 
+    // Descuento validado en servidor (el cliente no puede falsificar el monto)
+    var VALID_DISCOUNT_CODES = { 'BIENVENIDO10': 10 };
+    var discPct = (discount && VALID_DISCOUNT_CODES[String(discount).toUpperCase()]) || 0;
+    if (discPct > 0) {
+      var subTot  = items.reduce(function(s, it) { return s + it.unit_price * it.quantity; }, 0);
+      var discAmt = Math.round(subTot * discPct / 100);
+      if (discAmt > 0) {
+        items.push({ id: 'descuento', title: 'Descuento ' + String(discount).toUpperCase(), quantity: 1, unit_price: -discAmt, currency_id: 'CLP' });
+      }
+    }
+
     if (shipFee > 0) {
       items.push({ id: 'shipping', title: 'Envío', quantity: 1, unit_price: shipFee, currency_id: 'CLP' });
     }

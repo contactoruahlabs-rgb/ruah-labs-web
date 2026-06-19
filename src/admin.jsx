@@ -2564,7 +2564,14 @@ function ViewEventos({ content, store }) {
               <div className="row-3">
                 <Text label="Nombre"  value={p.name}   onChange={v => updateList('eventos.packs', l => l.map(x => x.id === p.id ? { ...x, name: v } : x))} />
                 <Text label="Límite"  value={p.limit}  onChange={v => updateList('eventos.packs', l => l.map(x => x.id === p.id ? { ...x, limit: v } : x))} />
+                <Text label="Precio"  value={p.price || ''} onChange={v => updateList('eventos.packs', l => l.map(x => x.id === p.id ? { ...x, price: v } : x))} />
+              </div>
+              <div style={{ display:'flex', gap:16, alignItems:'center' }}>
                 <Text label="Detalle" value={p.detail} onChange={v => updateList('eventos.packs', l => l.map(x => x.id === p.id ? { ...x, detail: v } : x))} />
+                <label style={{ display:'flex', alignItems:'center', gap:6, fontSize:13, cursor:'pointer', whiteSpace:'nowrap', paddingTop:18 }}>
+                  <input type="checkbox" checked={!!p.featured} onChange={e => updateList('eventos.packs', l => l.map(x => x.id === p.id ? { ...x, featured: e.target.checked } : x))} />
+                  Destacado
+                </label>
               </div>
             </div>
             <div className="prod-edit__actions">

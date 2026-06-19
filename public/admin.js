@@ -5728,13 +5728,43 @@ function ViewEventos({
       limit: v
     } : x))
   }), /*#__PURE__*/React.createElement(Text, {
+    label: "Precio",
+    value: p.price || '',
+    onChange: v => updateList('eventos.packs', l => l.map(x => x.id === p.id ? {
+      ...x,
+      price: v
+    } : x))
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 16,
+      alignItems: 'center'
+    }
+  }, /*#__PURE__*/React.createElement(Text, {
     label: "Detalle",
     value: p.detail,
     onChange: v => updateList('eventos.packs', l => l.map(x => x.id === p.id ? {
       ...x,
       detail: v
     } : x))
-  }))), /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 6,
+      fontSize: 13,
+      cursor: 'pointer',
+      whiteSpace: 'nowrap',
+      paddingTop: 18
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: !!p.featured,
+    onChange: e => updateList('eventos.packs', l => l.map(x => x.id === p.id ? {
+      ...x,
+      featured: e.target.checked
+    } : x))
+  }), "Destacado"))), /*#__PURE__*/React.createElement("div", {
     className: "prod-edit__actions"
   }, /*#__PURE__*/React.createElement("button", {
     className: "abtn danger sm",
@@ -6339,7 +6369,28 @@ function ViewDesign({
     orden: piezas.length,
     estado: 'visible'
   } : editId ? piezas.find(p => p.id === editId) : null;
+  const eyebrowSize = content.design && content.design.eyebrowSize || 90;
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card__head"
+  }, /*#__PURE__*/React.createElement("h3", null, "Apariencia de la secci\xF3n")), /*#__PURE__*/React.createElement(Field, {
+    label: 'Tamaño título PERSONALIZADOS · ' + eyebrowSize + 'px'
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "range",
+    min: 40,
+    max: 160,
+    step: 5,
+    value: eyebrowSize,
+    onChange: e => store.update('design.eyebrowSize', Number(e.target.value)),
+    style: {
+      accentColor: 'var(--amber)',
+      width: '100%'
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "card__head"

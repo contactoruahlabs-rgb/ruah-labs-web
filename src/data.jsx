@@ -536,9 +536,9 @@ const DEFAULT_CONTENT = {
     ],
     packsTitle: 'TRES PAQUETES',
     packs: [
-      { id: 'evp1', name: 'ESENCIAL', limit: 'hasta 60 invitados', detail: '3 horas · 1 estación' },
-      { id: 'evp2', name: 'PLUS',     limit: 'hasta 150 invitados', detail: '5 horas · 1 estación + 2 operadores' },
-      { id: 'evp3', name: 'PREMIUM',  limit: '200+ invitados',      detail: 'Jornada completa · 2 estaciones' },
+      { id: 'evp1', name: 'ESENCIAL', limit: 'hasta 60 invitados',  detail: '3 horas · 1 estación',                 price: 'Desde $290.000' },
+      { id: 'evp2', name: 'PLUS',     limit: 'hasta 150 invitados', detail: '5 horas · 1 estación + 2 operadores', price: 'Desde $490.000', featured: true },
+      { id: 'evp3', name: 'PREMIUM',  limit: '200+ invitados',      detail: 'Jornada completa · 2 estaciones',     price: 'A cotizar' },
     ],
     packsFoot: 'Te armamos el paquete según tu evento. Cotización al día siguiente de la reunión.',
     coverageTitle: 'COBERTURA',

@@ -1215,17 +1215,26 @@
 /* WhatsApp FAB flotante */
 .wsp-fab {
   position: fixed; bottom: 28px; right: 24px; z-index: 9000;
-  display: flex; align-items: center; gap: 10px;
-  background: #25d366; color: #fff;
-  padding: 14px 20px 14px 16px;
-  border-radius: 999px;
-  box-shadow: 0 4px 20px rgba(37,211,102,0.4);
-  text-decoration: none;
-  font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+  border-radius: 999px; text-decoration: none;
+  display: flex; align-items: center;
   transition: transform .2s ease, box-shadow .2s ease;
+  /* Default: amber personalizado button */
+  background: #eca10c; color: #0d0d0b;
+  padding: 14px 28px;
+  box-shadow: 0 4px 20px rgba(236,161,12,0.45);
+  font-family: var(--serif); font-size: clamp(16px, 1.4vw, 22px);
+  letter-spacing: 0.04em; text-transform: uppercase;
 }
-.wsp-fab:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(37,211,102,0.55); }
-@media (max-width: 600px) { .wsp-fab__label { display: none; } .wsp-fab { padding: 14px; } }
+.wsp-fab:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(236,161,12,0.65); }
+/* Green WA variant for all other sections */
+.wsp-fab.wsp-fab--wsp {
+  background: #25d366; color: #fff;
+  padding: 14px 20px 14px 16px; gap: 10px;
+  box-shadow: 0 4px 20px rgba(37,211,102,0.4);
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em;
+}
+.wsp-fab.wsp-fab--wsp:hover { box-shadow: 0 6px 28px rgba(37,211,102,0.55); }
+@media (max-width: 600px) { .wsp-fab--wsp .wsp-fab__label { display: none; } .wsp-fab--wsp { padding: 14px; } }
 
 @media (max-width: 900px) {
   .ig-hero { grid-template-columns: 1fr; gap: 40px; }

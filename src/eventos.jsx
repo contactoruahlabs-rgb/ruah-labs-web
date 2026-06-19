@@ -55,14 +55,27 @@ function Eventos({ content }) {
           <div className="ev-packs__hd">{ev.packsTitle}</div>
           <div className="ev-packs__grid">
             {ev.packs.map((p, i) => (
-              <Reveal key={p.id} delay={i * 80} className="ev-pack">
-                <div className="ev-pack__name">{p.name}</div>
-                <div className="ev-pack__limit">{p.limit}</div>
+              <Reveal key={p.id} delay={i * 80} className={'ev-pack' + (p.featured ? ' ev-pack--featured' : '')}>
+                {p.featured && <div className="ev-pack__badge">MÁS POPULAR</div>}
+                <div className="ev-pack__top">
+                  <div className="ev-pack__name">{p.name}</div>
+                  <div className="ev-pack__limit">{p.limit}</div>
+                </div>
+                <div className="ev-pack__price">{p.price}</div>
                 <div className="ev-pack__detail">{p.detail}</div>
               </Reveal>
             ))}
           </div>
           <p className="ev-packs__foot">{ev.packsFoot}</p>
+        </Reveal>
+
+        {/* El detalle que cambia todo */}
+        <Reveal className="ev-detail">
+          <div className="ev-detail__icon">1×</div>
+          <div className="ev-detail__txt">
+            <h3 className="ev-detail__title">{ev.detailTitle}</h3>
+            <p className="ev-detail__body">{ev.detailBody}</p>
+          </div>
         </Reveal>
 
         {/* Lo que hacemos */}
@@ -95,15 +108,6 @@ function Eventos({ content }) {
         <Reveal className="ev-onwhat">
           <h3 className="ev-onwhat__title">{ev.onWhatTitle}</h3>
           <p className="ev-onwhat__body">{ev.onWhatBody}</p>
-        </Reveal>
-
-        {/* El detalle que cambia todo */}
-        <Reveal className="ev-detail">
-          <div className="ev-detail__icon">1×</div>
-          <div className="ev-detail__txt">
-            <h3 className="ev-detail__title">{ev.detailTitle}</h3>
-            <p className="ev-detail__body">{ev.detailBody}</p>
-          </div>
         </Reveal>
 
         {/* Lo que recibes */}

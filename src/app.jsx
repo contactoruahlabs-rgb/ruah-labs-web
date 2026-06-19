@@ -3,6 +3,16 @@
 // RUAH LABS — App root
 // ============================================================
 
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { error: false }; }
+  static getDerivedStateFromError() { return { error: true }; }
+  componentDidCatch(err, info) { console.error('[RUAH] Error en componente:', err, info && info.componentStack); }
+  render() {
+    if (this.state.error) return this.props.fallback || null;
+    return this.props.children;
+  }
+}
+
 function App() {
   const store = useContentStore();
   const { content } = store;
@@ -19,7 +29,9 @@ function App() {
   const [pageCategory, setPageCategory] = React.useState('todo');
 
   // -------- Cart + checkout --------
-  const [cart,         setCart]         = React.useState([]);
+  const [cart,         setCart]         = React.useState(() => {
+    try { return JSON.parse(localStorage.getItem('ruah-cart') || '[]'); } catch(_) { return []; }
+  });
   const [checkoutOpen, setCheckoutOpen] = React.useState(false);
 
   function addToCart(productId, qty = 1, size = null) {
@@ -140,6 +152,11 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId]);
 
+  // Persistir carrito en localStorage
+  React.useEffect(() => {
+    try { localStorage.setItem('ruah-cart', JSON.stringify(cart)); } catch(_) {}
+  }, [cart]);
+
   // Global checkout events (from buttons elsewhere, e.g. nav cart)
   React.useEffect(() => {
     const onCk     = () => setCheckoutOpen(true);
@@ -175,6 +192,9 @@ function App() {
           // payment_id lo agrega MercadoPago al redirigir (auto_return solo
           // ocurre con pago aprobado). El servidor lo verifica contra MP.
           order.payment_id = params.get('payment_id') || params.get('collection_id') || '';
+          // Limpiar carrito — pago completado
+          setCart([]);
+          try { localStorage.removeItem('ruah-cart'); } catch(_) {}
           // Llamar API para crear cuenta club + enviar email
           fetch('' + window.RUAH_API + '/api/checkout/welcome', {
             method: 'POST',
@@ -285,6 +305,7 @@ function App() {
         onNavigate={openPage}
         onGoHome={goHome}
       />
+      <ErrorBoundary fallback={<div style={{padding:'60px 24px',color:'#eca10c',fontFamily:'monospace',fontSize:'12px',letterSpacing:'2px',textAlign:'center'}}>ERROR AL CARGAR SECCIÓN — RECARGA LA PÁGINA</div>}>
       <main>
         {activePage ? renderPage() : (
           <React.Fragment>
@@ -298,6 +319,7 @@ function App() {
           </React.Fragment>
         )}
       </main>
+      </ErrorBoundary>
       <Footer content={content} onOpenAdmin={() => setAdminOpen(true)} onNavigate={openPage} />
 
       <Admin open={adminOpen} content={content} store={store} onClose={() => setAdminOpen(false)} />
