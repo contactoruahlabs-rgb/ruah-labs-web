@@ -5877,8 +5877,7 @@ function Checkout({
   }
   function pay(e) {
     e.preventDefault();
-    if (payMethod === 'card' && !cardValid()) return;
-    if (payMethod !== 'card' && !terms) return;
+    if (!terms) return;
     setPayState('processing');
     // Guardar datos del comprador para recuperarlos después del redirect de MP
     try {
@@ -5953,7 +5952,7 @@ function Checkout({
     className: "ck-close",
     onClick: onClose,
     "aria-label": "Cerrar"
-  }, "\xD7")), step < 3 && /*#__PURE__*/React.createElement(Stepper, {
+  }, "\xD7")), step < 2 && /*#__PURE__*/React.createElement(Stepper, {
     step: step,
     onGo: goStep,
     labels: ck.stepLabels
@@ -5979,15 +5978,6 @@ function Checkout({
   }), step === 1 && /*#__PURE__*/React.createElement(StepShipping, {
     shipping: shipping,
     setShipping: setShipping,
-    onBack: () => goStep(0),
-    onNext: () => goStep(2),
-    content: content
-  }), step === 2 && /*#__PURE__*/React.createElement(StepPay, {
-    payMethod: payMethod,
-    setPayMethod: setPayMethod,
-    card: card,
-    setCard: setCard,
-    cardBrand: cardBrand,
     discount: discount,
     setDiscount: setDiscount,
     discountApplied: discountApplied,
@@ -5997,9 +5987,8 @@ function Checkout({
     setTerms: setTerms,
     total: total,
     payState: payState,
-    onBack: () => goStep(1),
+    onBack: () => goStep(0),
     onPay: pay,
-    cardValid: cardValid(),
     content: content
   })), /*#__PURE__*/React.createElement(Summary, {
     cart: cart,
@@ -6023,7 +6012,7 @@ function Stepper({
   onGo,
   labels
 }) {
-  const steps = labels && labels.length === 3 ? labels : ['INFORMACIÓN', 'ENVÍO', 'PAGO'];
+  const steps = labels && labels.length === 2 ? labels : ['INFORMACIÓN', 'ENVÍO'];
   return /*#__PURE__*/React.createElement("nav", {
     className: "ck-stepper",
     "aria-label": "Pasos del checkout"
@@ -6177,22 +6166,28 @@ function StepInfo({
 }
 
 // ============================================================
-// STEP 2 — ENVÍO
+// STEP 2 — ENVÍO + PAGO DIRECTO MP
 // ============================================================
 function StepShipping({
   shipping,
   setShipping,
+  discount,
+  setDiscount,
+  discountApplied,
+  discountErr,
+  applyDiscount,
+  terms,
+  setTerms,
+  total,
+  payState,
   onBack,
-  onNext,
+  onPay,
   content
 }) {
   const ck = content && content.checkout || {};
   return /*#__PURE__*/React.createElement("form", {
     className: "ck-form",
-    onSubmit: e => {
-      e.preventDefault();
-      onNext();
-    }
+    onSubmit: onPay
   }, /*#__PURE__*/React.createElement("h2", {
     className: "ck-h"
   }, ck.shippingTitle || 'Método de envío'), /*#__PURE__*/React.createElement("p", {
@@ -6222,17 +6217,56 @@ function StepShipping({
     className: "ck-opt__radio",
     "aria-hidden": "true"
   })))), /*#__PURE__*/React.createElement("div", {
+    className: "ck-discount"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "ck-field"
+  }, /*#__PURE__*/React.createElement("span", null, "C\xD3DIGO DE DESCUENTO"), /*#__PURE__*/React.createElement("div", {
+    className: "ck-input-row"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: discount,
+    onChange: e => setDiscount(e.target.value.toUpperCase()),
+    placeholder: "EJ: BIENVENIDO10"
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "ck-apply",
+    onClick: applyDiscount
+  }, "Aplicar")), discountApplied && /*#__PURE__*/React.createElement("span", {
+    className: "ck-discount__ok"
+  }, "\u2713 ", discountApplied.code, " \xB7 \u2212", discountApplied.percent, "%"), discountErr && /*#__PURE__*/React.createElement("span", {
+    className: "ck-discount__err"
+  }, discountErr))), /*#__PURE__*/React.createElement("label", {
+    className: "ck-check"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: terms,
+    onChange: e => setTerms(e.target.checked)
+  }), /*#__PURE__*/React.createElement("span", null, "Acepto los ", /*#__PURE__*/React.createElement("a", {
+    href: "#",
+    onClick: e => e.preventDefault()
+  }, "t\xE9rminos"), " y la ", /*#__PURE__*/React.createElement("a", {
+    href: "#",
+    onClick: e => e.preventDefault()
+  }, "pol\xEDtica de privacidad"), ".")), /*#__PURE__*/React.createElement("div", {
+    className: "ck-trust"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ck-trust__i"
+  }, "\u25AA"), /*#__PURE__*/React.createElement("span", null, ck.trustTxt || 'Serás redirigido a MercadoPago · Pago cifrado SSL · Protocolo 1×1 se activa al confirmar')), /*#__PURE__*/React.createElement("div", {
     className: "ck-actions ck-actions--split"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "btn btn--ghost",
-    onClick: onBack
+    onClick: onBack,
+    disabled: payState === 'processing'
   }, ck.backLabel || '← Volver'), /*#__PURE__*/React.createElement("button", {
     type: "submit",
-    className: "btn btn--amber"
-  }, ck.nextPayLabel || 'Continuar a pago', " ", /*#__PURE__*/React.createElement("span", {
+    className: 'btn btn--amber ck-pay ck-pay--' + payState,
+    disabled: payState === 'processing' || !terms
+  }, payState === 'idle' && /*#__PURE__*/React.createElement(React.Fragment, null, "IR A MERCADOPAGO ", /*#__PURE__*/React.createElement("span", {
     className: "arrow"
-  }, "\u2192"))));
+  }, "\u2192")), payState === 'processing' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+    className: "ck-spin"
+  }), " Redirigiendo\u2026"))));
 }
 
 // ============================================================

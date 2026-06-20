@@ -160,8 +160,7 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
 
   function pay(e) {
     e.preventDefault();
-    if (payMethod === 'card' && !cardValid()) return;
-    if (payMethod !== 'card' && !terms) return;
+    if (!terms) return;
     setPayState('processing');
     // Guardar datos del comprador para recuperarlos después del redirect de MP
     try {
@@ -209,7 +208,7 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
           <button className="ck-close" onClick={onClose} aria-label="Cerrar">×</button>
         </header>
 
-        {step < 3 && (
+        {step < 2 && (
           <Stepper step={step} onGo={goStep} labels={ck.stepLabels} />
         )}
 
@@ -230,22 +229,12 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
                 {step === 1 && (
                   <StepShipping
                     shipping={shipping} setShipping={setShipping}
-                    onBack={() => goStep(0)} onNext={() => goStep(2)}
-                    content={content}
-                  />
-                )}
-                {step === 2 && (
-                  <StepPay
-                    payMethod={payMethod} setPayMethod={setPayMethod}
-                    card={card} setCard={setCard}
-                    cardBrand={cardBrand}
                     discount={discount} setDiscount={setDiscount}
                     discountApplied={discountApplied} discountErr={discountErr}
                     applyDiscount={applyDiscount}
                     terms={terms} setTerms={setTerms}
                     total={total} payState={payState}
-                    onBack={() => goStep(1)} onPay={pay}
-                    cardValid={cardValid()}
+                    onBack={() => goStep(0)} onPay={pay}
                     content={content}
                   />
                 )}
@@ -269,7 +258,7 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
 // STEPPER
 // ============================================================
 function Stepper({ step, onGo, labels }) {
-  const steps = (labels && labels.length === 3) ? labels : ['INFORMACIÓN', 'ENVÍO', 'PAGO'];
+  const steps = (labels && labels.length === 2) ? labels : ['INFORMACIÓN', 'ENVÍO'];
   return (
     <nav className="ck-stepper" aria-label="Pasos del checkout">
       {steps.map((label, i) => (
@@ -389,12 +378,17 @@ function StepInfo({ info, setInfo, touched, onNext, content }) {
 }
 
 // ============================================================
-// STEP 2 — ENVÍO
+// STEP 2 — ENVÍO + PAGO DIRECTO MP
 // ============================================================
-function StepShipping({ shipping, setShipping, onBack, onNext, content }) {
+function StepShipping({
+  shipping, setShipping,
+  discount, setDiscount, discountApplied, discountErr, applyDiscount,
+  terms, setTerms, total, payState,
+  onBack, onPay, content,
+}) {
   const ck = (content && content.checkout) || {};
   return (
-    <form className="ck-form" onSubmit={(e) => { e.preventDefault(); onNext(); }}>
+    <form className="ck-form" onSubmit={onPay}>
       <h2 className="ck-h">{ck.shippingTitle || 'Método de envío'}</h2>
       <p className="ck-sub">{ck.shippingSub || 'Despachamos a todo Chile. Retiro disponible Lun – Vie, 11 a 19h.'}</p>
 
@@ -414,10 +408,41 @@ function StepShipping({ shipping, setShipping, onBack, onNext, content }) {
         ))}
       </div>
 
+      <div className="ck-discount">
+        <label className="ck-field">
+          <span>CÓDIGO DE DESCUENTO</span>
+          <div className="ck-input-row">
+            <input
+              type="text" value={discount}
+              onChange={e => setDiscount(e.target.value.toUpperCase())}
+              placeholder="EJ: BIENVENIDO10"
+            />
+            <button type="button" className="ck-apply" onClick={applyDiscount}>Aplicar</button>
+          </div>
+          {discountApplied && <span className="ck-discount__ok">✓ {discountApplied.code} · −{discountApplied.percent}%</span>}
+          {discountErr && <span className="ck-discount__err">{discountErr}</span>}
+        </label>
+      </div>
+
+      <label className="ck-check">
+        <input type="checkbox" checked={terms} onChange={e => setTerms(e.target.checked)} />
+        <span>Acepto los <a href="#" onClick={(e) => e.preventDefault()}>términos</a> y la <a href="#" onClick={(e) => e.preventDefault()}>política de privacidad</a>.</span>
+      </label>
+
+      <div className="ck-trust">
+        <span className="ck-trust__i">▪</span>
+        <span>{ck.trustTxt || 'Serás redirigido a MercadoPago · Pago cifrado SSL · Protocolo 1×1 se activa al confirmar'}</span>
+      </div>
+
       <div className="ck-actions ck-actions--split">
-        <button type="button" className="btn btn--ghost" onClick={onBack}>{ck.backLabel || '← Volver'}</button>
-        <button type="submit" className="btn btn--amber">
-          {ck.nextPayLabel || 'Continuar a pago'} <span className="arrow">→</span>
+        <button type="button" className="btn btn--ghost" onClick={onBack} disabled={payState === 'processing'}>{ck.backLabel || '← Volver'}</button>
+        <button
+          type="submit"
+          className={'btn btn--amber ck-pay ck-pay--' + payState}
+          disabled={payState === 'processing' || !terms}
+        >
+          {payState === 'idle' && <React.Fragment>IR A MERCADOPAGO <span className="arrow">→</span></React.Fragment>}
+          {payState === 'processing' && <React.Fragment><span className="ck-spin"></span> Redirigiendo…</React.Fragment>}
         </button>
       </div>
     </form>
