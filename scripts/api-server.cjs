@@ -95,6 +95,9 @@ function isValidEmail(e) {
 function esc(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+function cap(str) {
+  return String(str || '').toLowerCase().replace(/(?:^|\s)\S/g, function(c){ return c.toUpperCase(); });
+}
 
 if (!MP_TOKEN || MP_TOKEN === 'YOUR_MERCADOPAGO_ACCESS_TOKEN') {
   console.warn('⚠️  MERCADOPAGO_ACCESS_TOKEN no configurado en .env.local');
@@ -678,8 +681,8 @@ function buildWelcomeEmail(firstName, lastName, email, cart, password, orderId, 
 // ─── POST /api/checkout/welcome ───────────────────────────────────────────────
 app.post('/api/checkout/welcome', rateLimit('welcome', 5, 60 * 1000), async function(req, res) {
   var email        = (req.body.email     || '').trim().toLowerCase();
-  var firstName    = (req.body.firstName || '').trim();
-  var lastName     = (req.body.lastName  || '').trim();
+  var firstName    = cap((req.body.firstName || '').trim());
+  var lastName     = cap((req.body.lastName  || '').trim());
   var cart         = req.body.cart || [];
   var orderId      = req.body.orderId || ('RUAH-' + Date.now().toString().slice(-8));
   var paymentId    = (req.body.payment_id || '').trim();
@@ -790,8 +793,8 @@ app.post('/api/webhooks/mercadopago', function(req, res) {
     }
     var payment    = pay.body;
     var payerEmail = (payment.payer && payment.payer.email) ? payment.payer.email.trim().toLowerCase() : '';
-    var payerFirst = (payment.payer && payment.payer.first_name) || '';
-    var payerLast  = (payment.payer && payment.payer.last_name)  || '';
+    var payerFirst = cap((payment.payer && payment.payer.first_name) || '');
+    var payerLast  = cap((payment.payer && payment.payer.last_name)  || '');
     if (!payerEmail) { console.warn('[wh] pago sin email:', paymentId); return; }
 
     // Enriquecer items del pago con specs completas (verse, material, etc.) desde la DB
