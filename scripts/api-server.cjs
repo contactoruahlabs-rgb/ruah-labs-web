@@ -622,7 +622,7 @@ function buildWelcomeEmail(firstName, lastName, email, cart, password, orderId, 
 
     // Banner
     '<tr><td style="padding:0;line-height:0;">' +
-    '<img src="https://res.cloudinary.com/dh05zwrbp/image/upload/v1781610878/2_ybcfx3.jpg" width="600" alt="RUAH LABS" style="display:block;width:100%;max-width:600px;border:0;">' +
+    '<img src="https://res.cloudinary.com/dh05zwrbp/image/upload/v1781996767/BANNER_BRIEF_Mesa_de_trabajo_1_blvduz.jpg" width="600" alt="RUAH LABS" style="display:block;width:100%;max-width:600px;border:0;">' +
     '</td></tr>' +
 
     // Saludo
