@@ -166,7 +166,11 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
     try {
       sessionStorage.setItem('ruah-pending-order', JSON.stringify({
         email: info.email, firstName: info.firstName, lastName: info.lastName,
-        phone: info.phone, cart: cart, total: total, discount: discountApplied ? discountApplied.code : null,
+        phone: info.phone, cart: cart, total: total,
+        discount: discountApplied ? discountApplied.code : null,
+        discountAmount: discountAmount,
+        shippingFee: shipFee,
+        shippingName: shipOpt.name,
       }));
     } catch(_) {}
     fetch('' + window.RUAH_API + '/api/checkout/create-preference', {

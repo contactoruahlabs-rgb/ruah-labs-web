@@ -535,19 +535,38 @@ function sendEmail(to, subject, html) {
 // Carga templates/welcome.html y reemplaza {{VARIABLES}} con los datos reales.
 // Si el archivo no existe, cae en buildWelcomeEmail (HTML hardcodeado de respaldo).
 var SITE_DOMAIN = process.env.NEXT_PUBLIC_APP_URL || 'https://ruahlabs.cl';
-function renderWelcomeTemplate(firstName, lastName, email, cart, password, orderId) {
+function renderWelcomeTemplate(firstName, lastName, email, cart, password, orderId, opts) {
   var templatePath = path.join(__dirname, '..', 'templates', 'welcome.html');
   if (!fs.existsSync(templatePath)) return null; // fallback al HTML hardcodeado
   var html = fs.readFileSync(templatePath, 'utf8');
-  var firstItem = (cart && cart[0]) || {};
-  var firstPrice = parseInt(String(firstItem.price || '0').replace(/[^0-9]/g, ''), 10) || 0;
+  var firstItem    = (cart && cart[0]) || {};
+  var firstPrice   = parseInt(String(firstItem.price || '0').replace(/[^0-9]/g, ''), 10) || 0;
+  var subtotal     = (cart || []).reduce(function(s, it) { return s + (parseInt(String(it.price || '0').replace(/[^0-9]/g, ''), 10) || 0) * (it.qty || 1); }, 0);
+  var discountAmt  = (opts && opts.discountAmount)  || 0;
+  var shippingFee  = (opts && opts.shippingFee)     || 0;
+  var shippingName = (opts && opts.shippingName)    || 'Envío';
+  var total        = (opts && opts.total)           || (subtotal - discountAmt + shippingFee);
+  var discountCode = (opts && opts.discount)        || '';
+
   var itemsHtml = (cart || []).map(function(it) {
     var p = parseInt(String(it.price || '0').replace(/[^0-9]/g, ''), 10) || 0;
-    return '<tr><td style="padding:8px 0;border-bottom:1px solid #333;color:#fff;font-size:14px;">' +
-      esc(it.name) + (it.verse ? ' · <em>' + esc(it.verse) + '</em>' : '') +
-      '</td><td style="padding:8px 0;border-bottom:1px solid #333;color:#ECA10C;text-align:right;font-size:14px;">CLP $' +
-      p.toLocaleString('es-CL') + '</td></tr>';
+    var lineTotal = p * (it.qty || 1);
+    return '<tr>' +
+      '<td style="padding:10px 0;border-bottom:1px solid #2a2a2a;color:#fff;font-size:14px;">' +
+        esc(it.name) + (it.size ? ' · Talla ' + esc(it.size) : '') +
+        (it.qty > 1 ? ' <span style="color:#666;">×' + it.qty + '</span>' : '') +
+        (it.verse ? '<br><span style="color:#666;font-size:12px;">' + esc(it.verse) + '</span>' : '') +
+      '</td>' +
+      '<td style="padding:10px 0;border-bottom:1px solid #2a2a2a;color:#ECA10C;text-align:right;font-size:14px;white-space:nowrap;">CLP $' + lineTotal.toLocaleString('es-CL') + '</td>' +
+    '</tr>';
   }).join('');
+
+  var receiptRows =
+    '<tr><td style="padding:8px 0;color:#aaa;font-size:13px;">Subtotal</td><td style="padding:8px 0;color:#fff;text-align:right;font-size:13px;">CLP $' + subtotal.toLocaleString('es-CL') + '</td></tr>' +
+    (discountAmt > 0 ? '<tr><td style="padding:8px 0;color:#4caf50;font-size:13px;">Descuento ' + esc(discountCode) + '</td><td style="padding:8px 0;color:#4caf50;text-align:right;font-size:13px;">− CLP $' + discountAmt.toLocaleString('es-CL') + '</td></tr>' : '') +
+    '<tr><td style="padding:8px 0;color:#aaa;font-size:13px;">' + esc(shippingName) + '</td><td style="padding:8px 0;color:#fff;text-align:right;font-size:13px;">' + (shippingFee === 0 ? 'GRATIS' : 'CLP $' + shippingFee.toLocaleString('es-CL')) + '</td></tr>' +
+    '<tr><td style="padding:12px 0 0;color:#ECA10C;font-size:15px;font-weight:bold;border-top:1px solid #333;">TOTAL</td><td style="padding:12px 0 0;color:#ECA10C;text-align:right;font-size:15px;font-weight:bold;border-top:1px solid #333;">CLP $' + total.toLocaleString('es-CL') + '</td></tr>';
+
   return html
     .replace(/\{\{FIRST_NAME\}\}/g,      esc(firstName || ''))
     .replace(/\{\{LAST_NAME\}\}/g,       esc(lastName || ''))
@@ -560,77 +579,97 @@ function renderWelcomeTemplate(firstName, lastName, email, cart, password, order
         firstItem.material  ? 'Material: '   + firstItem.material  : '',
         firstItem.estampado ? 'Estampado: '  + firstItem.estampado : '',
         firstItem.fit       ? 'Fit: '        + firstItem.fit       : '',
-        firstItem.tallas    ? 'Tallas: '     + firstItem.tallas    : '',
         firstItem.origen    ? 'Origen: '     + firstItem.origen    : '',
       ].filter(Boolean).join('\n');
       return esc(lines);
     })())
     .replace(/\{\{PRODUCT_PRICE\}\}/g,   'CLP $' + firstPrice.toLocaleString('es-CL'))
     .replace(/\{\{ORDER_ITEMS\}\}/g,     itemsHtml)
+    .replace(/\{\{RECEIPT_ROWS\}\}/g,    receiptRows)
+    .replace(/\{\{TOTAL\}\}/g,           'CLP $' + total.toLocaleString('es-CL'))
     .replace(/\{\{SITE_URL\}\}/g,        SITE_DOMAIN);
 }
 
-function buildWelcomeEmail(firstName, lastName, email, cart, password, orderId) {
+function buildWelcomeEmail(firstName, lastName, email, cart, password, orderId, opts) {
+  var subtotal    = (cart || []).reduce(function(s, it) { return s + (parseInt(String(it.price || '0').replace(/[^0-9]/g, ''), 10) || 0) * (it.qty || 1); }, 0);
+  var discountAmt = (opts && opts.discountAmount) || 0;
+  var shippingFee = (opts && opts.shippingFee)    || 0;
+  var shippingNm  = (opts && opts.shippingName)   || 'Envío';
+  var total       = (opts && opts.total)          || (subtotal - discountAmt + shippingFee);
+  var discCode    = (opts && opts.discount)        || '';
+
   var items = (cart || []).map(function(it) {
-    var price = parseInt(String(it.price).replace(/[^0-9]/g, ''), 10) || 0;
-    return '<tr><td style="padding:8px 0;border-bottom:1px solid #222;color:#fff;font-size:14px;">' + esc(it.name) + (it.verse ? ' · ' + esc(it.verse) : '') + '</td><td style="padding:8px 0;border-bottom:1px solid #222;color:#ECA10C;text-align:right;font-size:14px;">CLP $' + price.toLocaleString('es-CL') + '</td></tr>';
+    var price = parseInt(String(it.price || '0').replace(/[^0-9]/g, ''), 10) || 0;
+    var lineTotal = price * (it.qty || 1);
+    return '<tr>' +
+      '<td style="padding:10px 0;border-bottom:1px solid #2a2a2a;color:#fff;font-size:14px;">' +
+        esc(it.name) + (it.size ? ' · Talla ' + esc(it.size) : '') +
+        (it.qty > 1 ? ' <span style="color:#666;">×' + it.qty + '</span>' : '') +
+      '</td>' +
+      '<td style="padding:10px 0;border-bottom:1px solid #2a2a2a;color:#ECA10C;text-align:right;font-size:14px;">CLP $' + lineTotal.toLocaleString('es-CL') + '</td>' +
+    '</tr>';
   }).join('');
 
-  return '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#0a0a0a;font-family:Arial,sans-serif;">' +
-    '<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 20px;">' +
-    '<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#111;border:1px solid #222;">' +
+  var receiptRows =
+    '<tr><td style="padding:8px 0;color:#aaa;font-size:13px;">Subtotal</td><td style="padding:8px 0;color:#fff;text-align:right;font-size:13px;">CLP $' + subtotal.toLocaleString('es-CL') + '</td></tr>' +
+    (discountAmt > 0 ? '<tr><td style="padding:8px 0;color:#4caf50;font-size:13px;">Descuento ' + esc(discCode) + '</td><td style="padding:8px 0;color:#4caf50;text-align:right;font-size:13px;">− CLP $' + discountAmt.toLocaleString('es-CL') + '</td></tr>' : '') +
+    '<tr><td style="padding:8px 0;color:#aaa;font-size:13px;">' + esc(shippingNm) + '</td><td style="padding:8px 0;color:#fff;text-align:right;font-size:13px;">' + (shippingFee === 0 ? 'GRATIS' : 'CLP $' + shippingFee.toLocaleString('es-CL')) + '</td></tr>' +
+    '<tr><td style="padding:12px 0 0;color:#ECA10C;font-size:15px;font-weight:bold;border-top:1px solid #333;">TOTAL</td><td style="padding:12px 0 0;color:#ECA10C;text-align:right;font-size:15px;font-weight:bold;border-top:1px solid #333;">CLP $' + total.toLocaleString('es-CL') + '</td></tr>';
 
-    // Header
-    '<tr><td style="background:#000;padding:32px 40px;border-bottom:2px solid #ECA10C;">' +
-    '<p style="margin:0;color:#ECA10C;font-size:11px;letter-spacing:4px;">RUAH LABS</p>' +
-    '<h1 style="margin:8px 0 0;color:#fff;font-size:28px;font-weight:900;letter-spacing:-0.5px;">FE PUESTA<br>EN ACCIÓN.</h1>' +
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#0a0a0a;font-family:Arial,sans-serif;">' +
+    '<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:32px 20px;">' +
+    '<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;">' +
+
+    // Banner
+    '<tr><td style="padding:0;line-height:0;">' +
+    '<img src="https://res.cloudinary.com/dh05zwrbp/image/upload/v1781610878/2_ybcfx3.jpg" width="600" alt="RUAH LABS" style="display:block;width:100%;max-width:600px;border:0;">' +
     '</td></tr>' +
 
     // Saludo
-    '<tr><td style="padding:32px 40px 16px;">' +
+    '<tr><td style="background:#111;padding:32px 40px 16px;border:1px solid #222;border-top:none;">' +
     '<p style="margin:0;color:#ECA10C;font-size:11px;letter-spacing:3px;">CONFIRMACIÓN DE COMPRA · ' + esc(orderId || '') + '</p>' +
-    '<h2 style="margin:12px 0;color:#fff;font-size:22px;">Gracias, ' + esc(firstName) + '.</h2>' +
+    '<h2 style="margin:12px 0;color:#fff;font-size:22px;">Hola, ' + esc(firstName) + '.</h2>' +
     '<p style="margin:0;color:#aaa;font-size:15px;line-height:1.6;">Tu pedido fue recibido y estamos preparando tu prenda con cuidado.<br>Cada pieza de RUAH LABS lleva una historia — la tuya empieza hoy.</p>' +
     '</td></tr>' +
 
     // Items
-    '<tr><td style="padding:0 40px 24px;">' +
+    '<tr><td style="background:#111;padding:0 40px 8px;border-left:1px solid #222;border-right:1px solid #222;">' +
     '<table width="100%" cellpadding="0" cellspacing="0">' +
-    '<tr><td colspan="2" style="padding-bottom:8px;color:#ECA10C;font-size:11px;letter-spacing:3px;">TU PEDIDO</td></tr>' +
+    '<tr><td colspan="2" style="padding-bottom:8px;color:#ECA10C;font-size:11px;letter-spacing:3px;border-bottom:1px solid #333;padding-bottom:8px;">DETALLE DEL PEDIDO</td></tr>' +
     items +
     '</table></td></tr>' +
 
+    // Receipt (subtotal / descuento / envío / total)
+    '<tr><td style="background:#111;padding:0 40px 24px;border-left:1px solid #222;border-right:1px solid #222;">' +
+    '<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;">' +
+    receiptRows +
+    '</table></td></tr>' +
+
     // Protocolo 1x1
-    '<tr><td style="padding:0 40px 24px;">' +
-    '<div style="background:#0d1a0d;border:1px solid #1a3a1a;padding:16px;border-left:3px solid #ECA10C;">' +
+    '<tr><td style="background:#111;padding:0 40px 24px;border-left:1px solid #222;border-right:1px solid #222;">' +
+    '<div style="background:#0d1a0d;border-left:3px solid #ECA10C;padding:14px 16px;">' +
     '<p style="margin:0 0 4px;color:#ECA10C;font-size:11px;letter-spacing:3px;">PROTOCOLO 1×1</p>' +
     '<p style="margin:0;color:#aaa;font-size:13px;line-height:1.6;">Esta compra activa una donación de prendas a alguien en situación de calle. Tu fe se convierte en acción concreta.</p>' +
     '</div></td></tr>' +
 
     // Club
-    '<tr><td style="padding:0 40px 24px;">' +
-    '<div style="background:#1a1200;border:1px solid #ECA10C;padding:24px;">' +
-    '<p style="margin:0 0 4px;color:#ECA10C;font-size:11px;letter-spacing:3px;">RUAH LABS CLUB</p>' +
-    '<h3 style="margin:8px 0;color:#fff;font-size:18px;">Ahora eres parte del movimiento.</h3>' +
-    '<p style="margin:0 0 16px;color:#aaa;font-size:13px;line-height:1.6;">Por comprar en RUAH LABS tienes acceso exclusivo al Club — rutas de entrega nocturna, reuniones privadas y canal directo con nosotros.</p>' +
-    '<p style="margin:0 0 8px;color:#ECA10C;font-size:11px;letter-spacing:2px;">TUS CREDENCIALES DE ACCESO</p>' +
+    '<tr><td style="background:#111;padding:0 40px 24px;border-left:1px solid #222;border-right:1px solid #222;">' +
+    '<div style="background:#0d0d0b;border:1px solid #ECA10C;padding:24px;">' +
+    '<p style="margin:0 0 4px;color:#ECA10C;font-size:11px;letter-spacing:3px;">ACCESO AL CLUB</p>' +
+    '<p style="margin:0 0 16px;color:#aaa;font-size:13px;line-height:1.6;">Por comprar en RUAH LABS tienes acceso exclusivo al Club Secreto — rutas de entrega nocturna, canal directo con nosotros.</p>' +
     '<p style="margin:0 0 4px;color:#aaa;font-size:13px;">Email: <span style="color:#fff;">' + esc(email) + '</span></p>' +
     '<p style="margin:0 0 16px;color:#aaa;font-size:13px;">Contraseña temporal: <strong style="color:#ECA10C;font-size:16px;letter-spacing:2px;">' + esc(password) + '</strong></p>' +
-    '<p style="margin:0;color:#666;font-size:12px;">⚠️ Por seguridad, te pediremos que la cambies la primera vez que ingreses.</p>' +
+    '<p style="margin:0 0 8px;color:#aaa;font-size:12px;">Para ingresar: ve a <strong style="color:#fff;">ruahlabs.cl</strong> · haz <strong style="color:#ECA10C;">triple click</strong> en el logo.</p>' +
+    '<p style="margin:0;color:#666;font-size:11px;">Te pediremos que cambies la contraseña la primera vez que ingreses.</p>' +
     '</div></td></tr>' +
 
-    // Instrucciones
-    '<tr><td style="padding:0 40px 32px;">' +
-    '<p style="margin:0 0 8px;color:#ECA10C;font-size:11px;letter-spacing:3px;">CÓMO INGRESAR AL CLUB</p>' +
-    '<ol style="margin:0;padding-left:20px;color:#aaa;font-size:13px;line-height:2;">' +
-    '<li>Ve a <strong style="color:#fff;">ruahlabs.cl</strong></li>' +
-    '<li>Haz <strong style="color:#ECA10C;">triple click</strong> en el logo RUAH LABS</li>' +
-    '<li>Ingresa tu email y la contraseña temporal</li>' +
-    '<li>Elige tu nueva contraseña y entra</li>' +
-    '</ol></td></tr>' +
+    // CTA
+    '<tr><td style="background:#111;padding:0 40px 32px;border-left:1px solid #222;border-right:1px solid #222;border-bottom:1px solid #222;text-align:center;">' +
+    '<a href="https://ruahlabs.cl" style="display:inline-block;background:#ECA10C;color:#000;padding:14px 36px;text-decoration:none;font-weight:bold;font-size:13px;letter-spacing:2px;">INGRESAR AL CLUB →</a>' +
+    '</td></tr>' +
 
     // Footer
-    '<tr><td style="padding:24px 40px;border-top:1px solid #222;background:#000;">' +
+    '<tr><td style="padding:16px 0;text-align:center;">' +
     '<p style="margin:0;color:#444;font-size:11px;letter-spacing:2px;">RUAH LABS · FE PUESTA EN ACCIÓN · ruahlabs.cl</p>' +
     '</td></tr>' +
 
@@ -639,12 +678,19 @@ function buildWelcomeEmail(firstName, lastName, email, cart, password, orderId) 
 
 // ─── POST /api/checkout/welcome ───────────────────────────────────────────────
 app.post('/api/checkout/welcome', rateLimit('welcome', 5, 60 * 1000), async function(req, res) {
-  var email     = (req.body.email     || '').trim().toLowerCase();
-  var firstName = (req.body.firstName || '').trim();
-  var lastName  = (req.body.lastName  || '').trim();
-  var cart      = req.body.cart || [];
-  var orderId   = req.body.orderId || ('RUAH-' + Date.now().toString().slice(-8));
-  var paymentId = (req.body.payment_id || '').trim();
+  var email        = (req.body.email     || '').trim().toLowerCase();
+  var firstName    = (req.body.firstName || '').trim();
+  var lastName     = (req.body.lastName  || '').trim();
+  var cart         = req.body.cart || [];
+  var orderId      = req.body.orderId || ('RUAH-' + Date.now().toString().slice(-8));
+  var paymentId    = (req.body.payment_id || '').trim();
+  var emailOpts    = {
+    discount:       req.body.discount       || null,
+    discountAmount: parseInt(req.body.discountAmount) || 0,
+    shippingFee:    parseInt(req.body.shippingFee)    || 0,
+    shippingName:   req.body.shippingName   || 'Envío',
+    total:          parseInt(req.body.total)          || 0,
+  };
 
   if (!email) return res.status(400).json({ error: 'Email requerido' });
 
@@ -693,7 +739,7 @@ app.post('/api/checkout/welcome', rateLimit('welcome', 5, 60 * 1000), async func
 
       // Construir y enviar email
       var subject = '✓ RUAH LABS · Tu pedido está en camino + acceso al Club';
-      var html = renderWelcomeTemplate(firstName, lastName, email, cart, passToSend || '(ya tienes acceso al club)', orderId) || buildWelcomeEmail(firstName, lastName, email, cart, passToSend || '(ya tienes acceso al club)', orderId);
+      var html = renderWelcomeTemplate(firstName, lastName, email, cart, passToSend || '(ya tienes acceso al club)', orderId, emailOpts) || buildWelcomeEmail(firstName, lastName, email, cart, passToSend || '(ya tienes acceso al club)', orderId, emailOpts);
 
       return sendEmail(email, subject, html).then(function(emailResult) {
         console.log('[Welcome]', email, '| Club:', created ? 'creado' : 'ya existía', '| Email:', RESEND_KEY ? 'enviado' : 'simulado');
