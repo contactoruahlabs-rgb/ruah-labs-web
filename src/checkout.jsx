@@ -215,34 +215,43 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
       return;
     }
     setPayState('processing');
+    try {
+      sessionStorage.setItem('ruah-pending-order', JSON.stringify({
+        email: info.email, firstName: info.firstName, lastName: info.lastName,
+        phone: info.phone,
+        address: info.address, address2: info.address2 || '',
+        city: info.city, region: info.region,
+        purchaseDate: new Date().toISOString(),
+        cart, total,
+        discount: discountApplied ? discountApplied.code : null,
+        discountAmount,
+        shippingFee: shipFee,
+        shippingName: activeShipOpt ? activeShipOpt.name : '',
+        shippingMethod: activeShipOpt ? activeShipOpt.id : 'std',
+        totalGrams,
+        weightCat,
+      }));
+    } catch(_) {}
 
-    fetch('' + window.RUAH_API + '/api/checkout/create-transaction', {
+    fetch('' + window.RUAH_API + '/api/checkout/create-preference', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        cart:          cart.map(it => ({ ...it, price: parsePrice(it.price) })),
+        cart: cart.map(it => ({ ...it, price: parsePrice(it.price) })),
         info,
-        discount:      discountApplied ? discountApplied.code : null,
-        shippingMethod: activeShipOpt ? activeShipOpt.id   : 'std',
-        shippingName:   activeShipOpt ? activeShipOpt.name : 'Envío',
-        totalGrams,
-        weightCat,
+        discount: discountApplied ? discountApplied.code : null,
+        shippingMethod: activeShipOpt ? activeShipOpt.id : 'std',
       }),
     })
     .then(r => r.json())
     .then(data => {
-      if (data.error) { setPayState('idle'); alert('Error: ' + data.error); return; }
-      // Enviar formulario POST a Transbank (requerido por su protocolo)
-      const form  = document.createElement('form');
-      form.method = 'POST';
-      form.action = data.url;
-      const input  = document.createElement('input');
-      input.type   = 'hidden';
-      input.name   = 'token_ws';
-      input.value  = data.token;
-      form.appendChild(input);
-      document.body.appendChild(form);
-      form.submit();
+      if (data.error) { setPayState('idle'); alert('Error MP: ' + data.error); return; }
+      try {
+        const pending = JSON.parse(sessionStorage.getItem('ruah-pending-order') || '{}');
+        pending.mp_external_ref = data.preference_id || null;
+        sessionStorage.setItem('ruah-pending-order', JSON.stringify(pending));
+      } catch(_) {}
+      window.location.href = data.init_point || data.sandbox_init_point;
     })
     .catch(err => {
       setPayState('idle');
@@ -462,17 +471,17 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
             <div className="ck2-radio-card ck2-radio-card--selected ck2-radio-card--static">
               <span className="ck2-radio-dot ck2-radio-dot--on"></span>
               <div className="ck2-radio-card__body">
-                <span className="ck2-radio-card__name">Pago seguro · Transbank Webpay</span>
+                <span className="ck2-radio-card__name">Todos los medios de pago · MercadoPago</span>
                 <div className="ck2-pay-badges">
                   <span className="ck2-pay-badge">Visa</span>
                   <span className="ck2-pay-badge">Mastercard</span>
                   <span className="ck2-pay-badge">Débito</span>
-                  <span className="ck2-pay-badge">Prepago</span>
+                  <span className="ck2-pay-badge">+2</span>
                 </div>
               </div>
               <span className="ck2-lock-icon">🔒</span>
             </div>
-            <p className="ck2-pay-note">Serás redirigido a Webpay para completar la compra de forma segura.</p>
+            <p className="ck2-pay-note">Serás redirigido a MercadoPago para completar la compra de forma segura.</p>
           </section>
 
           {/* ── RESUMEN DEL PEDIDO ── */}
@@ -515,7 +524,7 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
               {payState === 'processing' && (
                 <React.Fragment>
                   <span className="ck2-spin"></span>
-                  Redirigiendo a Webpay…
+                  Redirigiendo a MercadoPago…
                 </React.Fragment>
               )}
             </button>

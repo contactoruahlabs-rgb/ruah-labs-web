@@ -188,9 +188,21 @@ function App() {
     window.history.replaceState({}, '', window.location.pathname);
 
     if (payStatus === 'success') {
-      // Transbank guardó el pedido y envió el email server-side
-      setCart([]);
-      try { localStorage.removeItem('ruah-cart'); sessionStorage.removeItem('ruah-pending-order'); } catch(_) {}
+      var orderRaw = sessionStorage.getItem('ruah-pending-order');
+      if (orderRaw) {
+        try {
+          var order = JSON.parse(orderRaw);
+          sessionStorage.removeItem('ruah-pending-order');
+          order.payment_id = params.get('payment_id') || params.get('collection_id') || '';
+          setCart([]);
+          try { localStorage.removeItem('ruah-cart'); } catch(_) {}
+          fetch('' + window.RUAH_API + '/api/checkout/welcome', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(order),
+          }).catch(function(){});
+        } catch(_) {}
+      }
       setToast({ msg: '✓ PAGO CONFIRMADO — REVISA TU CORREO, YA ERES PARTE DEL CLUB', dur: 8000 });
       setTimeout(function() { setToast(null); }, 8000);
     } else if (payStatus === 'failure') {

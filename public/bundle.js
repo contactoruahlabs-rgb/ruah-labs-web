@@ -6005,7 +6005,29 @@ function Checkout({
       return;
     }
     setPayState('processing');
-    fetch('' + window.RUAH_API + '/api/checkout/create-transaction', {
+    try {
+      sessionStorage.setItem('ruah-pending-order', JSON.stringify({
+        email: info.email,
+        firstName: info.firstName,
+        lastName: info.lastName,
+        phone: info.phone,
+        address: info.address,
+        address2: info.address2 || '',
+        city: info.city,
+        region: info.region,
+        purchaseDate: new Date().toISOString(),
+        cart,
+        total,
+        discount: discountApplied ? discountApplied.code : null,
+        discountAmount,
+        shippingFee: shipFee,
+        shippingName: activeShipOpt ? activeShipOpt.name : '',
+        shippingMethod: activeShipOpt ? activeShipOpt.id : 'std',
+        totalGrams,
+        weightCat
+      }));
+    } catch (_) {}
+    fetch('' + window.RUAH_API + '/api/checkout/create-preference', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -6017,28 +6039,20 @@ function Checkout({
         })),
         info,
         discount: discountApplied ? discountApplied.code : null,
-        shippingMethod: activeShipOpt ? activeShipOpt.id : 'std',
-        shippingName: activeShipOpt ? activeShipOpt.name : 'Envío',
-        totalGrams,
-        weightCat
+        shippingMethod: activeShipOpt ? activeShipOpt.id : 'std'
       })
     }).then(r => r.json()).then(data => {
       if (data.error) {
         setPayState('idle');
-        alert('Error: ' + data.error);
+        alert('Error MP: ' + data.error);
         return;
       }
-      // Enviar formulario POST a Transbank (requerido por su protocolo)
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = data.url;
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = 'token_ws';
-      input.value = data.token;
-      form.appendChild(input);
-      document.body.appendChild(form);
-      form.submit();
+      try {
+        const pending = JSON.parse(sessionStorage.getItem('ruah-pending-order') || '{}');
+        pending.mp_external_ref = data.preference_id || null;
+        sessionStorage.setItem('ruah-pending-order', JSON.stringify(pending));
+      } catch (_) {}
+      window.location.href = data.init_point || data.sandbox_init_point;
     }).catch(err => {
       setPayState('idle');
       alert('No se pudo conectar con el servidor de pagos.\n' + err.message);
@@ -6325,7 +6339,7 @@ function Checkout({
     className: "ck2-radio-card__body"
   }, /*#__PURE__*/React.createElement("span", {
     className: "ck2-radio-card__name"
-  }, "Pago seguro \xB7 Transbank Webpay"), /*#__PURE__*/React.createElement("div", {
+  }, "Todos los medios de pago \xB7 MercadoPago"), /*#__PURE__*/React.createElement("div", {
     className: "ck2-pay-badges"
   }, /*#__PURE__*/React.createElement("span", {
     className: "ck2-pay-badge"
@@ -6335,11 +6349,11 @@ function Checkout({
     className: "ck2-pay-badge"
   }, "D\xE9bito"), /*#__PURE__*/React.createElement("span", {
     className: "ck2-pay-badge"
-  }, "Prepago"))), /*#__PURE__*/React.createElement("span", {
+  }, "+2"))), /*#__PURE__*/React.createElement("span", {
     className: "ck2-lock-icon"
   }, "\uD83D\uDD12")), /*#__PURE__*/React.createElement("p", {
     className: "ck2-pay-note"
-  }, "Ser\xE1s redirigido a Webpay para completar la compra de forma segura.")), /*#__PURE__*/React.createElement("section", {
+  }, "Ser\xE1s redirigido a MercadoPago para completar la compra de forma segura.")), /*#__PURE__*/React.createElement("section", {
     className: "ck2-section"
   }, /*#__PURE__*/React.createElement("h2", {
     className: "ck2-section-title"
@@ -6381,7 +6395,7 @@ function Checkout({
     className: "ck2-btn-arrow"
   }, "\u2192")), payState === 'processing' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
     className: "ck2-spin"
-  }), "Redirigiendo a Webpay\u2026")), /*#__PURE__*/React.createElement("p", {
+  }), "Redirigiendo a MercadoPago\u2026")), /*#__PURE__*/React.createElement("p", {
     className: "ck2-trust-note"
   }, "\uD83D\uDD12 Pago seguro \xB7 SSL \xB7 Protocolo 1\xD71 se activa al confirmar")))));
 }
@@ -7242,12 +7256,25 @@ function App() {
     // Limpiar URL sin recargar
     window.history.replaceState({}, '', window.location.pathname);
     if (payStatus === 'success') {
-      // Transbank guardó el pedido y envió el email server-side
-      setCart([]);
-      try {
-        localStorage.removeItem('ruah-cart');
-        sessionStorage.removeItem('ruah-pending-order');
-      } catch (_) {}
+      var orderRaw = sessionStorage.getItem('ruah-pending-order');
+      if (orderRaw) {
+        try {
+          var order = JSON.parse(orderRaw);
+          sessionStorage.removeItem('ruah-pending-order');
+          order.payment_id = params.get('payment_id') || params.get('collection_id') || '';
+          setCart([]);
+          try {
+            localStorage.removeItem('ruah-cart');
+          } catch (_) {}
+          fetch('' + window.RUAH_API + '/api/checkout/welcome', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(order)
+          }).catch(function () {});
+        } catch (_) {}
+      }
       setToast({
         msg: '✓ PAGO CONFIRMADO — REVISA TU CORREO, YA ERES PARTE DEL CLUB',
         dur: 8000
