@@ -287,7 +287,7 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
             <h2 className="ck2-section-title">Contacto</h2>
             <div className={emailCls()}>
               <input
-                type="email" value={info.email} placeholder="Correo electrónico (el mismo de MercadoPago)"
+                type="email" value={info.email} placeholder="Correo electrónico"
                 onChange={e => up('email', e.target.value)}
                 onBlur={() => setTouched(t => ({ ...t, email: 1 }))}
                 autoComplete="email"
@@ -462,18 +462,17 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
             <div className="ck2-radio-card ck2-radio-card--selected ck2-radio-card--static">
               <span className="ck2-radio-dot ck2-radio-dot--on"></span>
               <div className="ck2-radio-card__body">
-                <span className="ck2-radio-card__name">Todos los medios de pago · MercadoPago</span>
+                <span className="ck2-radio-card__name">Pago seguro · Transbank Webpay</span>
                 <div className="ck2-pay-badges">
                   <span className="ck2-pay-badge">Visa</span>
                   <span className="ck2-pay-badge">Mastercard</span>
                   <span className="ck2-pay-badge">Débito</span>
-                  <span className="ck2-pay-badge">+2</span>
+                  <span className="ck2-pay-badge">Prepago</span>
                 </div>
               </div>
               <span className="ck2-lock-icon">🔒</span>
             </div>
-            <p className="ck2-pay-note">Serás redirigido a MercadoPago para completar la compra de forma segura.</p>
-            <p className="ck2-pay-note ck2-pay-note--mobile">📱 En celular: si el botón "Pagar" aparece inactivo, ingresa tu correo en el campo de email que muestra MercadoPago.</p>
+            <p className="ck2-pay-note">Serás redirigido a Webpay para completar la compra de forma segura.</p>
           </section>
 
           {/* ── RESUMEN DEL PEDIDO ── */}
@@ -516,7 +515,7 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
               {payState === 'processing' && (
                 <React.Fragment>
                   <span className="ck2-spin"></span>
-                  Redirigiendo a MercadoPago…
+                  Redirigiendo a Webpay…
                 </React.Fragment>
               )}
             </button>

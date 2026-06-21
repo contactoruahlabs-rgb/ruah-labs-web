@@ -6095,7 +6095,7 @@ function Checkout({
   }, /*#__PURE__*/React.createElement("input", {
     type: "email",
     value: info.email,
-    placeholder: "Correo electr\xF3nico (el mismo de MercadoPago)",
+    placeholder: "Correo electr\xF3nico",
     onChange: e => up('email', e.target.value),
     onBlur: () => setTouched(t => ({
       ...t,
@@ -6325,7 +6325,7 @@ function Checkout({
     className: "ck2-radio-card__body"
   }, /*#__PURE__*/React.createElement("span", {
     className: "ck2-radio-card__name"
-  }, "Todos los medios de pago \xB7 MercadoPago"), /*#__PURE__*/React.createElement("div", {
+  }, "Pago seguro \xB7 Transbank Webpay"), /*#__PURE__*/React.createElement("div", {
     className: "ck2-pay-badges"
   }, /*#__PURE__*/React.createElement("span", {
     className: "ck2-pay-badge"
@@ -6335,13 +6335,11 @@ function Checkout({
     className: "ck2-pay-badge"
   }, "D\xE9bito"), /*#__PURE__*/React.createElement("span", {
     className: "ck2-pay-badge"
-  }, "+2"))), /*#__PURE__*/React.createElement("span", {
+  }, "Prepago"))), /*#__PURE__*/React.createElement("span", {
     className: "ck2-lock-icon"
   }, "\uD83D\uDD12")), /*#__PURE__*/React.createElement("p", {
     className: "ck2-pay-note"
-  }, "Ser\xE1s redirigido a MercadoPago para completar la compra de forma segura."), /*#__PURE__*/React.createElement("p", {
-    className: "ck2-pay-note ck2-pay-note--mobile"
-  }, "\uD83D\uDCF1 En celular: si el bot\xF3n \"Pagar\" aparece inactivo, ingresa tu correo en el campo de email que muestra MercadoPago.")), /*#__PURE__*/React.createElement("section", {
+  }, "Ser\xE1s redirigido a Webpay para completar la compra de forma segura.")), /*#__PURE__*/React.createElement("section", {
     className: "ck2-section"
   }, /*#__PURE__*/React.createElement("h2", {
     className: "ck2-section-title"
@@ -6383,7 +6381,7 @@ function Checkout({
     className: "ck2-btn-arrow"
   }, "\u2192")), payState === 'processing' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
     className: "ck2-spin"
-  }), "Redirigiendo a MercadoPago\u2026")), /*#__PURE__*/React.createElement("p", {
+  }), "Redirigiendo a Webpay\u2026")), /*#__PURE__*/React.createElement("p", {
     className: "ck2-trust-note"
   }, "\uD83D\uDD12 Pago seguro \xB7 SSL \xB7 Protocolo 1\xD71 se activa al confirmar")))));
 }
