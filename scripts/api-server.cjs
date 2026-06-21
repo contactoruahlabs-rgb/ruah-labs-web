@@ -316,7 +316,6 @@ app.post('/api/checkout/create-preference', rateLimit('checkout', 10, 60 * 1000)
       items:     items,
       payer: {
         name:  (info.firstName || '') + ' ' + (info.lastName || ''),
-        email: String(info.email || '').trim().toLowerCase(),
         phone: { number: info.phone || '' },
       },
       statement_descriptor: 'RUAH LABS',
