@@ -188,26 +188,9 @@ function App() {
     window.history.replaceState({}, '', window.location.pathname);
 
     if (payStatus === 'success') {
-      // Recuperar datos del comprador
-      var orderRaw = sessionStorage.getItem('ruah-pending-order');
-      if (orderRaw) {
-        try {
-          var order = JSON.parse(orderRaw);
-          sessionStorage.removeItem('ruah-pending-order');
-          // payment_id lo agrega MercadoPago al redirigir (auto_return solo
-          // ocurre con pago aprobado). El servidor lo verifica contra MP.
-          order.payment_id = params.get('payment_id') || params.get('collection_id') || '';
-          // Limpiar carrito — pago completado
-          setCart([]);
-          try { localStorage.removeItem('ruah-cart'); } catch(_) {}
-          // Llamar API para crear cuenta club + enviar email
-          fetch('' + window.RUAH_API + '/api/checkout/welcome', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(order),
-          }).catch(function(){});
-        } catch(_) {}
-      }
+      // Transbank guardó el pedido y envió el email server-side
+      setCart([]);
+      try { localStorage.removeItem('ruah-cart'); sessionStorage.removeItem('ruah-pending-order'); } catch(_) {}
       setToast({ msg: '✓ PAGO CONFIRMADO — REVISA TU CORREO, YA ERES PARTE DEL CLUB', dur: 8000 });
       setTimeout(function() { setToast(null); }, 8000);
     } else if (payStatus === 'failure') {

@@ -24,9 +24,28 @@ var MP_TOKEN          = process.env.MERCADOPAGO_ACCESS_TOKEN || '';
 var SITE_URL          = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:8000';
 var IS_DEV            = !MP_TOKEN.startsWith('APP_USR-');
 var MP_WEBHOOK_SECRET = process.env.MERCADOPAGO_WEBHOOK_SECRET || '';
-// Dedup compartido entre /api/checkout/welcome (redirect cliente) y el webhook.
-// Evita que ambos disparen el correo para el mismo pago.
 var _processedPayments = new Set();
+
+// ─── Transbank Webpay Plus ────────────────────────────────────────────────────
+var _tb = null;
+try { _tb = require('transbank-sdk'); } catch(e) { console.warn('[TB] transbank-sdk no disponible'); }
+var TB_COMMERCE_CODE = process.env.TRANSBANK_COMMERCE_CODE || '';
+var TB_API_KEY       = process.env.TRANSBANK_API_KEY       || '';
+var TB_IS_PROD       = !!(TB_COMMERCE_CODE && TB_API_KEY);
+var API_BASE         = process.env.API_BASE_URL || 'https://patient-benevolence-production.up.railway.app';
+// Órdenes pendientes: token_ws → datos (expiran en 30 min)
+var _pendingTB = new Map();
+setInterval(function() {
+  var now = Date.now();
+  _pendingTB.forEach(function(v, k) { if (v._exp < now) _pendingTB.delete(k); });
+}, 5 * 60 * 1000);
+function tbTx() {
+  if (!_tb) throw new Error('transbank-sdk no instalado');
+  var env  = TB_IS_PROD ? _tb.Environment.Production     : _tb.Environment.Integration;
+  var code = TB_IS_PROD ? TB_COMMERCE_CODE               : _tb.IntegrationCommerceCodes.WEBPAY_PLUS;
+  var key  = TB_IS_PROD ? TB_API_KEY                     : _tb.IntegrationApiKeys.WEBPAY_PLUS;
+  return new _tb.WebpayPlus.Transaction(new _tb.Options(code, key, env));
+}
 var ADMIN_LOGIN_EMAIL = 'contacto.ruahlabs@gmail.com';
 // Cache de tokens ya validados (2 min) — evita pegarle a Supabase en cada request.
 // SEGURIDAD: la única forma de ser admin es un JWT válido de Supabase Auth.
@@ -341,6 +360,165 @@ app.post('/api/checkout/create-preference', rateLimit('checkout', 10, 60 * 1000)
   }).catch(function(err) {
     console.error('[MP Network Error]', err.message);
     srvErr(res, err);
+  });
+});
+
+// ─── POST /api/checkout/create-transaction (Transbank Webpay Plus) ───────────
+app.post('/api/checkout/create-transaction', rateLimit('checkout', 10, 60 * 1000), function(req, res) {
+  if (!_tb) return res.status(503).json({ error: 'Pasarela Transbank no disponible' });
+  var cart           = req.body.cart           || [];
+  var info           = req.body.info           || {};
+  var shippingMethod = req.body.shippingMethod || 'std';
+  var shippingName   = req.body.shippingName   || 'Envío';
+  var discount       = req.body.discount       || null;
+  var totalGrams     = parseInt(req.body.totalGrams) || 0;
+  var weightCat      = req.body.weightCat      || null;
+
+  if (!cart.length) return res.status(400).json({ error: 'Carrito vacío' });
+
+  getContentPrices().then(function(result) {
+    var priceMap = result.prices;
+    var fees     = result.shipping;
+    var shipFee  = fees.hasOwnProperty(shippingMethod) ? fees[shippingMethod] : fees.std;
+
+    if (Object.keys(priceMap).length === 0) {
+      console.error('[create-transaction] sin precios en DB');
+      return res.status(503).json({ error: 'No se pudieron validar los precios.' });
+    }
+
+    var items = cart.map(function(it) {
+      var price = priceMap[it.id];
+      if (price === undefined) return null;
+      return { id: String(it.id), title: it.name || 'Producto', quantity: Math.max(1, parseInt(it.qty, 10) || 1), unit_price: price };
+    }).filter(Boolean);
+
+    if (items.length !== cart.length) return res.status(400).json({ error: 'Precio o producto inválido' });
+
+    var subtotal = items.reduce(function(s, it) { return s + it.unit_price * it.quantity; }, 0);
+    var discPct  = (discount && VALID_DISCOUNT_CODES[String(discount).toUpperCase()]) || 0;
+    var discAmt  = discPct > 0 ? Math.round(subtotal * discPct / 100) : 0;
+    var total    = Math.max(50, subtotal - discAmt + shipFee);
+
+    var buyOrder  = 'RL' + _crypto.randomBytes(4).toString('hex').toUpperCase().slice(0, 6);
+    var sessionId = 'S'  + _crypto.randomBytes(8).toString('hex');
+    var returnUrl = API_BASE + '/api/checkout/transbank-return';
+
+    tbTx().create(buyOrder, sessionId, total, returnUrl)
+      .then(function(r) {
+        _pendingTB.set(r.token, {
+          _exp:           Date.now() + 30 * 60 * 1000,
+          buyOrder:       buyOrder,
+          email:          (info.email    || '').trim().toLowerCase(),
+          firstName:      cap(info.firstName || ''),
+          lastName:       cap(info.lastName  || ''),
+          phone:          info.phone    || '',
+          address:        info.address  || '',
+          address2:       info.address2 || '',
+          city:           info.city     || '',
+          region:         info.region   || '',
+          cart:           cart,
+          items:          items,
+          subtotal:       subtotal,
+          discount:       discount ? String(discount).toUpperCase() : null,
+          discountAmount: discAmt,
+          shippingMethod: shippingMethod,
+          shippingName:   shippingName,
+          shippingFee:    shipFee,
+          total:          total,
+          totalGrams:     totalGrams,
+          weightCat:      weightCat,
+        });
+        console.log('[TB create]', buyOrder, 'total:', total);
+        res.json({ token: r.token, url: r.url });
+      })
+      .catch(function(err) {
+        console.error('[TB create error]', err.message);
+        res.status(500).json({ error: 'Error al iniciar pago: ' + err.message });
+      });
+  }).catch(function(err) {
+    console.error('[TB prices error]', err.message);
+    res.status(500).json({ error: 'Error interno' });
+  });
+});
+
+// ─── POST /api/checkout/transbank-return ─────────────────────────────────────
+app.post('/api/checkout/transbank-return', express.urlencoded({ extended: false }), function(req, res) {
+  var token = req.body.token_ws;
+
+  if (!token) {
+    console.warn('[TB return] sin token_ws — usuario canceló');
+    return res.redirect(SITE_URL + '/?payment=failure');
+  }
+
+  tbTx().commit(token).then(function(r) {
+    if (r.response_code !== 0) {
+      _pendingTB.delete(token);
+      console.warn('[TB commit] rechazado, response_code:', r.response_code);
+      return res.redirect(SITE_URL + '/?payment=failure');
+    }
+
+    var p = _pendingTB.get(token) || {};
+    _pendingTB.delete(token);
+
+    var _ch = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    var orderId = 'RL';
+    for (var _i = 0; _i < 4; _i++) orderId += _ch[_crypto.randomBytes(1)[0] % _ch.length];
+
+    saveOrder({
+      order_id:        orderId,
+      payment_id:      p.buyOrder || r.buy_order,
+      payment_method:  'Transbank Webpay',
+      status:          'approved',
+      buyer_email:     p.email    || '',
+      buyer_name:      ((p.firstName || '') + ' ' + (p.lastName || '')).trim(),
+      buyer_phone:     p.phone    || '',
+      shipping_method: p.shippingMethod || null,
+      shipping_name:   p.shippingName   || null,
+      shipping_fee:    p.shippingFee    || 0,
+      address:         p.address  || null,
+      address2:        p.address2 || null,
+      city:            p.city     || null,
+      region:          p.region   || null,
+      items:           p.items    || [],
+      subtotal:        p.subtotal || r.amount,
+      discount_code:   p.discount || null,
+      discount_amount: p.discountAmount || 0,
+      total:           r.amount,
+      total_grams:     p.totalGrams || null,
+      weight_cat:      p.weightCat  || null,
+      mp_external_ref: r.buy_order,
+    });
+
+    // Redirigir inmediatamente al frontend — email/club se procesa async
+    res.redirect(SITE_URL + '/?payment=success');
+
+    if (!p.email) return;
+
+    var rawPass = generatePassword();
+    bcrypt.hash(rawPass, 10).then(function(hash) {
+      return sbFetch('POST', 'club_credentials', {
+        body: { name: ((p.firstName || '') + ' ' + (p.lastName || '')).trim(), email: p.email, password_hash: hash, notes: 'Comprador automático', must_change_password: true },
+      }).then(function(clubRes) {
+        var created = clubRes.status < 400;
+        var emailOpts = {
+          discount: p.discount, discountAmount: p.discountAmount || 0,
+          shippingFee: p.shippingFee || 0, shippingName: p.shippingName || 'Envío',
+          total: r.amount, phone: p.phone || '',
+          address: p.address || '', address2: p.address2 || '',
+          city: p.city || '', region: p.region || '',
+          purchaseDate: new Date().toISOString(), paymentMethod: 'Transbank Webpay',
+        };
+        var passDisplay = created ? rawPass : '(ya tienes acceso al club)';
+        var html = renderWelcomeTemplate(p.firstName, p.lastName, p.email, p.cart || p.items, passDisplay, orderId, emailOpts)
+                || buildWelcomeEmail(p.firstName, p.lastName, p.email, p.cart || p.items, passDisplay, orderId, emailOpts);
+        sendEmail(p.email, '✓ RUAH LABS · Tu pedido está en camino + acceso al Club', html)
+          .catch(function(e) { console.error('[TB email]', e.message); });
+        console.log('[TB return]', p.email, '| Club:', created ? 'creado' : 'existía', '| Orden:', orderId);
+      });
+    }).catch(function(e) { console.error('[TB club+email]', e.message); });
+  }).catch(function(err) {
+    console.error('[TB commit error]', err.message);
+    res.redirect(SITE_URL + '/?payment=failure');
   });
 });
 

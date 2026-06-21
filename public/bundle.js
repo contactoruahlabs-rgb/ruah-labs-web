@@ -6005,29 +6005,7 @@ function Checkout({
       return;
     }
     setPayState('processing');
-    try {
-      sessionStorage.setItem('ruah-pending-order', JSON.stringify({
-        email: info.email,
-        firstName: info.firstName,
-        lastName: info.lastName,
-        phone: info.phone,
-        address: info.address,
-        address2: info.address2 || '',
-        city: info.city,
-        region: info.region,
-        purchaseDate: new Date().toISOString(),
-        cart,
-        total,
-        discount: discountApplied ? discountApplied.code : null,
-        discountAmount,
-        shippingFee: shipFee,
-        shippingName: activeShipOpt ? activeShipOpt.name : '',
-        shippingMethod: activeShipOpt ? activeShipOpt.id : 'std',
-        totalGrams,
-        weightCat
-      }));
-    } catch (_) {}
-    fetch('' + window.RUAH_API + '/api/checkout/create-preference', {
+    fetch('' + window.RUAH_API + '/api/checkout/create-transaction', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -6039,24 +6017,28 @@ function Checkout({
         })),
         info,
         discount: discountApplied ? discountApplied.code : null,
-        shippingMethod: activeShipOpt.id
+        shippingMethod: activeShipOpt ? activeShipOpt.id : 'std',
+        shippingName: activeShipOpt ? activeShipOpt.name : 'Envío',
+        totalGrams,
+        weightCat
       })
     }).then(r => r.json()).then(data => {
       if (data.error) {
         setPayState('idle');
-        alert('Error MP: ' + data.error);
+        alert('Error: ' + data.error);
         return;
       }
-      try {
-        const pending = JSON.parse(sessionStorage.getItem('ruah-pending-order') || '{}');
-        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-        let code = 'RL';
-        for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
-        pending.orderId = code;
-        pending.mp_external_ref = data.preference_id || null;
-        sessionStorage.setItem('ruah-pending-order', JSON.stringify(pending));
-      } catch (_) {}
-      window.location.href = data.init_point || data.sandbox_init_point;
+      // Enviar formulario POST a Transbank (requerido por su protocolo)
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = data.url;
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'token_ws';
+      input.value = data.token;
+      form.appendChild(input);
+      document.body.appendChild(form);
+      form.submit();
     }).catch(err => {
       setPayState('idle');
       alert('No se pudo conectar con el servidor de pagos.\n' + err.message);
@@ -7262,30 +7244,12 @@ function App() {
     // Limpiar URL sin recargar
     window.history.replaceState({}, '', window.location.pathname);
     if (payStatus === 'success') {
-      // Recuperar datos del comprador
-      var orderRaw = sessionStorage.getItem('ruah-pending-order');
-      if (orderRaw) {
-        try {
-          var order = JSON.parse(orderRaw);
-          sessionStorage.removeItem('ruah-pending-order');
-          // payment_id lo agrega MercadoPago al redirigir (auto_return solo
-          // ocurre con pago aprobado). El servidor lo verifica contra MP.
-          order.payment_id = params.get('payment_id') || params.get('collection_id') || '';
-          // Limpiar carrito — pago completado
-          setCart([]);
-          try {
-            localStorage.removeItem('ruah-cart');
-          } catch (_) {}
-          // Llamar API para crear cuenta club + enviar email
-          fetch('' + window.RUAH_API + '/api/checkout/welcome', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(order)
-          }).catch(function () {});
-        } catch (_) {}
-      }
+      // Transbank guardó el pedido y envió el email server-side
+      setCart([]);
+      try {
+        localStorage.removeItem('ruah-cart');
+        sessionStorage.removeItem('ruah-pending-order');
+      } catch (_) {}
       setToast({
         msg: '✓ PAGO CONFIRMADO — REVISA TU CORREO, YA ERES PARTE DEL CLUB',
         dur: 8000
