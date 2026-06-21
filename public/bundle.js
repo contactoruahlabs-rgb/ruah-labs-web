@@ -5886,9 +5886,17 @@ function Checkout({
         firstName: info.firstName,
         lastName: info.lastName,
         phone: info.phone,
+        address: info.address,
+        address2: info.address2 || '',
+        city: info.city,
+        region: info.region,
+        purchaseDate: new Date().toISOString(),
         cart: cart,
         total: total,
-        discount: discountApplied ? discountApplied.code : null
+        discount: discountApplied ? discountApplied.code : null,
+        discountAmount: discountAmount,
+        shippingFee: shipFee,
+        shippingName: shipOpt.name
       }));
     } catch (_) {}
     fetch('' + window.RUAH_API + '/api/checkout/create-preference', {

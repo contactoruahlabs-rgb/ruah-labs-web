@@ -98,6 +98,43 @@ function esc(str) {
 function cap(str) {
   return String(str || '').toLowerCase().replace(/(?:^|\s)\S/g, function(c){ return c.toUpperCase(); });
 }
+function formatDate(iso) {
+  try {
+    var d = new Date(iso);
+    var days   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+    var months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    return days[d.getDay()] + ' ' + d.getDate() + ' de ' + months[d.getMonth()] + ' ' + d.getFullYear() +
+           ' · ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0') + ' hrs';
+  } catch(e) { return iso || '—'; }
+}
+function formatPM(pmId, pmType) {
+  var brand = { visa:'Visa', master:'Mastercard', redcompra:'Redcompra', amex:'American Express', debvisa:'Visa Débito', debmaster:'Mastercard Débito', debitocc:'Débito' }[pmId] || cap(pmId || '');
+  var type  = pmType === 'debit_card' ? ' Débito' : pmType === 'credit_card' ? ' Crédito' : pmType === 'bank_transfer' ? ' Transferencia' : '';
+  var result = (brand + (brand && type && !brand.toLowerCase().includes(type.trim().toLowerCase()) ? type : '')).trim();
+  return result || 'MercadoPago';
+}
+function buildOrderInfo(orderId, opts, firstName, lastName, cart) {
+  var qty  = (cart || []).reduce(function(s, it){ return s + (it.qty || 1); }, 0);
+  var addr = [opts.address, opts.address2].filter(Boolean).join(', ');
+  if (opts.city)   addr += (addr ? ', ' : '') + cap(opts.city);
+  if (opts.region) addr += (addr ? ', ' : '') + opts.region;
+  var rows = [
+    ['N° de Orden',    orderId || '—'],
+    ['Fecha y hora',   formatDate(opts.purchaseDate)],
+    ['Cliente',        [firstName, lastName].filter(Boolean).join(' ') || '—'],
+    ['Dirección',      addr || '—'],
+    ['Teléfono',       opts.phone || '—'],
+    ['Método de pago', opts.paymentMethod || 'MercadoPago'],
+    ['Despacho',       opts.shippingName || '—'],
+    ['Cantidad',       qty + (qty === 1 ? ' producto' : ' productos')],
+  ];
+  return rows.map(function(r) {
+    return '<tr>' +
+      '<td style="padding:7px 20px 7px 0;color:#888;font-size:11px;letter-spacing:1px;white-space:nowrap;vertical-align:top;border-bottom:1px solid #1e1e1e;">' + esc(r[0].toUpperCase()) + '</td>' +
+      '<td style="padding:7px 0;color:#fff;font-size:13px;vertical-align:top;border-bottom:1px solid #1e1e1e;">' + esc(String(r[1])) + '</td>' +
+    '</tr>';
+  }).join('');
+}
 
 if (!MP_TOKEN || MP_TOKEN === 'YOUR_MERCADOPAGO_ACCESS_TOKEN') {
   console.warn('⚠️  MERCADOPAGO_ACCESS_TOKEN no configurado en .env.local');
@@ -586,6 +623,7 @@ function renderWelcomeTemplate(firstName, lastName, email, cart, password, order
       return esc(lines);
     })())
     .replace(/\{\{PRODUCT_PRICE\}\}/g,   'CLP $' + firstPrice.toLocaleString('es-CL'))
+    .replace(/\{\{ORDER_INFO\}\}/g,      buildOrderInfo(orderId, opts || {}, firstName, lastName, cart))
     .replace(/\{\{ORDER_ITEMS\}\}/g,     itemsHtml)
     .replace(/\{\{RECEIPT_ROWS\}\}/g,    receiptRows)
     .replace(/\{\{TOTAL\}\}/g,           'CLP $' + total.toLocaleString('es-CL'))
@@ -686,12 +724,23 @@ app.post('/api/checkout/welcome', rateLimit('welcome', 5, 60 * 1000), async func
   var cart         = req.body.cart || [];
   var orderId      = req.body.orderId || ('RUAH-' + Date.now().toString().slice(-8));
   var paymentId    = (req.body.payment_id || '').trim();
+  var phone        = (req.body.phone     || '').trim();
+  var address      = req.body.address    || '';
+  var address2     = req.body.address2   || '';
+  var city         = req.body.city       || '';
+  var region       = req.body.region     || '';
+  var purchaseDate = req.body.purchaseDate || new Date().toISOString();
+  var paymentMethod = 'MercadoPago';
   var emailOpts    = {
     discount:       req.body.discount       || null,
     discountAmount: parseInt(req.body.discountAmount) || 0,
     shippingFee:    parseInt(req.body.shippingFee)    || 0,
     shippingName:   req.body.shippingName   || 'Envío',
     total:          parseInt(req.body.total)          || 0,
+    phone:          phone,
+    address:        address, address2: address2, city: city, region: region,
+    purchaseDate:   purchaseDate,
+    paymentMethod:  paymentMethod,
   };
 
   if (!email) return res.status(400).json({ error: 'Email requerido' });
@@ -717,6 +766,8 @@ app.post('/api/checkout/welcome', rateLimit('welcome', 5, 60 * 1000), async func
       // Usar el email del pagador real cuando MP lo entrega (evita suplantación)
       var payerEmail = pay.body.payer && pay.body.payer.email;
       if (payerEmail) email = String(payerEmail).trim().toLowerCase();
+      paymentMethod = formatPM((pay.body.payment_method_id || '').toLowerCase(), pay.body.payment_type_id || '');
+      emailOpts.paymentMethod = paymentMethod;
     } catch(e) {
       console.error('[Welcome] error verificando pago:', e.message);
       return res.status(502).json({ error: 'No se pudo verificar el pago' });

@@ -166,7 +166,11 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
     try {
       sessionStorage.setItem('ruah-pending-order', JSON.stringify({
         email: info.email, firstName: info.firstName, lastName: info.lastName,
-        phone: info.phone, cart: cart, total: total,
+        phone: info.phone,
+        address: info.address, address2: info.address2 || '',
+        city: info.city, region: info.region,
+        purchaseDate: new Date().toISOString(),
+        cart: cart, total: total,
         discount: discountApplied ? discountApplied.code : null,
         discountAmount: discountAmount,
         shippingFee: shipFee,

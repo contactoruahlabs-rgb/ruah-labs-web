@@ -56,14 +56,35 @@
 
           <!-- DETALLE DEL PEDIDO -->
           <p style="color:#ECA10C;font-size:11px;letter-spacing:3px;margin:0 0 8px;border-bottom:1px solid #333;padding-bottom:8px;">DETALLE DEL PEDIDO</p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+            {{ORDER_INFO}}
+          </table>
+
+          <!-- PRODUCTOS -->
+          <p style="color:#ECA10C;font-size:11px;letter-spacing:3px;margin:0 0 8px;border-bottom:1px solid #333;padding-bottom:8px;">PRODUCTOS</p>
           <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:0;">
             {{ORDER_ITEMS}}
           </table>
 
           <!-- RECEIPT: subtotal / descuento / envío / total -->
-          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
             {{RECEIPT_ROWS}}
           </table>
+
+          <!-- INSTRUCCIONES DE RETIRO -->
+          <div style="background:#0d0d0d;border:1px solid #2a2a2a;padding:20px;margin-bottom:24px;">
+            <p style="color:#ECA10C;font-size:11px;letter-spacing:3px;margin:0 0 10px;">INFORMACIÓN DE RETIRO</p>
+            <p style="color:#aaa;font-size:13px;line-height:1.7;margin:0 0 14px;">
+              Deberás esperar un mail de confirmación de que tu compra está lista para ser retirada en la tienda. Puedes retirar tú o un tercero y para hacerlo deberás llevar la copia de tu orden de compra impresa o en formato digital.
+            </p>
+            <p style="color:#fff;font-size:13px;font-weight:bold;margin:0 0 4px;">Punto de retiro:</p>
+            <p style="color:#aaa;font-size:13px;margin:0 0 14px;">Rigoberto Jara 0171 · Lunes a Viernes 10:00 a 19:00</p>
+            <p style="color:#888;font-size:12px;margin:0;">
+              ¿Dudas? WhatsApp <a href="https://wa.me/5626237239" style="color:#ECA10C;">+56 26237239</a> ·
+              <a href="mailto:contacto@ruahlabs.cl" style="color:#ECA10C;">contacto@ruahlabs.cl</a> ·
+              <a href="mailto:ruahlabs@ruahlabs.cl" style="color:#ECA10C;">ruahlabs@ruahlabs.cl</a>
+            </p>
+          </div>
 
           <!-- PROTOCOLO 1x1 -->
           <div style="background:#0d1a0d;border-left:3px solid #ECA10C;padding:14px 16px;margin:0 0 24px;">
