@@ -5,6 +5,7 @@ const express = require('express');
 const fs      = require('fs');
 const path    = require('path');
 const bcrypt  = require('bcrypt');
+var _crypto = require('crypto');
 
 // ─── Cargar .env.local ───────────────────────────────────────────────────────
 const envPath = path.join(__dirname, '..', '.env.local');
@@ -168,7 +169,8 @@ var app = express();
 // Railway pone exactamente 1 proxy delante. Con esto req.ip es la IP real del
 // cliente (el último hop de confianza) y NO un X-Forwarded-For falsificable.
 app.set('trust proxy', 1);
-app.use(express.json({ limit: '4mb' })); // contenido del sitio (productos) puede ser grande
+app.use('/api/content', express.json({ limit: '4mb' })); // solo admin-content necesita 4MB
+app.use(express.json({ limit: '256kb' }));
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
 var ALLOWED_ORIGINS = [
@@ -231,6 +233,7 @@ function rateLimit(key, maxReqs, windowMs) {
 
 // ─── Helpers de precios ───────────────────────────────────────────────────────
 var DEFAULT_SHIP_FEES = { std: 4990, express: 9990, pickup: 0 };
+var VALID_DISCOUNT_CODES = { 'BIENVENIDO10': 10 };
 
 function getContentPrices() {
   if (!SB_URL || !SB_SVC) return Promise.resolve({ prices: {}, shipping: DEFAULT_SHIP_FEES });
@@ -298,7 +301,6 @@ app.post('/api/checkout/create-preference', rateLimit('checkout', 10, 60 * 1000)
     }
 
     // Descuento validado en servidor (el cliente no puede falsificar el monto)
-    var VALID_DISCOUNT_CODES = { 'BIENVENIDO10': 10 };
     var discPct = (discount && VALID_DISCOUNT_CODES[String(discount).toUpperCase()]) || 0;
     if (discPct > 0) {
       var subTot  = items.reduce(function(s, it) { return s + it.unit_price * it.quantity; }, 0);
@@ -344,6 +346,15 @@ app.post('/api/checkout/create-preference', rateLimit('checkout', 10, 60 * 1000)
     console.error('[MP Network Error]', err.message);
     srvErr(res, err);
   });
+});
+
+// ─── POST /api/checkout/validate-discount ────────────────────────────────────
+app.post('/api/checkout/validate-discount', rateLimit('discount', 20, 60 * 1000), function(req, res) {
+  var code = String(req.body.code || '').trim().toUpperCase();
+  if (!code) return res.status(400).json({ valid: false, message: 'Código vacío' });
+  var pct = VALID_DISCOUNT_CODES[code];
+  if (!pct) return res.json({ valid: false, message: 'Código no válido' });
+  res.json({ valid: true, percent: pct });
 });
 
 // ─── Supabase REST helper (service role — bypass RLS) ────────────────────────
@@ -423,10 +434,10 @@ function saveOrder(record) {
 // Generador de contraseña segura
 function generatePassword() {
   var words = ['fuego','gracia','shalom','ruah','vida','luz','fe','amor','paz','monte','agua','roca','cielo','viento','tierra'];
-  var w1 = words[Math.floor(Math.random() * words.length)];
-  var w2 = words[Math.floor(Math.random() * words.length)];
-  var n  = String(Math.floor(Math.random() * 9000) + 1000);
-  var sym = ['!','@','#','$','*'][Math.floor(Math.random() * 5)];
+  var w1  = words[_crypto.randomBytes(1)[0] % words.length];
+  var w2  = words[_crypto.randomBytes(1)[0] % words.length];
+  var n   = String(1000 + (_crypto.randomBytes(2).readUInt16BE(0) % 9000));
+  var sym = ['!','@','#','$','*'][_crypto.randomBytes(1)[0] % 5];
   return w1 + '.' + w2 + n + sym;
 }
 
@@ -906,7 +917,7 @@ app.post('/api/webhooks/mercadopago', function(req, res) {
 
       var _ch = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
       var orderId = 'RL';
-      for (var _i = 0; _i < 4; _i++) orderId += _ch[Math.floor(Math.random() * _ch.length)];
+      for (var _i = 0; _i < 4; _i++) orderId += _ch[_crypto.randomBytes(1)[0] % _ch.length];
 
       // Persistir pedido (fallback: solo si welcome no lo procesó antes)
       saveOrder({

@@ -83,11 +83,19 @@ export default {
       response = await env.ASSETS.fetch(indexReq);
       const h = new Headers(response.headers);
       h.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      h.set('X-Content-Type-Options', 'nosniff');
+      h.set('X-Frame-Options', 'DENY');
+      h.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+      h.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
       return new Response(response.body, { status: 200, headers: h });
     }
     const headers = new Headers(response.headers);
     if (url.pathname === '/' || url.pathname.endsWith('.html')) {
       headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      headers.set('X-Content-Type-Options', 'nosniff');
+      headers.set('X-Frame-Options', 'DENY');
+      headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+      headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
     } else if (/\.(js|css|woff2?|png|jpg|svg|ico)(\?|$)/.test(url.pathname)) {
       headers.set('Cache-Control', 'public, max-age=31536000, immutable');
     }

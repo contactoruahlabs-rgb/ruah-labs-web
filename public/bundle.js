@@ -6022,6 +6022,7 @@ function Checkout({
         discountAmount,
         shippingFee: shipFee,
         shippingName: activeShipOpt ? activeShipOpt.name : '',
+        shippingMethod: activeShipOpt ? activeShipOpt.id : 'std',
         totalGrams,
         weightCat
       }));
@@ -6052,6 +6053,7 @@ function Checkout({
         let code = 'RL';
         for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
         pending.orderId = code;
+        pending.mp_external_ref = data.preference_id || null;
         sessionStorage.setItem('ruah-pending-order', JSON.stringify(pending));
       } catch (_) {}
       window.location.href = data.init_point || data.sandbox_init_point;
