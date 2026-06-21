@@ -6355,7 +6355,9 @@ function Checkout({
     className: "ck2-lock-icon"
   }, "\uD83D\uDD12")), /*#__PURE__*/React.createElement("p", {
     className: "ck2-pay-note"
-  }, "Ser\xE1s redirigido a MercadoPago para completar la compra de forma segura.")), /*#__PURE__*/React.createElement("section", {
+  }, "Ser\xE1s redirigido a MercadoPago para completar la compra de forma segura."), /*#__PURE__*/React.createElement("p", {
+    className: "ck2-pay-note ck2-pay-note--mobile"
+  }, "\uD83D\uDCF1 En celular: si el bot\xF3n \"Pagar\" aparece inactivo, ingresa tu correo en el campo de email que muestra MercadoPago.")), /*#__PURE__*/React.createElement("section", {
     className: "ck2-section"
   }, /*#__PURE__*/React.createElement("h2", {
     className: "ck2-section-title"

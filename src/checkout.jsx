@@ -484,6 +484,7 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
               <span className="ck2-lock-icon">🔒</span>
             </div>
             <p className="ck2-pay-note">Serás redirigido a MercadoPago para completar la compra de forma segura.</p>
+            <p className="ck2-pay-note ck2-pay-note--mobile">📱 En celular: si el botón "Pagar" aparece inactivo, ingresa tu correo en el campo de email que muestra MercadoPago.</p>
           </section>
 
           {/* ── RESUMEN DEL PEDIDO ── */}

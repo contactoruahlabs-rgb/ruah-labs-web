@@ -187,6 +187,8 @@
 }
 .ck2-lock-icon { font-size: 16px; margin-top: 2px; }
 .ck2-pay-note { font-size: 12px; color: #555; margin: 10px 0 0; }
+.ck2-pay-note--mobile { display: none; }
+@media (max-width: 600px) { .ck2-pay-note--mobile { display: block; color: #888; } }
 
 /* ── RETIRO WRAP ── */
 .ck2-retiro-wrap { display: flex; flex-direction: column; gap: 10px; }
