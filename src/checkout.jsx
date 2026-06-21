@@ -300,7 +300,7 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
             <h2 className="ck2-section-title">Contacto</h2>
             <div className={emailCls()}>
               <input
-                type="email" value={info.email} placeholder="Correo electrónico"
+                type="email" value={info.email} placeholder="Correo electrónico (el mismo de MercadoPago)"
                 onChange={e => up('email', e.target.value)}
                 onBlur={() => setTouched(t => ({ ...t, email: 1 }))}
                 autoComplete="email"

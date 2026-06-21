@@ -6113,7 +6113,7 @@ function Checkout({
   }, /*#__PURE__*/React.createElement("input", {
     type: "email",
     value: info.email,
-    placeholder: "Correo electr\xF3nico",
+    placeholder: "Correo electr\xF3nico (el mismo de MercadoPago)",
     onChange: e => up('email', e.target.value),
     onBlur: () => setTouched(t => ({
       ...t,

@@ -316,6 +316,7 @@ app.post('/api/checkout/create-preference', rateLimit('checkout', 10, 60 * 1000)
 
     var prefBody = {
       items:     items,
+      payer: { email: (info.email || '').trim().toLowerCase() },
       statement_descriptor: 'RUAH LABS',
       external_reference:   'RUAH-' + Date.now(),
       metadata: { discount_code: discount },
