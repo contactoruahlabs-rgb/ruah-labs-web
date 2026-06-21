@@ -971,20 +971,20 @@ app.post('/api/checkout/welcome', rateLimit('welcome', 5, 60 * 1000), async func
   // Persistir pedido en base de datos
   var _subtotal = Math.max(0, (emailOpts.total || 0) - (emailOpts.shippingFee || 0) + (emailOpts.discountAmount || 0));
   saveOrder({
-    order_number:    orderId,
+    order_id:        orderId,
     payment_id:      paymentId || null,
     payment_method:  paymentMethod,
-    payment_status:  'approved',
-    customer_email:  email,
-    customer_name:   (firstName + ' ' + lastName).trim(),
-    customer_phone:  phone,
+    status:          'approved',
+    buyer_email:     email,
+    buyer_name:      (firstName + ' ' + lastName).trim(),
+    buyer_phone:     phone,
     shipping_method: req.body.shippingMethod || 'std',
     shipping_name:   emailOpts.shippingName  || null,
     shipping_fee:    emailOpts.shippingFee   || 0,
-    shipping_street: address  || null,
-    shipping_apt:    address2 || null,
-    shipping_city:   city     || null,
-    shipping_region: region   || null,
+    address:         address  || null,
+    address2:        address2 || null,
+    city:            city     || null,
+    region:          region   || null,
     items:           cart,
     subtotal:        _subtotal,
     discount_code:   emailOpts.discount      || null,
@@ -993,7 +993,6 @@ app.post('/api/checkout/welcome', rateLimit('welcome', 5, 60 * 1000), async func
     total_grams:     parseInt(req.body.totalGrams) || null,
     weight_cat:      req.body.weightCat      || null,
     mp_external_ref: req.body.mp_external_ref || null,
-    paid_at:         new Date().toISOString(),
   });
 
   var rawPass = generatePassword();
@@ -1096,17 +1095,16 @@ app.post('/api/webhooks/mercadopago', function(req, res) {
 
       // Persistir pedido (fallback: solo si welcome no lo procesó antes)
       saveOrder({
-        order_number:    orderId,
+        order_id:        orderId,
         payment_id:      paymentId,
         payment_method:  'MercadoPago',
-        payment_status:  'approved',
-        customer_email:  payerEmail,
-        customer_name:   (payerFirst + ' ' + payerLast).trim(),
+        status:          'approved',
+        buyer_email:     payerEmail,
+        buyer_name:      (payerFirst + ' ' + payerLast).trim(),
         items:           cart,
         total:           parseInt(payment.transaction_amount) || 0,
         subtotal:        parseInt(payment.transaction_amount) || 0,
         mp_external_ref: payment.external_reference || null,
-        paid_at:         new Date().toISOString(),
       });
 
       var rawPass = generatePassword();
