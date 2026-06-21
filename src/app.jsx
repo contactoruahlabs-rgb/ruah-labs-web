@@ -19,6 +19,7 @@ function App() {
   const [adminOpen,    setAdminOpen]    = React.useState(false);
   const [clubOpen,     setClubOpen]     = React.useState(false);
   const [productId,       setProductId]       = React.useState(null);
+  const productWasOpen = React.useRef(false);
   const [productOverrideImg, setProductOverrideImg] = React.useState(null);
   const [cuadroId,        setCuadroId]        = React.useState(null);
   const [toast,        setToast]        = React.useState(null);
@@ -140,9 +141,13 @@ function App() {
 
   // Refleja en la URL el producto abierto (sin entradas duplicadas en el historial).
   React.useEffect(() => {
+    if (productId != null) productWasOpen.current = true;
     const onProductPath = /^\/producto\//.test(window.location.pathname);
     if (productId == null) {
-      if (onProductPath) window.history.pushState({}, '', '/');
+      // Solo limpiar la URL si el producto ya estuvo abierto antes.
+      // En carga inicial con Supabase aún pendiente, productId es null pero
+      // la URL debe preservarse para que el efecto de retry la pueda usar.
+      if (onProductPath && productWasOpen.current) window.history.pushState({}, '', '/');
       return;
     }
     const prod = (content.products.items || []).find((p) => p.id === productId);
