@@ -42,21 +42,24 @@
   }
   </script>
 
-  <script src="config.js?v=mqmycnw5"></script>
-  <script src="analytics.js?v=mqmycnw5"></script>
-  <link rel="stylesheet" href="styles.css?v=mqmycnw5" />
-  <link rel="stylesheet" href="admin.css?v=mqmycnw5" />
-  <link rel="stylesheet" href="club.css?v=mqmycnw5" />
-  <link rel="stylesheet" href="extras.css?v=mqmycnw5" />
-  <link rel="stylesheet" href="eventos.css?v=mqmycnw5" />
-  <link rel="stylesheet" href="checkout.css?v=mqmycnw5" />
-  <link rel="stylesheet" href="secret.css?v=mqmycnw5" />
+  <script src="config.js?v=mqnglpvu"></script>
+  <script src="analytics.js?v=mqnglpvu"></script>
+  <link rel="stylesheet" href="styles.css?v=mqnglpvu" />
+  <link rel="stylesheet" href="admin.css?v=mqnglpvu" />
+  <link rel="stylesheet" href="club.css?v=mqnglpvu" />
+  <link rel="stylesheet" href="extras.css?v=mqnglpvu" />
+  <link rel="stylesheet" href="eventos.css?v=mqnglpvu" />
+  <link rel="stylesheet" href="checkout.css?v=mqnglpvu" />
+  <link rel="stylesheet" href="secret.css?v=mqnglpvu" />
 
   <!-- Preconectar CDNs -->
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 
   <!-- Supabase JS -->
+  <!-- MercadoPago: fingerprint de dispositivo — requerido para que el botón "Pagar" funcione en móvil -->
+  <script src="https://www.mercadopago.com/v2/security.js" view="checkout"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" crossorigin="anonymous"></script>
   <!-- Sanitización XSS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js" integrity="sha512-jB0TkTBeQC9ZSkBqDhdmfTv1qdfbWpGE72yJ/01Srq6hEzZIz2xkz1e57p9ai7IeHMwEG7HpzG6NdptChif5Pg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -67,7 +70,7 @@
 <body>
   <div id="root"></div>
 
-  <script src="admin.js?v=mqmycnw5"></script>
-  <script src="bundle.js?v=mqmycnw5"></script>
+  <script src="admin.js?v=mqnglpvu"></script>
+  <script src="bundle.js?v=mqnglpvu"></script>
 </body>
 </html>

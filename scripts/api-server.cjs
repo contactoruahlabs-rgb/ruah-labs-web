@@ -316,6 +316,7 @@ app.post('/api/checkout/create-preference', rateLimit('checkout', 10, 60 * 1000)
       items:     items,
       payer: {
         name:  (info.firstName || '') + ' ' + (info.lastName || ''),
+        email: String(info.email || '').trim().toLowerCase(),
         phone: { number: info.phone || '' },
       },
       statement_descriptor: 'RUAH LABS',
@@ -406,9 +407,18 @@ function sbFetch(method, table, opts) {
   var headers = {
     'apikey':        SB_SVC,
     'Authorization': 'Bearer ' + SB_SVC,
-    'Prefer':        method === 'POST' ? 'return=representation' : '',
+    'Prefer':        (opts && opts.prefer) || (method === 'POST' ? 'return=representation' : ''),
   };
   return sbRequest(method, url, headers, opts && opts.body ? opts.body : undefined);
+}
+
+// Guarda un pedido en Supabase. ON CONFLICT DO NOTHING por payment_id único:
+// si welcome y webhook disparan para el mismo pago, solo el primero inserta.
+function saveOrder(record) {
+  return sbFetch('POST', 'orders', {
+    body:   record,
+    prefer: 'return=minimal,resolution=ignore-duplicates',
+  }).catch(function(e) { console.error('[orders] insert error:', e.message); });
 }
 
 // Generador de contraseña segura
@@ -774,6 +784,33 @@ app.post('/api/checkout/welcome', rateLimit('welcome', 5, 60 * 1000), async func
     }
   }
 
+  // Persistir pedido en base de datos
+  var _subtotal = Math.max(0, (emailOpts.total || 0) - (emailOpts.shippingFee || 0) + (emailOpts.discountAmount || 0));
+  saveOrder({
+    order_id:        orderId,
+    payment_id:      paymentId || null,
+    payment_method:  paymentMethod,
+    status:          'approved',
+    buyer_email:     email,
+    buyer_name:      (firstName + ' ' + lastName).trim(),
+    buyer_phone:     phone,
+    shipping_method: req.body.shippingMethod || null,
+    shipping_name:   emailOpts.shippingName  || null,
+    shipping_fee:    emailOpts.shippingFee   || 0,
+    address:         address  || null,
+    address2:        address2 || null,
+    city:            city     || null,
+    region:          region   || null,
+    items:           cart,
+    subtotal:        _subtotal,
+    discount_code:   emailOpts.discount      || null,
+    discount_amount: emailOpts.discountAmount || 0,
+    total:           emailOpts.total         || 0,
+    total_grams:     parseInt(req.body.totalGrams) || null,
+    weight_cat:      req.body.weightCat      || null,
+    mp_external_ref: req.body.mp_external_ref || null,
+  });
+
   var rawPass = generatePassword();
 
   bcrypt.hash(rawPass, 10).then(function(hash) {
@@ -871,6 +908,19 @@ app.post('/api/webhooks/mercadopago', function(req, res) {
       var _ch = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
       var orderId = 'RL';
       for (var _i = 0; _i < 4; _i++) orderId += _ch[Math.floor(Math.random() * _ch.length)];
+
+      // Persistir pedido (fallback: solo si welcome no lo procesó antes)
+      saveOrder({
+        order_id:        orderId,
+        payment_id:      paymentId,
+        payment_method:  'MercadoPago',
+        status:          'approved',
+        buyer_email:     payerEmail,
+        buyer_name:      (payerFirst + ' ' + payerLast).trim(),
+        items:           cart,
+        total:           parseInt(payment.transaction_amount) || 0,
+        mp_external_ref: payment.external_reference || null,
+      });
 
       var rawPass = generatePassword();
       bcrypt.hash(rawPass, 10).then(function(hash) {

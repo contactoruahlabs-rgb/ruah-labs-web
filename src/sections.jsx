@@ -1161,6 +1161,7 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
   const pdMouseDragRef  = React.useRef(null);
   const pdMainRef       = React.useRef(null);
   const [selectedSize, setSelectedSize] = React.useState(null);
+  const [sizeErr, setSizeErr]           = React.useState(false);
 
   const SIZES = {
     adulto: ['S', 'M', 'L', 'XL', 'XXL'],
@@ -1360,11 +1361,12 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
                 <button
                   key={s}
                   type="button"
-                  className={'pd__size-btn' + (selectedSize === s ? ' active' : '')}
-                  onClick={() => setSelectedSize(s === selectedSize ? null : s)}
+                  className={'pd__size-btn' + (selectedSize === s ? ' active' : '') + (sizeErr ? ' pd__size-btn--err' : '')}
+                  onClick={() => { setSelectedSize(s === selectedSize ? null : s); setSizeErr(false); }}
                 >{s}</button>
               ))}
             </div>
+            {sizeErr && <p className="pd__size-err">Selecciona una talla para continuar</p>}
           </div>
 
           <div className="pd__scrollable">
@@ -1404,14 +1406,20 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
             <button
               type="button"
               className="btn btn--amber"
-              onClick={() => { if (onBuyNow) onBuyNow(product.id, selectedSize); else onClose(); }}
+              onClick={() => {
+                if (!selectedSize) { setSizeErr(true); document.querySelector('.pd__sizes')?.scrollIntoView({ behavior:'smooth', block:'center' }); return; }
+                if (onBuyNow) onBuyNow(product.id, selectedSize); else onClose();
+              }}
             >
               Ir a pagar <span className="arrow">→</span>
             </button>
             <button
               type="button"
               className="btn btn--ghost"
-              onClick={() => { if (onAddToCart) onAddToCart(product.id, 1, selectedSize); }}
+              onClick={() => {
+                if (!selectedSize) { setSizeErr(true); document.querySelector('.pd__sizes')?.scrollIntoView({ behavior:'smooth', block:'center' }); return; }
+                if (onAddToCart) onAddToCart(product.id, 1, selectedSize);
+              }}
             >
               Añadir al carrito
             </button>

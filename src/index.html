@@ -57,6 +57,9 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 
   <!-- Supabase JS -->
+  <!-- MercadoPago: fingerprint de dispositivo — requerido para que el botón "Pagar" funcione en móvil -->
+  <script src="https://www.mercadopago.com/v2/security.js" view="checkout"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" crossorigin="anonymous"></script>
   <!-- Sanitización XSS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js" integrity="sha512-jB0TkTBeQC9ZSkBqDhdmfTv1qdfbWpGE72yJ/01Srq6hEzZIz2xkz1e57p9ai7IeHMwEG7HpzG6NdptChif5Pg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>

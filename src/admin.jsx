@@ -807,6 +807,14 @@ function ViewProducts({ content, store }) {
                     <Text label="Tallas:"      value={it.tallas    || ''} placeholder="S · M · L · XL · XXL"               onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, tallas:    v } : x))} />
                   </div>
                   <Text label="Origen:"        value={it.origen    || ''} placeholder="Diseñado y producido en Santiago, Chile" onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, origen:    v } : x))} />
+                  <div className="row" style={{marginTop:8}}>
+                    <Text label="Peso base (gramos)" placeholder="Ej: 400" hint="Por unidad — todas las tallas"
+                      value={String(it.weightDefault || '')}
+                      onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, weightDefault: parseInt(v.replace(/[^0-9]/g,'')) || 0 } : x))} />
+                    <Text label="Peso por talla (opcional)" placeholder="S:350,M:400,L:450,XL:500" hint="Sobreescribe el peso base por talla"
+                      value={it.weightBySizes || ''}
+                      onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, weightBySizes: v } : x))} />
+                  </div>
                 </div>
                 <div className="row-3">
                   <Text label="Precio CLP" value={it.price} onChange={v => updateList('products.items', l => l.map(x => x.id === it.id ? { ...x, price: v } : x))} />
@@ -2609,6 +2617,21 @@ function ViewEventos({ content, store }) {
 }
 
 // ----- View: Checkout (pasarela de pago) -----
+const STARKEN_DEF_ADMIN = {
+  domicilio: {
+    rm:     { xs:3900, s:4900, m:5500, l:6200 },
+    cs:     { xs:4900, s:6100, m:7900, l:9900 },
+    norte:  { xs:5800, s:9700, m:14700,l:17400 },
+    austral:{ xs:5990, s:10100,m:15000,l:18300 },
+  },
+  sucursal: {
+    rm:     { xs:3700, s:4700, m:5300, l:5900 },
+    cs:     { xs:4800, s:5900, m:7600, l:9400 },
+    norte:  { xs:5500, s:9300, m:14000,l:16600 },
+    austral:{ xs:5800, s:9700, m:14400,l:17400 },
+  },
+};
+
 function ViewCheckout({ content, store }) {
   const { update } = store;
   const ck = content.checkout || {};
@@ -2651,12 +2674,41 @@ function ViewCheckout({ content, store }) {
       </div>
 
       <div className="card">
-        <div className="card__head"><h3>Tarifas de envío</h3><span className="meta">El servidor usa estos valores — el cliente no puede modificarlos</span></div>
-        <div className="row">
-          <Text label="Envío estándar (CLP, sin puntos)" value={String((ck.shippingFees || {}).std ?? 4990)} onChange={v => update('checkout.shippingFees.std', parseInt(v.replace(/[^0-9]/g,''),10)||0)} hint="Ej: 4990" />
-          <Text label="Envío express (CLP, sin puntos)"  value={String((ck.shippingFees || {}).express ?? 9990)} onChange={v => update('checkout.shippingFees.express', parseInt(v.replace(/[^0-9]/g,''),10)||0)} hint="Ej: 9990" />
-          <Text label="Retiro en tienda (0 = gratis)"   value={String((ck.shippingFees || {}).pickup ?? 0)} onChange={v => update('checkout.shippingFees.pickup', parseInt(v.replace(/[^0-9]/g,''),10)||0)} hint="Normalmente 0" />
-        </div>
+        <div className="card__head"><h3>Tarifas Starken</h3><span className="meta">Ya incluyen embalaje · se calculan por peso y región del cliente</span></div>
+        <p style={{fontFamily:'var(--mono)',fontSize:11,color:'var(--gray)',marginBottom:16,lineHeight:1.7}}>
+          Categorías de peso: <strong>XS</strong> ≤500 g · <strong>S</strong> 501 g–3 kg · <strong>M</strong> 3,1–6 kg · <strong>L</strong> 6,1–10 kg<br/>
+          Origen: Quilicura (RM) · Los precios se actualizan en tiempo real en el checkout del cliente.
+        </p>
+        {[
+          ['rm',      'RM — Metropolitana'],
+          ['cs',      'Centro/Sur (Atacama → Los Lagos)'],
+          ['norte',   'Extremo Norte (Arica, Iquique, Antofagasta)'],
+          ['austral', 'Extremo Austral (Aysén, Magallanes)'],
+        ].map(([zk, zl]) => {
+          const dom = (content.starken?.domicilio || STARKEN_DEF_ADMIN.domicilio)[zk] || {};
+          const suc = (content.starken?.sucursal  || STARKEN_DEF_ADMIN.sucursal)[zk]  || {};
+          const upD = (cat, v) => update('starken.domicilio.' + zk + '.' + cat, parseInt(v.replace(/[^0-9]/g,''))||0);
+          const upS = (cat, v) => update('starken.sucursal.'  + zk + '.' + cat, parseInt(v.replace(/[^0-9]/g,''))||0);
+          return (
+            <div key={zk} style={{marginBottom:16,paddingBottom:16,borderBottom:'1px solid var(--divider)'}}>
+              <p style={{fontFamily:'var(--mono)',fontSize:11,fontWeight:700,letterSpacing:'0.06em',marginBottom:8,color:'var(--amber)'}}>{zl}</p>
+              <div className="row-3" style={{marginBottom:6}}>
+                <Text label="Domicilio XS (≤500g)" value={String(dom.xs ?? 0)} onChange={v => upD('xs', v)} hint="CLP sin puntos" />
+                <Text label="Domicilio S (≤3kg)"   value={String(dom.s  ?? 0)} onChange={v => upD('s',  v)} hint="CLP sin puntos" />
+                <Text label="Domicilio M (≤6kg)"   value={String(dom.m  ?? 0)} onChange={v => upD('m',  v)} hint="CLP sin puntos" />
+              </div>
+              <div className="row-3" style={{marginBottom:6}}>
+                <Text label="Sucursal XS (≤500g)"  value={String(suc.xs ?? 0)} onChange={v => upS('xs', v)} hint="CLP sin puntos" />
+                <Text label="Sucursal S (≤3kg)"    value={String(suc.s  ?? 0)} onChange={v => upS('s',  v)} hint="CLP sin puntos" />
+                <Text label="Sucursal M (≤6kg)"    value={String(suc.m  ?? 0)} onChange={v => upS('m',  v)} hint="CLP sin puntos" />
+              </div>
+              <div className="row" style={{gridTemplateColumns:'1fr 1fr'}}>
+                <Text label="Domicilio L (≤10kg)"  value={String(dom.l  ?? 0)} onChange={v => upD('l',  v)} hint="CLP sin puntos" />
+                <Text label="Sucursal L (≤10kg)"   value={String(suc.l  ?? 0)} onChange={v => upS('l',  v)} hint="CLP sin puntos" />
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <div className="card">

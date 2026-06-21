@@ -3560,6 +3560,7 @@ function ProductDetail({
   const pdMouseDragRef = React.useRef(null);
   const pdMainRef = React.useRef(null);
   const [selectedSize, setSelectedSize] = React.useState(null);
+  const [sizeErr, setSizeErr] = React.useState(false);
   const SIZES = {
     adulto: ['S', 'M', 'L', 'XL', 'XXL'],
     nino: ['4', '6', '8', '10', '12', '14', '16'],
@@ -3916,9 +3917,14 @@ function ProductDetail({
   }, (SIZES[product.sizeType] || SIZES.adulto).map(s => /*#__PURE__*/React.createElement("button", {
     key: s,
     type: "button",
-    className: 'pd__size-btn' + (selectedSize === s ? ' active' : ''),
-    onClick: () => setSelectedSize(s === selectedSize ? null : s)
-  }, s)))), /*#__PURE__*/React.createElement("div", {
+    className: 'pd__size-btn' + (selectedSize === s ? ' active' : '') + (sizeErr ? ' pd__size-btn--err' : ''),
+    onClick: () => {
+      setSelectedSize(s === selectedSize ? null : s);
+      setSizeErr(false);
+    }
+  }, s))), sizeErr && /*#__PURE__*/React.createElement("p", {
+    className: "pd__size-err"
+  }, "Selecciona una talla para continuar")), /*#__PURE__*/React.createElement("div", {
     className: "pd__scrollable"
   }, product.description && /*#__PURE__*/React.createElement("p", {
     className: "pd__desc"
@@ -3977,6 +3983,14 @@ function ProductDetail({
     type: "button",
     className: "btn btn--amber",
     onClick: () => {
+      if (!selectedSize) {
+        setSizeErr(true);
+        document.querySelector('.pd__sizes')?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+        return;
+      }
       if (onBuyNow) onBuyNow(product.id, selectedSize);else onClose();
     }
   }, "Ir a pagar ", /*#__PURE__*/React.createElement("span", {
@@ -3985,6 +3999,14 @@ function ProductDetail({
     type: "button",
     className: "btn btn--ghost",
     onClick: () => {
+      if (!selectedSize) {
+        setSizeErr(true);
+        document.querySelector('.pd__sizes')?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+        return;
+      }
       if (onAddToCart) onAddToCart(product.id, 1, selectedSize);
     }
   }, "A\xF1adir al carrito")))));
@@ -4502,10 +4524,14 @@ function WhatsAppFab({
     rel: "noopener noreferrer",
     "aria-label": "Cotiza por WhatsApp"
   }, /*#__PURE__*/React.createElement("svg", {
-    width: "26",
-    height: "26",
+    width: "30",
+    height: "30",
     viewBox: "0 0 24 24",
-    fill: "currentColor"
+    fill: "white",
+    style: {
+      display: 'block',
+      flexShrink: 0
+    }
   }, /*#__PURE__*/React.createElement("path", {
     d: "M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"
   }), /*#__PURE__*/React.createElement("path", {
@@ -5662,85 +5688,132 @@ Object.assign(window, {
 /* checkout */
 /* global React */
 // ============================================================
-// RUAH LABS — Checkout flow (3 pasos + confirmación)
-// Reutiliza branding existente: .btn, .btn--amber, .btn--ghost,
-// tipografía mono/serif, paleta ámbar/marfil/negro.
+// RUAH LABS — Checkout 2.0
+// Layout estilo página única (Kaya Unite UX) con branding RUAH LABS
 // ============================================================
 
-const SHIPPING_OPTIONS = [{
-  id: 'std',
-  name: 'Envío estándar',
-  eta: '5 – 7 días hábiles',
-  price: 4990
-}, {
-  id: 'express',
-  name: 'Envío express',
-  eta: '24 – 48 hrs',
-  price: 9990
-}, {
+// ── Starken ──────────────────────────────────────────────────
+const STARKEN_ZONES = {
+  'Metropolitana': 'rm',
+  'Valparaíso': 'cs',
+  'O\'Higgins': 'cs',
+  'Maule': 'cs',
+  'Ñuble': 'cs',
+  'Biobío': 'cs',
+  'Araucanía': 'cs',
+  'Los Ríos': 'cs',
+  'Los Lagos': 'cs',
+  'Coquimbo': 'cs',
+  'Atacama': 'cs',
+  'Arica y Parinacota': 'norte',
+  'Tarapacá': 'norte',
+  'Antofagasta': 'norte',
+  'Aysén': 'austral',
+  'Magallanes': 'austral'
+};
+const STARKEN_ETA = {
+  rm: '1-2 días hábiles',
+  cs: '2-3 días hábiles',
+  norte: '3-5 días hábiles',
+  austral: '4-6 días hábiles'
+};
+// Precios por defecto (ya incluyen embalaje ~$990). Editables desde el admin.
+const STARKEN_DEFAULT = {
+  domicilio: {
+    rm: {
+      xs: 3900,
+      s: 4900,
+      m: 5500,
+      l: 6200
+    },
+    cs: {
+      xs: 4900,
+      s: 6100,
+      m: 7900,
+      l: 9900
+    },
+    norte: {
+      xs: 5800,
+      s: 9700,
+      m: 14700,
+      l: 17400
+    },
+    austral: {
+      xs: 5990,
+      s: 10100,
+      m: 15000,
+      l: 18300
+    }
+  },
+  sucursal: {
+    rm: {
+      xs: 3700,
+      s: 4700,
+      m: 5300,
+      l: 5900
+    },
+    cs: {
+      xs: 4800,
+      s: 5900,
+      m: 7600,
+      l: 9400
+    },
+    norte: {
+      xs: 5500,
+      s: 9300,
+      m: 14000,
+      l: 16600
+    },
+    austral: {
+      xs: 5800,
+      s: 9700,
+      m: 14400,
+      l: 17400
+    }
+  }
+};
+function parseWeightBySizes(str) {
+  const out = {};
+  if (!str) return out;
+  String(str).split(',').forEach(p => {
+    const [sz, w] = p.trim().split(':');
+    if (sz && w) out[sz.trim().toUpperCase()] = parseInt(w.trim()) || 0;
+  });
+  return out;
+}
+function calcCartWeight(cart, content) {
+  const prods = [...(content?.products?.items || []), ...(content?.cuadros?.products || [])];
+  return (cart || []).reduce((sum, it) => {
+    const p = prods.find(x => x.id === it.id);
+    let w = 400;
+    if (p) {
+      if (it.size && p.weightBySizes) {
+        const bsz = parseWeightBySizes(p.weightBySizes);
+        w = bsz[String(it.size).toUpperCase()] || p.weightDefault || 400;
+      } else {
+        w = p.weightDefault || 400;
+      }
+    }
+    return sum + w * (it.qty || 1);
+  }, 0);
+}
+function starkenCat(grams) {
+  if (grams <= 500) return 'xs';
+  if (grams <= 3000) return 's';
+  if (grams <= 6000) return 'm';
+  return 'l';
+}
+const RETIRO_OPTION = {
   id: 'pickup',
   name: 'Retiro en taller',
-  eta: 'Lunes a viernes · Ñuñoa',
+  eta: 'Rigoberto Jara 0171 · Lun–Vie 10:00–19:00',
   price: 0
-}];
-const PAY_METHODS = [{
-  id: 'card',
-  name: 'Tarjeta',
-  hint: 'Crédito / Débito · Visa · Mastercard · Amex'
-}, {
-  id: 'webpay',
-  name: 'Webpay',
-  hint: 'Transbank · Redcompra'
-}, {
-  id: 'transfer',
-  name: 'Transferencia',
-  hint: 'BancoEstado · Tesorería RUAH'
-}];
+};
 function parsePrice(p) {
-  // "18.990" -> 18990 ; "9990" -> 9990
   return parseInt(String(p || '0').replace(/[^\d]/g, ''), 10) || 0;
 }
 function fmtCLP(n) {
   return new Intl.NumberFormat('es-CL').format(Math.max(0, Math.round(n || 0)));
-}
-function detectCardBrand(num) {
-  const s = (num || '').replace(/\s+/g, '');
-  if (/^4/.test(s)) return 'visa';
-  if (/^(5[1-5]|2[2-7])/.test(s)) return 'mastercard';
-  if (/^3[47]/.test(s)) return 'amex';
-  if (/^6(011|5)/.test(s)) return 'discover';
-  return null;
-}
-function formatCardNumber(num, brand) {
-  const s = (num || '').replace(/\D/g, '');
-  if (brand === 'amex') {
-    return s.replace(/(\d{0,4})(\d{0,6})(\d{0,5}).*/, (_, a, b, c) => [a, b, c].filter(Boolean).join(' ')).trim();
-  }
-  return s.replace(/(\d{4})/g, '$1 ').trim().slice(0, 19);
-}
-function formatExp(s) {
-  const v = (s || '').replace(/\D/g, '').slice(0, 4);
-  if (v.length < 3) return v;
-  return v.slice(0, 2) + '/' + v.slice(2);
-}
-function CardBrandMark({
-  brand
-}) {
-  if (!brand) {
-    return /*#__PURE__*/React.createElement("span", {
-      className: "ck-card-brand ck-card-brand--blank",
-      "aria-hidden": "true"
-    }, /*#__PURE__*/React.createElement("span", null), /*#__PURE__*/React.createElement("span", null), /*#__PURE__*/React.createElement("span", null), /*#__PURE__*/React.createElement("span", null));
-  }
-  const labels = {
-    visa: 'VISA',
-    mastercard: 'MC',
-    amex: 'AMEX',
-    discover: 'DISC'
-  };
-  return /*#__PURE__*/React.createElement("span", {
-    className: 'ck-card-brand ck-card-brand--' + brand
-  }, labels[brand]);
 }
 
 // ============================================================
@@ -5753,7 +5826,6 @@ function Checkout({
   onClose,
   onUpdateCart
 }) {
-  const [step, setStep] = React.useState(0);
   const [info, setInfo] = React.useState({
     email: '',
     firstName: '',
@@ -5764,31 +5836,23 @@ function Checkout({
     region: '',
     postal: '',
     phone: '',
-    country: 'Chile',
     newsletter: true
   });
-  const [shipping, setShipping] = React.useState(SHIPPING_OPTIONS[0].id);
-  const [payMethod, setPayMethod] = React.useState('card');
-  const [card, setCard] = React.useState({
-    num: '',
-    name: '',
-    exp: '',
-    cvv: ''
-  });
+  const [mode, setMode] = React.useState('envio'); // 'envio' | 'retiro'
+  const [selectedShip, setSelectedShip] = React.useState(null);
+  const [shipErr, setShipErr] = React.useState(false);
   const [discount, setDiscount] = React.useState('');
   const [discountApplied, setDiscountApplied] = React.useState(null);
   const [discountErr, setDiscountErr] = React.useState('');
   const [terms, setTerms] = React.useState(false);
-  const [payState, setPayState] = React.useState('idle'); // idle | processing | success
-  const [orderNum, setOrderNum] = React.useState('');
+  const [payState, setPayState] = React.useState('idle');
   const [touched, setTouched] = React.useState({});
-
-  // Reset when re-opened
+  const [summaryOpen, setSummaryOpen] = React.useState(false);
   React.useEffect(() => {
     if (open) {
-      setStep(0);
       setPayState('idle');
       setTouched({});
+      setSummaryOpen(false);
     }
   }, [open]);
   React.useEffect(() => {
@@ -5799,48 +5863,96 @@ function Checkout({
   }, [open]);
   React.useEffect(() => {
     if (!open) return;
-    const onKey = e => {
+    const fn = e => {
       if (e.key === 'Escape') onClose();
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('keydown', fn);
+    return () => window.removeEventListener('keydown', fn);
   }, [open, onClose]);
   if (!open) return null;
 
-  // ---------------------- Totals ----------------------
+  // ── Totals ──
   const subtotal = (cart || []).reduce((s, it) => s + parsePrice(it.price) * (it.qty || 1), 0);
-  const shipOpt = SHIPPING_OPTIONS.find(s => s.id === shipping) || SHIPPING_OPTIONS[0];
-  const shipFee = shipOpt.price;
+  const totalGrams = calcCartWeight(cart, content);
+  const weightCat = starkenCat(totalGrams);
+  const zone = STARKEN_ZONES[info.region] || null;
+  const rates = content?.starken || STARKEN_DEFAULT;
+  const starkenOpts = zone ? [{
+    id: 'starken-dom',
+    name: 'Starken · Domicilio',
+    eta: STARKEN_ETA[zone],
+    price: rates.domicilio?.[zone]?.[weightCat] || 0
+  }, {
+    id: 'starken-suc',
+    name: 'Starken · Retiro en sucursal',
+    eta: STARKEN_ETA[zone],
+    price: rates.sucursal?.[zone]?.[weightCat] || 0
+  }] : [];
+  const activeShipOpt = mode === 'retiro' ? RETIRO_OPTION : selectedShip ? starkenOpts.find(o => o.id === selectedShip) || null : null;
+  const shipFee = activeShipOpt ? activeShipOpt.price : 0;
   const discountAmount = discountApplied ? Math.round(subtotal * discountApplied.percent / 100) : 0;
   const total = Math.max(0, subtotal - discountAmount) + shipFee;
-  const cardBrand = detectCardBrand(card.num);
 
-  // ---------------------- Validation ----------------------
-  function infoValid() {
-    return info.email.includes('@') && info.firstName && info.lastName && info.address && info.city && info.region && info.phone;
+  // ── Helpers ──
+  function up(k, v) {
+    setInfo(prev => ({
+      ...prev,
+      [k]: v
+    }));
   }
-  function cardValid() {
-    const n = card.num.replace(/\D/g, '');
-    return n.length >= 13 && card.name && /^\d{2}\/\d{2}$/.test(card.exp) && card.cvv.length >= 3 && terms;
+  function fieldCls(k, req = true) {
+    if (touched[k] && req && !info[k]) return 'ck2-field invalid';
+    if (info[k]) return 'ck2-field valid';
+    return 'ck2-field';
+  }
+  function emailCls() {
+    if (touched.email && !info.email.includes('@')) return 'ck2-field invalid';
+    if (info.email && info.email.includes('@')) return 'ck2-field valid';
+    return 'ck2-field';
   }
 
-  // ---------------------- Actions ----------------------
+  // ── Discount ──
   function applyDiscount(e) {
     e && e.preventDefault();
     const code = discount.trim().toUpperCase();
-    if (code === 'BIENVENIDO10') {
-      setDiscountApplied({
-        code: 'BIENVENIDO10',
-        percent: 10
-      });
-      setDiscountErr('');
-    } else if (code === '') {
+    if (!code) {
       setDiscountApplied(null);
       setDiscountErr('');
-    } else {
-      setDiscountApplied(null);
-      setDiscountErr('Código no válido');
+      return;
     }
+    fetch('' + window.RUAH_API + '/api/checkout/validate-discount', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        code,
+        subtotal
+      })
+    }).then(r => r.json()).then(d => {
+      if (d.valid) {
+        setDiscountApplied({
+          code,
+          percent: d.percent
+        });
+        setDiscountErr('');
+      } else {
+        setDiscountApplied(null);
+        setDiscountErr(d.message || 'Código no válido');
+      }
+    }).catch(() => {
+      // fallback local
+      if (code === 'BIENVENIDO10') {
+        setDiscountApplied({
+          code: 'BIENVENIDO10',
+          percent: 10
+        });
+        setDiscountErr('');
+      } else {
+        setDiscountApplied(null);
+        setDiscountErr('Código no válido');
+      }
+    });
   }
   function setQty(uid, qty) {
     onUpdateCart(c => c.map(it => (it.uid || it.id) === uid ? {
@@ -5851,35 +5963,48 @@ function Checkout({
   function removeItem(uid) {
     onUpdateCart(c => c.filter(it => (it.uid || it.id) !== uid));
   }
-  function goStep(n) {
-    if (n > step) {
-      if (step === 0 && !infoValid()) {
-        setTouched({
-          email: 1,
-          firstName: 1,
-          lastName: 1,
-          address: 1,
-          city: 1,
-          region: 1,
-          phone: 1
-        });
-        return;
-      }
+
+  // ── Validation ──
+  function validate() {
+    const req = {
+      email: 1,
+      firstName: 1,
+      lastName: 1,
+      phone: 1
+    };
+    if (mode === 'envio') {
+      req.address = 1;
+      req.city = 1;
+      req.region = 1;
     }
-    setStep(Math.max(0, Math.min(3, n)));
-    requestAnimationFrame(() => {
-      const el = document.querySelector('.ck-stage');
-      if (el) el.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    });
+    setTouched(req);
+    if (!info.email.includes('@')) return false;
+    for (const k of Object.keys(req)) {
+      if (!info[k]) return false;
+    }
+    if (mode === 'envio' && !selectedShip) {
+      setShipErr(true);
+      return false;
+    }
+    setShipErr(false);
+    if (!terms) return false;
+    return true;
   }
+
+  // ── Pay ──
   function pay(e) {
-    e.preventDefault();
-    if (!terms) return;
+    e && e.preventDefault();
+    if (!validate()) {
+      requestAnimationFrame(() => {
+        const el = document.querySelector('.ck2-field.invalid input, .ck2-field.invalid select');
+        if (el) el.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      });
+      return;
+    }
     setPayState('processing');
-    // Guardar datos del comprador para recuperarlos después del redirect de MP
     try {
       sessionStorage.setItem('ruah-pending-order', JSON.stringify({
         email: info.email,
@@ -5891,12 +6016,14 @@ function Checkout({
         city: info.city,
         region: info.region,
         purchaseDate: new Date().toISOString(),
-        cart: cart,
-        total: total,
+        cart,
+        total,
         discount: discountApplied ? discountApplied.code : null,
-        discountAmount: discountAmount,
+        discountAmount,
         shippingFee: shipFee,
-        shippingName: shipOpt.name
+        shippingName: activeShipOpt ? activeShipOpt.name : '',
+        totalGrams,
+        weightCat
       }));
     } catch (_) {}
     fetch('' + window.RUAH_API + '/api/checkout/create-preference', {
@@ -5909,711 +6036,469 @@ function Checkout({
           ...it,
           price: parsePrice(it.price)
         })),
-        info: info,
+        info,
         discount: discountApplied ? discountApplied.code : null,
-        shippingMethod: shipping
+        shippingMethod: activeShipOpt.id
       })
-    }).then(function (r) {
-      return r.json();
-    }).then(function (data) {
+    }).then(r => r.json()).then(data => {
       if (data.error) {
         setPayState('idle');
         alert('Error MP: ' + data.error);
         return;
       }
-      // Guardar número de pedido antes del redirect
       try {
-        var pending = JSON.parse(sessionStorage.getItem('ruah-pending-order') || '{}');
-        var _chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-        var _code = 'RL';
-        for (var _i = 0; _i < 4; _i++) _code += _chars[Math.floor(Math.random() * _chars.length)];
-        pending.orderId = _code;
+        const pending = JSON.parse(sessionStorage.getItem('ruah-pending-order') || '{}');
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let code = 'RL';
+        for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+        pending.orderId = code;
         sessionStorage.setItem('ruah-pending-order', JSON.stringify(pending));
       } catch (_) {}
-      var url = data.init_point || data.sandbox_init_point;
-      window.location.href = url;
-    }).catch(function (err) {
+      window.location.href = data.init_point || data.sandbox_init_point;
+    }).catch(err => {
       setPayState('idle');
-      alert('No se pudo conectar con el servidor de pagos.\nAsegúrate de que el API server esté corriendo (puerto 3001).\n\n' + err.message);
+      alert('No se pudo conectar con el servidor de pagos.\n' + err.message);
     });
   }
 
-  // ---------------------- Steps ----------------------
-  const ck = content && content.checkout || {};
+  // ── Render ──
   return /*#__PURE__*/React.createElement("div", {
-    className: "ck-overlay",
+    className: "ck2-overlay",
     role: "dialog",
     "aria-modal": "true"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "ck-shell"
+    className: "ck2-page"
   }, /*#__PURE__*/React.createElement("header", {
-    className: "ck-top"
+    className: "ck2-header"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "ck-top__brand"
+    className: "ck2-header__inner"
   }, /*#__PURE__*/React.createElement("img", {
-    src: window.__resources && window.__resources.logoWhite || "https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323723/ruahlabs/s6aaamzrfbcwd46icjxu.png",
+    src: "https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323723/ruahlabs/s6aaamzrfbcwd46icjxu.png",
     alt: "RUAH LABS",
-    className: "ck-top__logo"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "ck-top__tag"
-  }, ck.topTag || 'CHECKOUT · ACTIVA PROTOCOLO 1×1')), /*#__PURE__*/React.createElement("button", {
-    className: "ck-close",
+    className: "ck2-header__logo"
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "ck2-close",
     onClick: onClose,
     "aria-label": "Cerrar"
-  }, "\xD7")), step < 2 && /*#__PURE__*/React.createElement(Stepper, {
-    step: step,
-    onGo: goStep,
-    labels: ck.stepLabels
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "ck-stage"
-  }, step === 3 ? /*#__PURE__*/React.createElement(Confirmation, {
-    order: orderNum,
-    info: info,
-    total: total,
-    cart: cart,
-    onClose: onClose,
-    content: content
-  }) : /*#__PURE__*/React.createElement("div", {
-    className: "ck-layout"
-  }, /*#__PURE__*/React.createElement("main", {
-    className: "ck-main"
-  }, step === 0 && /*#__PURE__*/React.createElement(StepInfo, {
-    info: info,
-    setInfo: setInfo,
-    touched: touched,
-    onNext: () => goStep(1),
-    content: content
-  }), step === 1 && /*#__PURE__*/React.createElement(StepShipping, {
-    shipping: shipping,
-    setShipping: setShipping,
-    discount: discount,
-    setDiscount: setDiscount,
-    discountApplied: discountApplied,
-    discountErr: discountErr,
-    applyDiscount: applyDiscount,
-    terms: terms,
-    setTerms: setTerms,
-    total: total,
-    payState: payState,
-    onBack: () => goStep(0),
-    onPay: pay,
-    content: content
-  })), /*#__PURE__*/React.createElement(Summary, {
+  }, "\xD7")), /*#__PURE__*/React.createElement("button", {
+    className: "ck2-summary-toggle",
+    type: "button",
+    onClick: () => setSummaryOpen(o => !o)
+  }, /*#__PURE__*/React.createElement("span", null, "Resumen del pedido ", /*#__PURE__*/React.createElement("span", {
+    className: "ck2-caret"
+  }, summaryOpen ? '▲' : '▼')), /*#__PURE__*/React.createElement("span", {
+    className: "ck2-summary-toggle__total"
+  }, "CLP $", fmtCLP(total))), summaryOpen && /*#__PURE__*/React.createElement("div", {
+    className: "ck2-summary-drop"
+  }, /*#__PURE__*/React.createElement(SummaryItems, {
     cart: cart,
     setQty: setQty,
     removeItem: removeItem,
     subtotal: subtotal,
-    shipOpt: shipOpt,
     shipFee: shipFee,
+    activeShipOpt: activeShipOpt,
     discountApplied: discountApplied,
     discountAmount: discountAmount,
-    total: total,
-    content: content
-  })))));
-}
-
-// ============================================================
-// STEPPER
-// ============================================================
-function Stepper({
-  step,
-  onGo,
-  labels
-}) {
-  const steps = labels && labels.length === 2 ? labels : ['INFORMACIÓN', 'ENVÍO'];
-  return /*#__PURE__*/React.createElement("nav", {
-    className: "ck-stepper",
-    "aria-label": "Pasos del checkout"
-  }, steps.map((label, i) => /*#__PURE__*/React.createElement("button", {
-    key: label,
-    type: "button",
-    className: 'ck-step' + (i === step ? ' active' : '') + (i < step ? ' done' : ''),
-    onClick: () => i < step && onGo(i),
-    disabled: i > step
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "ck-step__n"
-  }, String(i + 1).padStart(2, '0')), /*#__PURE__*/React.createElement("span", {
-    className: "ck-step__l"
-  }, label))));
-}
-
-// ============================================================
-// STEP 1 — INFORMACIÓN
-// ============================================================
-function StepInfo({
-  info,
-  setInfo,
-  touched,
-  onNext,
-  content
-}) {
-  const ck = content && content.checkout || {};
-  function up(k, v) {
-    setInfo({
-      ...info,
-      [k]: v
-    });
-  }
-  function err(k) {
-    return touched[k] && !info[k];
-  }
-  function submit(e) {
-    e.preventDefault();
-    onNext();
-  }
-  return /*#__PURE__*/React.createElement("form", {
-    className: "ck-form",
-    onSubmit: submit,
-    noValidate: true
+    total: total
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-body"
+  }, /*#__PURE__*/React.createElement("section", {
+    className: "ck2-section"
   }, /*#__PURE__*/React.createElement("h2", {
-    className: "ck-h"
-  }, ck.infoTitle || 'Información de contacto'), /*#__PURE__*/React.createElement("p", {
-    className: "ck-sub"
-  }, ck.infoSub || 'Recibirás aquí el comprobante y el registro del Protocolo 1×1.'), /*#__PURE__*/React.createElement("label", {
-    className: 'ck-field' + (err('email') ? ' invalid' : '')
-  }, /*#__PURE__*/React.createElement("span", null, "EMAIL"), /*#__PURE__*/React.createElement("input", {
+    className: "ck2-section-title"
+  }, "Contacto"), /*#__PURE__*/React.createElement("div", {
+    className: emailCls()
+  }, /*#__PURE__*/React.createElement("input", {
     type: "email",
-    required: true,
     value: info.email,
+    placeholder: "Correo electr\xF3nico",
     onChange: e => up('email', e.target.value),
-    placeholder: "tu@correo.cl",
+    onBlur: () => setTouched(t => ({
+      ...t,
+      email: 1
+    })),
     autoComplete: "email"
-  })), /*#__PURE__*/React.createElement("h3", {
-    className: "ck-h2"
-  }, ck.addressTitle || 'Dirección de envío'), /*#__PURE__*/React.createElement("label", {
-    className: "ck-field"
-  }, /*#__PURE__*/React.createElement("span", null, "PA\xCDS / REGI\xD3N"), /*#__PURE__*/React.createElement("select", {
-    value: info.country,
-    onChange: e => up('country', e.target.value)
-  }, /*#__PURE__*/React.createElement("option", null, "Chile"), /*#__PURE__*/React.createElement("option", null, "Argentina"), /*#__PURE__*/React.createElement("option", null, "Per\xFA"), /*#__PURE__*/React.createElement("option", null, "Colombia"), /*#__PURE__*/React.createElement("option", null, "M\xE9xico"), /*#__PURE__*/React.createElement("option", null, "Espa\xF1a"))), /*#__PURE__*/React.createElement("div", {
-    className: "ck-grid-2"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: 'ck-field' + (err('firstName') ? ' invalid' : '')
-  }, /*#__PURE__*/React.createElement("span", null, "NOMBRE"), /*#__PURE__*/React.createElement("input", {
-    type: "text",
-    required: true,
-    value: info.firstName,
-    onChange: e => up('firstName', e.target.value),
-    placeholder: "Mar\xEDa",
-    autoComplete: "given-name"
-  })), /*#__PURE__*/React.createElement("label", {
-    className: 'ck-field' + (err('lastName') ? ' invalid' : '')
-  }, /*#__PURE__*/React.createElement("span", null, "APELLIDO"), /*#__PURE__*/React.createElement("input", {
-    type: "text",
-    required: true,
-    value: info.lastName,
-    onChange: e => up('lastName', e.target.value),
-    placeholder: "Gonz\xE1lez",
-    autoComplete: "family-name"
-  }))), /*#__PURE__*/React.createElement("label", {
-    className: 'ck-field' + (err('address') ? ' invalid' : '')
-  }, /*#__PURE__*/React.createElement("span", null, "DIRECCI\xD3N"), /*#__PURE__*/React.createElement("input", {
-    type: "text",
-    required: true,
-    value: info.address,
-    onChange: e => up('address', e.target.value),
-    placeholder: "Calle, n\xFAmero",
-    autoComplete: "street-address"
-  })), /*#__PURE__*/React.createElement("label", {
-    className: "ck-field"
-  }, /*#__PURE__*/React.createElement("span", null, "DEPTO / OFICINA \xB7 OPCIONAL"), /*#__PURE__*/React.createElement("input", {
-    type: "text",
-    value: info.address2,
-    onChange: e => up('address2', e.target.value),
-    placeholder: "Depto 402 \xB7 Torre B"
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "ck-grid-3"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: 'ck-field' + (err('city') ? ' invalid' : '')
-  }, /*#__PURE__*/React.createElement("span", null, "CIUDAD"), /*#__PURE__*/React.createElement("input", {
-    type: "text",
-    required: true,
-    value: info.city,
-    onChange: e => up('city', e.target.value),
-    placeholder: "Santiago",
-    autoComplete: "address-level2"
-  })), /*#__PURE__*/React.createElement("label", {
-    className: 'ck-field' + (err('region') ? ' invalid' : '')
-  }, /*#__PURE__*/React.createElement("span", null, "REGI\xD3N"), /*#__PURE__*/React.createElement("select", {
-    required: true,
-    value: info.region,
-    onChange: e => up('region', e.target.value)
-  }, /*#__PURE__*/React.createElement("option", {
-    value: ""
-  }, "\u2014 Selecciona \u2014"), /*#__PURE__*/React.createElement("option", null, "Arica y Parinacota"), /*#__PURE__*/React.createElement("option", null, "Tarapac\xE1"), /*#__PURE__*/React.createElement("option", null, "Antofagasta"), /*#__PURE__*/React.createElement("option", null, "Atacama"), /*#__PURE__*/React.createElement("option", null, "Coquimbo"), /*#__PURE__*/React.createElement("option", null, "Valpara\xEDso"), /*#__PURE__*/React.createElement("option", null, "Metropolitana"), /*#__PURE__*/React.createElement("option", null, "O'Higgins"), /*#__PURE__*/React.createElement("option", null, "Maule"), /*#__PURE__*/React.createElement("option", null, "\xD1uble"), /*#__PURE__*/React.createElement("option", null, "Biob\xEDo"), /*#__PURE__*/React.createElement("option", null, "Araucan\xEDa"), /*#__PURE__*/React.createElement("option", null, "Los R\xEDos"), /*#__PURE__*/React.createElement("option", null, "Los Lagos"), /*#__PURE__*/React.createElement("option", null, "Ays\xE9n"), /*#__PURE__*/React.createElement("option", null, "Magallanes"))), /*#__PURE__*/React.createElement("label", {
-    className: "ck-field"
-  }, /*#__PURE__*/React.createElement("span", null, "C\xD3D. POSTAL"), /*#__PURE__*/React.createElement("input", {
-    type: "text",
-    value: info.postal,
-    onChange: e => up('postal', e.target.value),
-    placeholder: "7500000",
-    autoComplete: "postal-code"
-  }))), /*#__PURE__*/React.createElement("label", {
-    className: 'ck-field' + (err('phone') ? ' invalid' : '')
-  }, /*#__PURE__*/React.createElement("span", null, "TEL\xC9FONO"), /*#__PURE__*/React.createElement("input", {
-    type: "tel",
-    required: true,
-    value: info.phone,
-    onChange: e => up('phone', e.target.value),
-    placeholder: "+56 9 0000 0000",
-    autoComplete: "tel"
-  })), /*#__PURE__*/React.createElement("label", {
-    className: "ck-check"
+  }), touched.email && !info.email.includes('@') && /*#__PURE__*/React.createElement("span", {
+    className: "ck2-err"
+  }, "Ingresa un email v\xE1lido")), /*#__PURE__*/React.createElement("label", {
+    className: "ck2-check"
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
     checked: info.newsletter,
     onChange: e => up('newsletter', e.target.checked)
-  }), /*#__PURE__*/React.createElement("span", null, "Sumarme al bolet\xEDn mensual del Protocolo 1\xD71 (sin spam).")), /*#__PURE__*/React.createElement("div", {
-    className: "ck-actions"
-  }, /*#__PURE__*/React.createElement("button", {
-    type: "submit",
-    className: "btn btn--amber"
-  }, ck.nextLabel || 'Continuar a envío', " ", /*#__PURE__*/React.createElement("span", {
-    className: "arrow"
-  }, "\u2192"))));
-}
-
-// ============================================================
-// STEP 2 — ENVÍO + PAGO DIRECTO MP
-// ============================================================
-function StepShipping({
-  shipping,
-  setShipping,
-  discount,
-  setDiscount,
-  discountApplied,
-  discountErr,
-  applyDiscount,
-  terms,
-  setTerms,
-  total,
-  payState,
-  onBack,
-  onPay,
-  content
-}) {
-  const ck = content && content.checkout || {};
-  return /*#__PURE__*/React.createElement("form", {
-    className: "ck-form",
-    onSubmit: onPay
+  }), /*#__PURE__*/React.createElement("span", null, "Enviarme novedades y el registro del Protocolo 1\xD71"))), /*#__PURE__*/React.createElement("section", {
+    className: "ck2-section"
   }, /*#__PURE__*/React.createElement("h2", {
-    className: "ck-h"
-  }, ck.shippingTitle || 'Método de envío'), /*#__PURE__*/React.createElement("p", {
-    className: "ck-sub"
-  }, ck.shippingSub || 'Despachamos a todo Chile. Retiro disponible Lun – Vie, 11 a 19h.'), /*#__PURE__*/React.createElement("div", {
-    className: "ck-options"
-  }, SHIPPING_OPTIONS.map(opt => /*#__PURE__*/React.createElement("label", {
-    key: opt.id,
-    className: 'ck-opt' + (shipping === opt.id ? ' active' : '')
-  }, /*#__PURE__*/React.createElement("input", {
-    type: "radio",
-    name: "ship",
-    value: opt.id,
-    checked: shipping === opt.id,
-    onChange: () => setShipping(opt.id)
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "ck-opt__body"
+    className: "ck2-section-title"
+  }, "Entrega"), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-tabs"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: 'ck2-tab' + (mode === 'envio' ? ' active' : ''),
+    onClick: () => setMode('envio')
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ck2-tab-icon"
+  }, "\uD83D\uDCE6"), " Env\xEDo"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: 'ck2-tab' + (mode === 'retiro' ? ' active' : ''),
+    onClick: () => setMode('retiro')
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ck2-tab-icon"
+  }, "\uD83D\uDCCD"), " Retiro")), mode === 'envio' && /*#__PURE__*/React.createElement("div", {
+    className: "ck2-address-form"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "ck-opt__row"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "ck-opt__name"
-  }, opt.name), /*#__PURE__*/React.createElement("span", {
-    className: "ck-opt__price"
-  }, opt.price === 0 ? 'GRATIS' : 'CLP $' + fmtCLP(opt.price))), /*#__PURE__*/React.createElement("div", {
-    className: "ck-opt__eta"
-  }, opt.eta)), /*#__PURE__*/React.createElement("span", {
-    className: "ck-opt__radio",
-    "aria-hidden": "true"
-  })))), /*#__PURE__*/React.createElement("div", {
-    className: "ck-discount"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "ck-field"
-  }, /*#__PURE__*/React.createElement("span", null, "C\xD3DIGO DE DESCUENTO"), /*#__PURE__*/React.createElement("div", {
-    className: "ck-input-row"
+    className: "ck2-grid-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: fieldCls('firstName')
   }, /*#__PURE__*/React.createElement("input", {
     type: "text",
-    value: discount,
-    onChange: e => setDiscount(e.target.value.toUpperCase()),
-    placeholder: "EJ: BIENVENIDO10"
-  }), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "ck-apply",
-    onClick: applyDiscount
-  }, "Aplicar")), discountApplied && /*#__PURE__*/React.createElement("span", {
-    className: "ck-discount__ok"
-  }, "\u2713 ", discountApplied.code, " \xB7 \u2212", discountApplied.percent, "%"), discountErr && /*#__PURE__*/React.createElement("span", {
-    className: "ck-discount__err"
-  }, discountErr))), /*#__PURE__*/React.createElement("label", {
-    className: "ck-check"
-  }, /*#__PURE__*/React.createElement("input", {
-    type: "checkbox",
-    checked: terms,
-    onChange: e => setTerms(e.target.checked)
-  }), /*#__PURE__*/React.createElement("span", null, "Acepto los ", /*#__PURE__*/React.createElement("a", {
-    href: "#",
-    onClick: e => e.preventDefault()
-  }, "t\xE9rminos"), " y la ", /*#__PURE__*/React.createElement("a", {
-    href: "#",
-    onClick: e => e.preventDefault()
-  }, "pol\xEDtica de privacidad"), ".")), /*#__PURE__*/React.createElement("div", {
-    className: "ck-trust"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "ck-trust__i"
-  }, "\u25AA"), /*#__PURE__*/React.createElement("span", null, ck.trustTxt || 'Serás redirigido a MercadoPago · Pago cifrado SSL · Protocolo 1×1 se activa al confirmar')), /*#__PURE__*/React.createElement("div", {
-    className: "ck-actions ck-actions--split"
-  }, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "btn btn--ghost",
-    onClick: onBack,
-    disabled: payState === 'processing'
-  }, ck.backLabel || '← Volver'), /*#__PURE__*/React.createElement("button", {
-    type: "submit",
-    className: 'btn btn--amber ck-pay ck-pay--' + payState,
-    disabled: payState === 'processing' || !terms
-  }, payState === 'idle' && /*#__PURE__*/React.createElement(React.Fragment, null, "IR A MERCADOPAGO ", /*#__PURE__*/React.createElement("span", {
-    className: "arrow"
-  }, "\u2192")), payState === 'processing' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
-    className: "ck-spin"
-  }), " Redirigiendo\u2026"))));
-}
-
-// ============================================================
-// STEP 3 — PAGO
-// ============================================================
-function StepPay({
-  payMethod,
-  setPayMethod,
-  card,
-  setCard,
-  cardBrand,
-  discount,
-  setDiscount,
-  discountApplied,
-  discountErr,
-  applyDiscount,
-  terms,
-  setTerms,
-  total,
-  payState,
-  onBack,
-  onPay,
-  cardValid,
-  content
-}) {
-  const ck = content && content.checkout || {};
-  function onCardNum(e) {
-    const formatted = formatCardNumber(e.target.value, cardBrand);
-    setCard({
-      ...card,
-      num: formatted
-    });
-  }
-  return /*#__PURE__*/React.createElement("form", {
-    className: "ck-form",
-    onSubmit: onPay
-  }, /*#__PURE__*/React.createElement("h2", {
-    className: "ck-h"
-  }, ck.payTitle || 'Método de pago'), /*#__PURE__*/React.createElement("div", {
-    className: "ck-pay-logos",
-    "aria-label": "M\xE9todos de pago aceptados"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "ck-pay-logo ck-pay-logo--mp"
-  }, /*#__PURE__*/React.createElement("svg", {
-    width: "14",
-    height: "14",
-    viewBox: "0 0 24 24",
-    fill: "currentColor",
-    "aria-hidden": "true",
-    style: {
-      verticalAlign: 'middle',
-      marginRight: 5
-    }
-  }, /*#__PURE__*/React.createElement("circle", {
-    cx: "12",
-    cy: "12",
-    r: "12"
-  })), "mercado pago")), /*#__PURE__*/React.createElement("div", {
-    className: "ck-tabs"
-  }, PAY_METHODS.map(m => /*#__PURE__*/React.createElement("button", {
-    key: m.id,
-    type: "button",
-    className: 'ck-tab' + (payMethod === m.id ? ' active' : ''),
-    onClick: () => setPayMethod(m.id)
-  }, m.name))), /*#__PURE__*/React.createElement("p", {
-    className: "ck-tab__hint"
-  }, PAY_METHODS.find(m => m.id === payMethod)?.hint), payMethod === 'card' && /*#__PURE__*/React.createElement("div", {
-    className: "ck-card-form"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "ck-field"
-  }, /*#__PURE__*/React.createElement("span", null, "N\xDAMERO DE TARJETA"), /*#__PURE__*/React.createElement("div", {
-    className: "ck-input-row"
+    value: info.firstName,
+    placeholder: "Nombre",
+    onChange: e => up('firstName', e.target.value),
+    autoComplete: "given-name"
+  }), touched.firstName && !info.firstName && /*#__PURE__*/React.createElement("span", {
+    className: "ck2-err"
+  }, "Requerido")), /*#__PURE__*/React.createElement("div", {
+    className: fieldCls('lastName')
   }, /*#__PURE__*/React.createElement("input", {
     type: "text",
-    inputMode: "numeric",
-    value: card.num,
-    onChange: onCardNum,
-    placeholder: "0000 0000 0000 0000",
-    autoComplete: "cc-number",
-    maxLength: cardBrand === 'amex' ? 17 : 19
-  }), /*#__PURE__*/React.createElement(CardBrandMark, {
-    brand: cardBrand
-  }))), /*#__PURE__*/React.createElement("label", {
-    className: "ck-field"
-  }, /*#__PURE__*/React.createElement("span", null, "NOMBRE EN LA TARJETA"), /*#__PURE__*/React.createElement("input", {
+    value: info.lastName,
+    placeholder: "Apellidos",
+    onChange: e => up('lastName', e.target.value),
+    autoComplete: "family-name"
+  }), touched.lastName && !info.lastName && /*#__PURE__*/React.createElement("span", {
+    className: "ck2-err"
+  }, "Requerido"))), /*#__PURE__*/React.createElement("div", {
+    className: fieldCls('address')
+  }, /*#__PURE__*/React.createElement("input", {
     type: "text",
-    value: card.name,
-    onChange: e => setCard({
-      ...card,
-      name: e.target.value.toUpperCase()
-    }),
-    placeholder: "COMO APARECE EN LA TARJETA",
-    autoComplete: "cc-name"
+    value: info.address,
+    placeholder: "Direcci\xF3n",
+    onChange: e => up('address', e.target.value),
+    autoComplete: "street-address"
+  }), touched.address && !info.address && /*#__PURE__*/React.createElement("span", {
+    className: "ck2-err"
+  }, "Ingresa tu direcci\xF3n")), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-field"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: info.address2,
+    placeholder: "Casa, apartamento, etc. (opcional)",
+    onChange: e => up('address2', e.target.value)
   })), /*#__PURE__*/React.createElement("div", {
-    className: "ck-grid-2"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "ck-field"
-  }, /*#__PURE__*/React.createElement("span", null, "VENCIMIENTO"), /*#__PURE__*/React.createElement("input", {
-    type: "text",
-    inputMode: "numeric",
-    value: card.exp,
-    onChange: e => setCard({
-      ...card,
-      exp: formatExp(e.target.value)
-    }),
-    placeholder: "MM/AA",
-    maxLength: 5,
-    autoComplete: "cc-exp"
-  })), /*#__PURE__*/React.createElement("label", {
-    className: "ck-field"
-  }, /*#__PURE__*/React.createElement("span", null, "CVV"), /*#__PURE__*/React.createElement("input", {
-    type: "text",
-    inputMode: "numeric",
-    value: card.cvv,
-    onChange: e => setCard({
-      ...card,
-      cvv: e.target.value.replace(/\D/g, '').slice(0, cardBrand === 'amex' ? 4 : 3)
-    }),
-    placeholder: cardBrand === 'amex' ? '4 dígitos' : '3 dígitos',
-    autoComplete: "cc-csc"
-  })))), payMethod === 'webpay' && /*#__PURE__*/React.createElement("div", {
-    className: "ck-alt"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ck-alt__t"
-  }, "Ser\xE1s redirigido a Webpay Transbank."), /*#__PURE__*/React.createElement("div", {
-    className: "ck-alt__d"
-  }, "Pago seguro \xB7 soporta Visa, Mastercard, Redcompra, d\xE9bito.")), payMethod === 'transfer' && /*#__PURE__*/React.createElement("div", {
-    className: "ck-alt"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ck-alt__t"
-  }, "Transferencia electr\xF3nica"), /*#__PURE__*/React.createElement("div", {
-    className: "ck-alt__d"
-  }, "BancoEstado \xB7 Cuenta Vista 1234567 \xB7 contacto@ruahlabs.cl \u2014 confirmaremos al recibirla.")), /*#__PURE__*/React.createElement("div", {
-    className: "ck-discount"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "ck-field"
-  }, /*#__PURE__*/React.createElement("span", null, "C\xD3DIGO DE DESCUENTO"), /*#__PURE__*/React.createElement("div", {
-    className: "ck-input-row"
+    className: "ck2-field"
   }, /*#__PURE__*/React.createElement("input", {
     type: "text",
-    value: discount,
-    onChange: e => setDiscount(e.target.value.toUpperCase()),
-    placeholder: "EJ: BIENVENIDO10"
-  }), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "ck-apply",
-    onClick: applyDiscount
-  }, "Aplicar")), discountApplied && /*#__PURE__*/React.createElement("span", {
-    className: "ck-discount__ok"
-  }, "\u2713 ", discountApplied.code, " \xB7 \u2212", discountApplied.percent, "%"), discountErr && /*#__PURE__*/React.createElement("span", {
-    className: "ck-discount__err"
-  }, discountErr))), /*#__PURE__*/React.createElement("label", {
-    className: "ck-check"
+    value: info.postal,
+    placeholder: "C\xF3digo postal (opcional)",
+    onChange: e => up('postal', e.target.value),
+    autoComplete: "postal-code"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: fieldCls('city')
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: info.city,
+    placeholder: "Ciudad / Comuna",
+    onChange: e => up('city', e.target.value),
+    autoComplete: "address-level2"
+  }), touched.city && !info.city && /*#__PURE__*/React.createElement("span", {
+    className: "ck2-err"
+  }, "Ingresa tu ciudad")), /*#__PURE__*/React.createElement("div", {
+    className: fieldCls('region')
+  }, /*#__PURE__*/React.createElement("select", {
+    value: info.region,
+    onChange: e => {
+      up('region', e.target.value);
+      setSelectedShip(null);
+    }
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, "Regi\xF3n"), /*#__PURE__*/React.createElement("option", null, "Arica y Parinacota"), /*#__PURE__*/React.createElement("option", null, "Tarapac\xE1"), /*#__PURE__*/React.createElement("option", null, "Antofagasta"), /*#__PURE__*/React.createElement("option", null, "Atacama"), /*#__PURE__*/React.createElement("option", null, "Coquimbo"), /*#__PURE__*/React.createElement("option", null, "Valpara\xEDso"), /*#__PURE__*/React.createElement("option", null, "Metropolitana"), /*#__PURE__*/React.createElement("option", null, "O'Higgins"), /*#__PURE__*/React.createElement("option", null, "Maule"), /*#__PURE__*/React.createElement("option", null, "\xD1uble"), /*#__PURE__*/React.createElement("option", null, "Biob\xEDo"), /*#__PURE__*/React.createElement("option", null, "Araucan\xEDa"), /*#__PURE__*/React.createElement("option", null, "Los R\xEDos"), /*#__PURE__*/React.createElement("option", null, "Los Lagos"), /*#__PURE__*/React.createElement("option", null, "Ays\xE9n"), /*#__PURE__*/React.createElement("option", null, "Magallanes")), touched.region && !info.region && /*#__PURE__*/React.createElement("span", {
+    className: "ck2-err"
+  }, "Selecciona tu regi\xF3n")), /*#__PURE__*/React.createElement("div", {
+    className: fieldCls('phone')
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "tel",
+    value: info.phone,
+    placeholder: "Tel\xE9fono",
+    onChange: e => up('phone', e.target.value),
+    autoComplete: "tel"
+  }), touched.phone && !info.phone && /*#__PURE__*/React.createElement("span", {
+    className: "ck2-err"
+  }, "Ingresa tu tel\xE9fono"))), mode === 'retiro' && /*#__PURE__*/React.createElement("div", {
+    className: "ck2-retiro-wrap"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ck2-radio-card ck2-radio-card--selected ck2-radio-card--static"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ck2-radio-dot ck2-radio-dot--on"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-radio-card__body"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ck2-radio-card__name"
+  }, "Retiro en taller \xB7 ", /*#__PURE__*/React.createElement("strong", {
+    style: {
+      color: '#ECA10C'
+    }
+  }, "GRATIS")), /*#__PURE__*/React.createElement("span", {
+    className: "ck2-radio-card__meta"
+  }, "\uD83D\uDCCD Rigoberto Jara 0171"), /*#__PURE__*/React.createElement("span", {
+    className: "ck2-radio-card__meta"
+  }, "\uD83D\uDD50 Lunes a Viernes \xB7 10:00 \u2013 19:00"), /*#__PURE__*/React.createElement("span", {
+    className: "ck2-radio-card__meta",
+    style: {
+      color: '#666'
+    }
+  }, "Recibir\xE1s un correo cuando tu pedido est\xE9 listo para retirar"))), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-grid-2",
+    style: {
+      marginTop: '14px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: fieldCls('firstName')
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: info.firstName,
+    placeholder: "Nombre",
+    onChange: e => up('firstName', e.target.value),
+    autoComplete: "given-name"
+  }), touched.firstName && !info.firstName && /*#__PURE__*/React.createElement("span", {
+    className: "ck2-err"
+  }, "Requerido")), /*#__PURE__*/React.createElement("div", {
+    className: fieldCls('lastName')
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: info.lastName,
+    placeholder: "Apellidos",
+    onChange: e => up('lastName', e.target.value),
+    autoComplete: "family-name"
+  }), touched.lastName && !info.lastName && /*#__PURE__*/React.createElement("span", {
+    className: "ck2-err"
+  }, "Requerido"))), /*#__PURE__*/React.createElement("div", {
+    className: fieldCls('phone')
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "tel",
+    value: info.phone,
+    placeholder: "Tel\xE9fono",
+    onChange: e => up('phone', e.target.value),
+    autoComplete: "tel"
+  }), touched.phone && !info.phone && /*#__PURE__*/React.createElement("span", {
+    className: "ck2-err"
+  }, "Ingresa tu tel\xE9fono")))), mode === 'envio' && /*#__PURE__*/React.createElement("section", {
+    className: "ck2-section"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "ck2-section-title"
+  }, "M\xE9todo de env\xEDo"), !info.region ? /*#__PURE__*/React.createElement("p", {
+    className: "ck2-section-sub",
+    style: {
+      color: '#555',
+      marginBottom: 0
+    }
+  }, "Selecciona tu regi\xF3n arriba para ver las opciones de Starken") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "ck2-ship-weight"
+  }, /*#__PURE__*/React.createElement("span", null, "\uD83D\uDCE6"), /*#__PURE__*/React.createElement("span", null, "Peso estimado del pedido: ", /*#__PURE__*/React.createElement("strong", null, totalGrams >= 1000 ? (totalGrams / 1000).toFixed(2).replace('.', ',') + ' kg' : totalGrams + ' g'))), shipErr && /*#__PURE__*/React.createElement("p", {
+    className: "ck2-ship-warning"
+  }, "Selecciona un m\xE9todo de env\xEDo para continuar"), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-ship-list"
+  }, starkenOpts.map(opt => /*#__PURE__*/React.createElement("div", {
+    key: opt.id,
+    className: 'ck2-radio-card' + (selectedShip === opt.id ? ' ck2-radio-card--selected' : ''),
+    onClick: () => {
+      setSelectedShip(opt.id);
+      setShipErr(false);
+    },
+    role: "radio",
+    "aria-checked": selectedShip === opt.id,
+    tabIndex: 0,
+    onKeyDown: e => e.key === 'Enter' && (setSelectedShip(opt.id), setShipErr(false))
+  }, /*#__PURE__*/React.createElement("span", {
+    className: 'ck2-radio-dot' + (selectedShip === opt.id ? ' ck2-radio-dot--on' : '')
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-radio-card__body"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ck2-radio-card__name"
+  }, opt.name), /*#__PURE__*/React.createElement("span", {
+    className: "ck2-radio-card__meta"
+  }, opt.eta)), /*#__PURE__*/React.createElement("span", {
+    className: "ck2-radio-card__price"
+  }, "+ CLP $", fmtCLP(opt.price))))), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: '11px',
+      color: '#3a3a3a',
+      marginTop: '8px',
+      letterSpacing: '.3px'
+    }
+  }, "Despacho desde Quilicura \xB7 Starken opera lunes a s\xE1bado"))), /*#__PURE__*/React.createElement("section", {
+    className: "ck2-section"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "ck2-section-title"
+  }, "Pago"), /*#__PURE__*/React.createElement("p", {
+    className: "ck2-section-sub"
+  }, "Todas las transacciones son seguras y est\xE1n encriptadas."), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-radio-card ck2-radio-card--selected ck2-radio-card--static"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ck2-radio-dot ck2-radio-dot--on"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-radio-card__body"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ck2-radio-card__name"
+  }, "Todos los medios de pago \xB7 MercadoPago"), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-pay-badges"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ck2-pay-badge"
+  }, "Visa"), /*#__PURE__*/React.createElement("span", {
+    className: "ck2-pay-badge"
+  }, "Mastercard"), /*#__PURE__*/React.createElement("span", {
+    className: "ck2-pay-badge"
+  }, "D\xE9bito"), /*#__PURE__*/React.createElement("span", {
+    className: "ck2-pay-badge"
+  }, "+2"))), /*#__PURE__*/React.createElement("span", {
+    className: "ck2-lock-icon"
+  }, "\uD83D\uDD12")), /*#__PURE__*/React.createElement("p", {
+    className: "ck2-pay-note"
+  }, "Ser\xE1s redirigido a MercadoPago para completar la compra de forma segura.")), /*#__PURE__*/React.createElement("section", {
+    className: "ck2-section"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "ck2-section-title"
+  }, "Resumen del pedido"), /*#__PURE__*/React.createElement(SummaryItems, {
+    cart: cart,
+    setQty: setQty,
+    removeItem: removeItem,
+    subtotal: subtotal,
+    shipFee: shipFee,
+    activeShipOpt: activeShipOpt,
+    discountApplied: discountApplied,
+    discountAmount: discountAmount,
+    total: total,
+    discount: discount,
+    setDiscount: setDiscount,
+    discountErr: discountErr,
+    applyDiscount: applyDiscount,
+    showDiscount: true
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-cta-block"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: 'ck2-check ck2-terms-check' + (!terms && touched.terms ? ' ck2-terms-err' : '')
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
     checked: terms,
     onChange: e => setTerms(e.target.checked)
-  }), /*#__PURE__*/React.createElement("span", null, "Acepto los ", /*#__PURE__*/React.createElement("a", {
+  }), /*#__PURE__*/React.createElement("span", null, "He le\xEDdo y acepto los", ' ', /*#__PURE__*/React.createElement("a", {
     href: "#",
     onClick: e => e.preventDefault()
-  }, "t\xE9rminos"), " y la ", /*#__PURE__*/React.createElement("a", {
+  }, "t\xE9rminos y condiciones"), ' ', "y la", ' ', /*#__PURE__*/React.createElement("a", {
     href: "#",
     onClick: e => e.preventDefault()
-  }, "pol\xEDtica de privacidad"), ".")), /*#__PURE__*/React.createElement("div", {
-    className: "ck-trust"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "ck-trust__i"
-  }, "\u25AA"), /*#__PURE__*/React.createElement("span", null, ck.trustTxt || 'Pago cifrado SSL · No guardamos datos de tarjeta · Protocolo 1×1 se activa al confirmar')), /*#__PURE__*/React.createElement("div", {
-    className: "ck-actions ck-actions--split"
-  }, /*#__PURE__*/React.createElement("button", {
+  }, "pol\xEDtica de privacidad"))), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    className: "btn btn--ghost",
-    onClick: onBack,
+    className: 'ck2-pay-btn ck2-pay-btn--' + payState,
+    onClick: pay,
     disabled: payState === 'processing'
-  }, ck.backLabel || '← Volver'), /*#__PURE__*/React.createElement("button", {
-    type: "submit",
-    className: 'btn btn--amber ck-pay ck-pay--' + payState,
-    disabled: payState === 'processing' || !terms || payMethod === 'card' && !cardValid
-  }, payState === 'idle' && /*#__PURE__*/React.createElement(React.Fragment, null, ck.payCtaLabel || 'Pagar', " CLP $", fmtCLP(total), " ", /*#__PURE__*/React.createElement("span", {
-    className: "arrow"
+  }, payState === 'idle' && /*#__PURE__*/React.createElement(React.Fragment, null, "CONFIRMAR Y PAGAR \xB7 CLP $", fmtCLP(total), /*#__PURE__*/React.createElement("span", {
+    className: "ck2-btn-arrow"
   }, "\u2192")), payState === 'processing' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
-    className: "ck-spin"
-  }), " Procesando\u2026"), payState === 'success' && /*#__PURE__*/React.createElement(React.Fragment, null, "\u2713 Pago confirmado"))));
+    className: "ck2-spin"
+  }), "Redirigiendo a MercadoPago\u2026")), /*#__PURE__*/React.createElement("p", {
+    className: "ck2-trust-note"
+  }, "\uD83D\uDD12 Pago seguro \xB7 SSL \xB7 Protocolo 1\xD71 se activa al confirmar")))));
 }
 
 // ============================================================
-// CONFIRMACIÓN
+// SUMMARY ITEMS (reutilizado en header dropdown y sección final)
 // ============================================================
-function Confirmation({
-  order,
-  info,
-  total,
-  cart,
-  onClose,
-  content
-}) {
-  const ck = content && content.checkout || {};
-  return /*#__PURE__*/React.createElement("div", {
-    className: "ck-confirm"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ck-check-wrap"
-  }, /*#__PURE__*/React.createElement("svg", {
-    className: "ck-check-svg",
-    viewBox: "0 0 64 64",
-    "aria-hidden": "true"
-  }, /*#__PURE__*/React.createElement("circle", {
-    cx: "32",
-    cy: "32",
-    r: "30",
-    stroke: "currentColor",
-    strokeWidth: "2",
-    fill: "none"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M18 32 L28 42 L46 22",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: "3",
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
-  }))), /*#__PURE__*/React.createElement("h2", {
-    className: "ck-confirm__t"
-  }, ck.confirmedTitle || 'PEDIDO CONFIRMADO.'), /*#__PURE__*/React.createElement("p", {
-    className: "ck-confirm__sub"
-  }, "Gracias, ", /*#__PURE__*/React.createElement("strong", null, info.firstName || 'hermano'), ". El Protocolo 1\xD71 ya est\xE1 activado: una prenda saldr\xE1 a la calle a tu nombre."), /*#__PURE__*/React.createElement("div", {
-    className: "ck-confirm__order"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ck-confirm__row"
-  }, /*#__PURE__*/React.createElement("span", null, "N\xB0 ORDEN"), /*#__PURE__*/React.createElement("code", null, order)), /*#__PURE__*/React.createElement("div", {
-    className: "ck-confirm__row"
-  }, /*#__PURE__*/React.createElement("span", null, "EMAIL"), /*#__PURE__*/React.createElement("code", null, info.email || '—')), /*#__PURE__*/React.createElement("div", {
-    className: "ck-confirm__row"
-  }, /*#__PURE__*/React.createElement("span", null, "TOTAL PAGADO"), /*#__PURE__*/React.createElement("code", null, "CLP $", fmtCLP(total)))), /*#__PURE__*/React.createElement("div", {
-    className: "ck-confirm__items"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ck-confirm__items__hd"
-  }, "PIEZAS EN TU PEDIDO"), (cart || []).map(it => /*#__PURE__*/React.createElement("div", {
-    className: "ck-confirm__item",
-    key: it.id
-  }, /*#__PURE__*/React.createElement("span", null, it.name, it.size ? ' · Talla ' + it.size : '', " ", it.qty > 1 ? '× ' + it.qty : ''), /*#__PURE__*/React.createElement("span", null, "CLP $", fmtCLP(parsePrice(it.price) * (it.qty || 1)))))), /*#__PURE__*/React.createElement("div", {
-    className: "ck-confirm__actions"
-  }, /*#__PURE__*/React.createElement("a", {
-    className: "btn btn--ghost",
-    href: '#orden-' + order,
-    onClick: onClose
-  }, "Seguir mi orden"), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "btn btn--amber",
-    onClick: onClose
-  }, "Seguir comprando ", /*#__PURE__*/React.createElement("span", {
-    className: "arrow"
-  }, "\u2192"))), /*#__PURE__*/React.createElement("p", {
-    className: "ck-confirm__note"
-  }, "Te enviamos a ", /*#__PURE__*/React.createElement("strong", null, info.email), " el resumen y el seguimiento. Cuando salgamos a ruta, recibir\xE1s el registro de entrega (foto al piso, nunca de frente)."));
-}
-
-// ============================================================
-// SUMMARY (sticky right column)
-// ============================================================
-function Summary({
+function SummaryItems({
   cart,
   setQty,
   removeItem,
   subtotal,
-  shipOpt,
   shipFee,
+  activeShipOpt,
   discountApplied,
   discountAmount,
   total,
-  content
+  discount,
+  setDiscount,
+  discountErr,
+  applyDiscount,
+  showDiscount
 }) {
-  const [collapsed, setCollapsed] = React.useState(false);
-  const ck = content && content.checkout || {};
-  return /*#__PURE__*/React.createElement("aside", {
-    className: 'ck-summary' + (collapsed ? ' collapsed' : '')
-  }, /*#__PURE__*/React.createElement("button", {
-    className: "ck-summary__toggle",
-    type: "button",
-    onClick: () => setCollapsed(c => !c),
-    "aria-expanded": !collapsed
-  }, /*#__PURE__*/React.createElement("span", null, ck.summaryHd || 'RESUMEN DEL PEDIDO'), /*#__PURE__*/React.createElement("span", {
-    className: "ck-summary__total-mini"
-  }, "CLP $", fmtCLP(total), " ", /*#__PURE__*/React.createElement("span", {
-    className: "caret"
-  }, collapsed ? '▾' : '▴'))), /*#__PURE__*/React.createElement("div", {
-    className: "ck-summary__body"
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ck2-summary-inner"
+  }, (cart || []).map(it => /*#__PURE__*/React.createElement("div", {
+    key: it.uid || it.id,
+    className: "ck2-order-item"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "ck-summary__items"
-  }, (cart || []).length === 0 && /*#__PURE__*/React.createElement("div", {
-    className: "ck-summary__empty"
-  }, "CARRITO VAC\xCDO"), (cart || []).map(it => /*#__PURE__*/React.createElement("div", {
-    className: "ck-summary__item",
-    key: it.id
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ck-summary__media"
+    className: "ck2-order-item__thumb"
   }, it.img ? /*#__PURE__*/React.createElement("img", {
     src: it.img,
     alt: it.name
-  }) : /*#__PURE__*/React.createElement("span", null, it.name.split(' ').slice(-1)[0].slice(0, 2)), /*#__PURE__*/React.createElement("span", {
-    className: "ck-summary__qty"
+  }) : /*#__PURE__*/React.createElement("span", {
+    className: "ck2-order-item__thumb-ph"
+  }, it.name.slice(0, 2).toUpperCase()), /*#__PURE__*/React.createElement("span", {
+    className: "ck2-order-item__qty-badge"
   }, it.qty || 1)), /*#__PURE__*/React.createElement("div", {
-    className: "ck-summary__info"
+    className: "ck2-order-item__info"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "ck-summary__name"
+    className: "ck2-order-item__name"
   }, it.name), it.size && /*#__PURE__*/React.createElement("div", {
-    className: "ck-summary__size"
-  }, "TALLA ", it.size), /*#__PURE__*/React.createElement("div", {
-    className: "ck-summary__verse"
-  }, it.verse || ''), /*#__PURE__*/React.createElement("div", {
-    className: "ck-summary__qtybar"
+    className: "ck2-order-item__attr"
+  }, "Talla ", it.size), it.verse && /*#__PURE__*/React.createElement("div", {
+    className: "ck2-order-item__attr"
+  }, it.verse), setQty && /*#__PURE__*/React.createElement("div", {
+    className: "ck2-order-item__controls"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: () => setQty(it.uid || it.id, (it.qty || 1) - 1),
-    "aria-label": "Menos"
+    onClick: () => setQty(it.uid || it.id, (it.qty || 1) - 1)
   }, "\u2212"), /*#__PURE__*/React.createElement("span", null, it.qty || 1), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: () => setQty(it.uid || it.id, (it.qty || 1) + 1),
-    "aria-label": "M\xE1s"
+    onClick: () => setQty(it.uid || it.id, (it.qty || 1) + 1)
   }, "+"), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    className: "ck-summary__rm",
-    onClick: () => removeItem(it.uid || it.id),
-    "aria-label": "Eliminar"
+    className: "ck2-remove-btn",
+    onClick: () => removeItem(it.uid || it.id)
   }, "\xD7"))), /*#__PURE__*/React.createElement("div", {
-    className: "ck-summary__price"
-  }, "CLP $", fmtCLP(parsePrice(it.price) * (it.qty || 1)))))), /*#__PURE__*/React.createElement("div", {
-    className: "ck-summary__rows"
+    className: "ck2-order-item__price"
+  }, "CLP $", fmtCLP(parsePrice(it.price) * (it.qty || 1))))), showDiscount && /*#__PURE__*/React.createElement("div", {
+    className: "ck2-discount-block"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "ck-summary__row"
-  }, /*#__PURE__*/React.createElement("span", null, "Subtotal"), /*#__PURE__*/React.createElement("span", null, "CLP $", fmtCLP(subtotal))), /*#__PURE__*/React.createElement("div", {
-    className: "ck-summary__row"
-  }, /*#__PURE__*/React.createElement("span", null, "Env\xEDo \xB7 ", shipOpt.name), /*#__PURE__*/React.createElement("span", null, shipFee === 0 ? 'GRATIS' : 'CLP $' + fmtCLP(shipFee))), discountApplied && /*#__PURE__*/React.createElement("div", {
-    className: "ck-summary__row ck-summary__row--disc"
-  }, /*#__PURE__*/React.createElement("span", null, "Descuento ", discountApplied.code), /*#__PURE__*/React.createElement("span", null, "\u2212 CLP $", fmtCLP(discountAmount))), /*#__PURE__*/React.createElement("div", {
-    className: "ck-summary__row ck-summary__row--total"
-  }, /*#__PURE__*/React.createElement("span", null, "TOTAL"), /*#__PURE__*/React.createElement("span", null, "CLP $", fmtCLP(total)))), /*#__PURE__*/React.createElement("div", {
-    className: "ck-summary__protocol"
+    className: "ck2-discount-row"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: discount || '',
+    placeholder: "C\xF3digo de descuento",
+    onChange: e => setDiscount && setDiscount(e.target.value.toUpperCase()),
+    onKeyDown: e => e.key === 'Enter' && applyDiscount(e)
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: applyDiscount
+  }, "Aplicar")), discountApplied && /*#__PURE__*/React.createElement("span", {
+    className: "ck2-discount-ok"
+  }, "\u2713 ", discountApplied.code, " \xB7 \u2212", discountApplied.percent, "%"), discountErr && /*#__PURE__*/React.createElement("span", {
+    className: "ck2-discount-err"
+  }, discountErr)), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-totals"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ck2-total-row"
+  }, /*#__PURE__*/React.createElement("span", null, "Subtotal"), /*#__PURE__*/React.createElement("span", null, "CLP $", fmtCLP(subtotal))), discountApplied && /*#__PURE__*/React.createElement("div", {
+    className: "ck2-total-row ck2-total-row--disc"
+  }, /*#__PURE__*/React.createElement("span", null, "Descuento \xB7 ", discountApplied.code), /*#__PURE__*/React.createElement("span", null, "\u2212CLP $", fmtCLP(discountAmount))), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-total-row"
+  }, /*#__PURE__*/React.createElement("span", null, "Env\xEDo", activeShipOpt ? ' · ' + activeShipOpt.name : ''), /*#__PURE__*/React.createElement("span", {
+    style: !activeShipOpt ? {
+      color: '#555'
+    } : {}
+  }, !activeShipOpt ? 'Por seleccionar' : shipFee === 0 ? 'GRATIS' : 'CLP $' + fmtCLP(shipFee))), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-total-row ck2-total-row--total"
+  }, /*#__PURE__*/React.createElement("strong", null, "Total"), /*#__PURE__*/React.createElement("strong", null, "CLP $", fmtCLP(total), !activeShipOpt && /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: '#555',
+      fontSize: '11px',
+      fontWeight: '400'
+    }
+  }, " + env\xEDo")))), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-protocol-note"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "ck-summary__protocol__icon"
-  }, "1\xD7"), /*#__PURE__*/React.createElement("span", null, ck.summaryProtocol ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("strong", null, "PROTOCOLO 1\xD71."), " ", ck.summaryProtocol.replace(/^PROTOCOLO 1×1\.?\s*/, '')) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("strong", null, "PROTOCOLO 1\xD71."), " Esta compra dona una prenda filtrada a alguien en situaci\xF3n de calle.")))));
+    className: "ck2-protocol-note__badge"
+  }, "1\xD7"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("strong", null, "Protocolo 1\xD71."), " Esta compra activa una donaci\xF3n de prendas a alguien en situaci\xF3n de calle.")));
 }
 Object.assign(window, {
   Checkout

@@ -1,90 +1,110 @@
 /* global React */
 // ============================================================
-// RUAH LABS — Checkout flow (3 pasos + confirmación)
-// Reutiliza branding existente: .btn, .btn--amber, .btn--ghost,
-// tipografía mono/serif, paleta ámbar/marfil/negro.
+// RUAH LABS — Checkout 2.0
+// Layout estilo página única (Kaya Unite UX) con branding RUAH LABS
 // ============================================================
 
-const SHIPPING_OPTIONS = [
-  { id: 'std',     name: 'Envío estándar',     eta: '5 – 7 días hábiles', price: 4990 },
-  { id: 'express', name: 'Envío express',      eta: '24 – 48 hrs',         price: 9990 },
-  { id: 'pickup',  name: 'Retiro en taller',   eta: 'Lunes a viernes · Ñuñoa', price: 0 },
-];
+// ── Starken ──────────────────────────────────────────────────
+const STARKEN_ZONES = {
+  'Metropolitana':      'rm',
+  'Valparaíso':         'cs', 'O\'Higgins': 'cs', 'Maule': 'cs',
+  'Ñuble':              'cs', 'Biobío':     'cs', 'Araucanía': 'cs',
+  'Los Ríos':           'cs', 'Los Lagos':  'cs',
+  'Coquimbo':           'cs', 'Atacama':    'cs',
+  'Arica y Parinacota': 'norte', 'Tarapacá': 'norte', 'Antofagasta': 'norte',
+  'Aysén':              'austral', 'Magallanes': 'austral',
+};
+const STARKEN_ETA = {
+  rm: '1-2 días hábiles', cs: '2-3 días hábiles',
+  norte: '3-5 días hábiles', austral: '4-6 días hábiles',
+};
+// Precios por defecto (ya incluyen embalaje ~$990). Editables desde el admin.
+const STARKEN_DEFAULT = {
+  domicilio: {
+    rm:     { xs:3900, s:4900, m:5500, l:6200 },
+    cs:     { xs:4900, s:6100, m:7900, l:9900 },
+    norte:  { xs:5800, s:9700, m:14700,l:17400 },
+    austral:{ xs:5990, s:10100,m:15000,l:18300 },
+  },
+  sucursal: {
+    rm:     { xs:3700, s:4700, m:5300, l:5900 },
+    cs:     { xs:4800, s:5900, m:7600, l:9400 },
+    norte:  { xs:5500, s:9300, m:14000,l:16600 },
+    austral:{ xs:5800, s:9700, m:14400,l:17400 },
+  },
+};
 
-const PAY_METHODS = [
-  { id: 'card',     name: 'Tarjeta',          hint: 'Crédito / Débito · Visa · Mastercard · Amex' },
-  { id: 'webpay',   name: 'Webpay',           hint: 'Transbank · Redcompra' },
-  { id: 'transfer', name: 'Transferencia',    hint: 'BancoEstado · Tesorería RUAH' },
-];
+function parseWeightBySizes(str) {
+  const out = {};
+  if (!str) return out;
+  String(str).split(',').forEach(p => {
+    const [sz, w] = p.trim().split(':');
+    if (sz && w) out[sz.trim().toUpperCase()] = parseInt(w.trim()) || 0;
+  });
+  return out;
+}
+function calcCartWeight(cart, content) {
+  const prods = [
+    ...(content?.products?.items || []),
+    ...(content?.cuadros?.products || []),
+  ];
+  return (cart || []).reduce((sum, it) => {
+    const p = prods.find(x => x.id === it.id);
+    let w = 400;
+    if (p) {
+      if (it.size && p.weightBySizes) {
+        const bsz = parseWeightBySizes(p.weightBySizes);
+        w = bsz[String(it.size).toUpperCase()] || p.weightDefault || 400;
+      } else {
+        w = p.weightDefault || 400;
+      }
+    }
+    return sum + w * (it.qty || 1);
+  }, 0);
+}
+function starkenCat(grams) {
+  if (grams <= 500)  return 'xs';
+  if (grams <= 3000) return 's';
+  if (grams <= 6000) return 'm';
+  return 'l';
+}
+
+const RETIRO_OPTION = {
+  id: 'pickup',
+  name: 'Retiro en taller',
+  eta: 'Rigoberto Jara 0171 · Lun–Vie 10:00–19:00',
+  price: 0,
+};
 
 function parsePrice(p) {
-  // "18.990" -> 18990 ; "9990" -> 9990
   return parseInt(String(p || '0').replace(/[^\d]/g, ''), 10) || 0;
 }
 function fmtCLP(n) {
   return new Intl.NumberFormat('es-CL').format(Math.max(0, Math.round(n || 0)));
 }
 
-function detectCardBrand(num) {
-  const s = (num || '').replace(/\s+/g, '');
-  if (/^4/.test(s))                              return 'visa';
-  if (/^(5[1-5]|2[2-7])/.test(s))                return 'mastercard';
-  if (/^3[47]/.test(s))                          return 'amex';
-  if (/^6(011|5)/.test(s))                       return 'discover';
-  return null;
-}
-function formatCardNumber(num, brand) {
-  const s = (num || '').replace(/\D/g, '');
-  if (brand === 'amex') {
-    return s.replace(/(\d{0,4})(\d{0,6})(\d{0,5}).*/, (_, a, b, c) => [a, b, c].filter(Boolean).join(' ')).trim();
-  }
-  return s.replace(/(\d{4})/g, '$1 ').trim().slice(0, 19);
-}
-function formatExp(s) {
-  const v = (s || '').replace(/\D/g, '').slice(0, 4);
-  if (v.length < 3) return v;
-  return v.slice(0, 2) + '/' + v.slice(2);
-}
-
-function CardBrandMark({ brand }) {
-  if (!brand) {
-    return (
-      <span className="ck-card-brand ck-card-brand--blank" aria-hidden="true">
-        <span></span><span></span><span></span><span></span>
-      </span>
-    );
-  }
-  const labels = { visa: 'VISA', mastercard: 'MC', amex: 'AMEX', discover: 'DISC' };
-  return <span className={'ck-card-brand ck-card-brand--' + brand}>{labels[brand]}</span>;
-}
-
 // ============================================================
 // MAIN
 // ============================================================
 function Checkout({ open, cart, content, onClose, onUpdateCart }) {
-  const [step, setStep]         = React.useState(0);
-  const [info, setInfo]         = React.useState({
-    email: '', firstName: '', lastName: '', address: '', address2: '',
-    city: '', region: '', postal: '', phone: '', country: 'Chile', newsletter: true,
+  const [info, setInfo] = React.useState({
+    email: '', firstName: '', lastName: '',
+    address: '', address2: '', city: '', region: '', postal: '', phone: '',
+    newsletter: true,
   });
-  const [shipping, setShipping] = React.useState(SHIPPING_OPTIONS[0].id);
-  const [payMethod, setPayMethod] = React.useState('card');
-  const [card, setCard]         = React.useState({ num: '', name: '', exp: '', cvv: '' });
-  const [discount, setDiscount] = React.useState('');
+  const [mode, setMode]               = React.useState('envio'); // 'envio' | 'retiro'
+  const [selectedShip, setSelectedShip] = React.useState(null);
+  const [shipErr, setShipErr]           = React.useState(false);
+  const [discount, setDiscount]       = React.useState('');
   const [discountApplied, setDiscountApplied] = React.useState(null);
   const [discountErr, setDiscountErr] = React.useState('');
-  const [terms, setTerms]       = React.useState(false);
-  const [payState, setPayState] = React.useState('idle'); // idle | processing | success
-  const [orderNum, setOrderNum] = React.useState('');
-  const [touched, setTouched]   = React.useState({});
+  const [terms, setTerms]             = React.useState(false);
+  const [payState, setPayState]       = React.useState('idle');
+  const [touched, setTouched]         = React.useState({});
+  const [summaryOpen, setSummaryOpen] = React.useState(false);
 
-  // Reset when re-opened
   React.useEffect(() => {
-    if (open) {
-      setStep(0);
-      setPayState('idle');
-      setTouched({});
-    }
+    if (open) { setPayState('idle'); setTouched({}); setSummaryOpen(false); }
   }, [open]);
 
   React.useEffect(() => {
@@ -94,47 +114,74 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
 
   React.useEffect(() => {
     if (!open) return;
-    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const fn = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', fn);
+    return () => window.removeEventListener('keydown', fn);
   }, [open, onClose]);
 
   if (!open) return null;
 
-  // ---------------------- Totals ----------------------
-  const subtotal = (cart || []).reduce((s, it) => s + parsePrice(it.price) * (it.qty || 1), 0);
-  const shipOpt  = SHIPPING_OPTIONS.find(s => s.id === shipping) || SHIPPING_OPTIONS[0];
-  const shipFee  = shipOpt.price;
+  // ── Totals ──
+  const subtotal     = (cart || []).reduce((s, it) => s + parsePrice(it.price) * (it.qty || 1), 0);
+  const totalGrams   = calcCartWeight(cart, content);
+  const weightCat    = starkenCat(totalGrams);
+  const zone         = STARKEN_ZONES[info.region] || null;
+  const rates        = content?.starken || STARKEN_DEFAULT;
+  const starkenOpts  = zone ? [
+    { id:'starken-dom', name:'Starken · Domicilio',         eta: STARKEN_ETA[zone], price: rates.domicilio?.[zone]?.[weightCat] || 0 },
+    { id:'starken-suc', name:'Starken · Retiro en sucursal', eta: STARKEN_ETA[zone], price: rates.sucursal?.[zone]?.[weightCat]  || 0 },
+  ] : [];
+  const activeShipOpt = mode === 'retiro'
+    ? RETIRO_OPTION
+    : (selectedShip ? (starkenOpts.find(o => o.id === selectedShip) || null) : null);
+  const shipFee       = activeShipOpt ? activeShipOpt.price : 0;
   const discountAmount = discountApplied ? Math.round(subtotal * discountApplied.percent / 100) : 0;
-  const total    = Math.max(0, subtotal - discountAmount) + shipFee;
+  const total          = Math.max(0, subtotal - discountAmount) + shipFee;
 
-  const cardBrand = detectCardBrand(card.num);
+  // ── Helpers ──
+  function up(k, v) { setInfo(prev => ({ ...prev, [k]: v })); }
 
-  // ---------------------- Validation ----------------------
-  function infoValid() {
-    return info.email.includes('@') &&
-           info.firstName && info.lastName &&
-           info.address && info.city && info.region && info.phone;
+  function fieldCls(k, req = true) {
+    if (touched[k] && req && !info[k]) return 'ck2-field invalid';
+    if (info[k]) return 'ck2-field valid';
+    return 'ck2-field';
   }
-  function cardValid() {
-    const n = card.num.replace(/\D/g, '');
-    return n.length >= 13 && card.name && /^\d{2}\/\d{2}$/.test(card.exp) && card.cvv.length >= 3 && terms;
+  function emailCls() {
+    if (touched.email && !info.email.includes('@')) return 'ck2-field invalid';
+    if (info.email && info.email.includes('@')) return 'ck2-field valid';
+    return 'ck2-field';
   }
 
-  // ---------------------- Actions ----------------------
+  // ── Discount ──
   function applyDiscount(e) {
     e && e.preventDefault();
     const code = discount.trim().toUpperCase();
-    if (code === 'BIENVENIDO10') {
-      setDiscountApplied({ code: 'BIENVENIDO10', percent: 10 });
-      setDiscountErr('');
-    } else if (code === '') {
-      setDiscountApplied(null);
-      setDiscountErr('');
-    } else {
-      setDiscountApplied(null);
-      setDiscountErr('Código no válido');
-    }
+    if (!code) { setDiscountApplied(null); setDiscountErr(''); return; }
+    fetch('' + window.RUAH_API + '/api/checkout/validate-discount', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, subtotal }),
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.valid) {
+        setDiscountApplied({ code, percent: d.percent });
+        setDiscountErr('');
+      } else {
+        setDiscountApplied(null);
+        setDiscountErr(d.message || 'Código no válido');
+      }
+    })
+    .catch(() => {
+      // fallback local
+      if (code === 'BIENVENIDO10') {
+        setDiscountApplied({ code: 'BIENVENIDO10', percent: 10 });
+        setDiscountErr('');
+      } else {
+        setDiscountApplied(null);
+        setDiscountErr('Código no válido');
+      }
+    });
   }
 
   function setQty(uid, qty) {
@@ -144,25 +191,30 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
     onUpdateCart(c => c.filter(it => (it.uid || it.id) !== uid));
   }
 
-  function goStep(n) {
-    if (n > step) {
-      if (step === 0 && !infoValid()) {
-        setTouched({ email: 1, firstName: 1, lastName: 1, address: 1, city: 1, region: 1, phone: 1 });
-        return;
-      }
-    }
-    setStep(Math.max(0, Math.min(3, n)));
-    requestAnimationFrame(() => {
-      const el = document.querySelector('.ck-stage');
-      if (el) el.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+  // ── Validation ──
+  function validate() {
+    const req = { email: 1, firstName: 1, lastName: 1, phone: 1 };
+    if (mode === 'envio') { req.address = 1; req.city = 1; req.region = 1; }
+    setTouched(req);
+    if (!info.email.includes('@')) return false;
+    for (const k of Object.keys(req)) { if (!info[k]) return false; }
+    if (mode === 'envio' && !selectedShip) { setShipErr(true); return false; }
+    setShipErr(false);
+    if (!terms) return false;
+    return true;
   }
 
+  // ── Pay ──
   function pay(e) {
-    e.preventDefault();
-    if (!terms) return;
+    e && e.preventDefault();
+    if (!validate()) {
+      requestAnimationFrame(() => {
+        const el = document.querySelector('.ck2-field.invalid input, .ck2-field.invalid select');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+      return;
+    }
     setPayState('processing');
-    // Guardar datos del comprador para recuperarlos después del redirect de MP
     try {
       sessionStorage.setItem('ruah-pending-order', JSON.stringify({
         email: info.email, firstName: info.firstName, lastName: info.lastName,
@@ -170,552 +222,420 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
         address: info.address, address2: info.address2 || '',
         city: info.city, region: info.region,
         purchaseDate: new Date().toISOString(),
-        cart: cart, total: total,
+        cart, total,
         discount: discountApplied ? discountApplied.code : null,
-        discountAmount: discountAmount,
+        discountAmount,
         shippingFee: shipFee,
-        shippingName: shipOpt.name,
+        shippingName: activeShipOpt ? activeShipOpt.name : '',
+        totalGrams,
+        weightCat,
       }));
     } catch(_) {}
+
     fetch('' + window.RUAH_API + '/api/checkout/create-preference', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cart: cart.map(it => ({ ...it, price: parsePrice(it.price) })), info: info, discount: discountApplied ? discountApplied.code : null, shippingMethod: shipping }),
+      body: JSON.stringify({
+        cart: cart.map(it => ({ ...it, price: parsePrice(it.price) })),
+        info,
+        discount: discountApplied ? discountApplied.code : null,
+        shippingMethod: activeShipOpt.id,
+      }),
     })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
+    .then(r => r.json())
+    .then(data => {
       if (data.error) { setPayState('idle'); alert('Error MP: ' + data.error); return; }
-      // Guardar número de pedido antes del redirect
       try {
-        var pending = JSON.parse(sessionStorage.getItem('ruah-pending-order') || '{}');
-        var _chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-        var _code  = 'RL';
-        for (var _i = 0; _i < 4; _i++) _code += _chars[Math.floor(Math.random() * _chars.length)];
-        pending.orderId = _code;
+        const pending = JSON.parse(sessionStorage.getItem('ruah-pending-order') || '{}');
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let code = 'RL';
+        for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+        pending.orderId = code;
         sessionStorage.setItem('ruah-pending-order', JSON.stringify(pending));
       } catch(_) {}
-      var url = data.init_point || data.sandbox_init_point;
-      window.location.href = url;
+      window.location.href = data.init_point || data.sandbox_init_point;
     })
-    .catch(function(err) {
+    .catch(err => {
       setPayState('idle');
-      alert('No se pudo conectar con el servidor de pagos.\nAsegúrate de que el API server esté corriendo (puerto 3001).\n\n' + err.message);
+      alert('No se pudo conectar con el servidor de pagos.\n' + err.message);
     });
   }
 
-  // ---------------------- Steps ----------------------
-  const ck = (content && content.checkout) || {};
+  // ── Render ──
   return (
-    <div className="ck-overlay" role="dialog" aria-modal="true">
-      <div className="ck-shell">
-        <header className="ck-top">
-          <div className="ck-top__brand">
-            <img src={(window.__resources && window.__resources.logoWhite) || "https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323723/ruahlabs/s6aaamzrfbcwd46icjxu.png"} alt="RUAH LABS" className="ck-top__logo" />
-            <span className="ck-top__tag">{ck.topTag || 'CHECKOUT · ACTIVA PROTOCOLO 1×1'}</span>
+    <div className="ck2-overlay" role="dialog" aria-modal="true">
+      <div className="ck2-page">
+
+        {/* ═══ HEADER ═══ */}
+        <header className="ck2-header">
+          <div className="ck2-header__inner">
+            <img
+              src="https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323723/ruahlabs/s6aaamzrfbcwd46icjxu.png"
+              alt="RUAH LABS" className="ck2-header__logo"
+            />
+            <button className="ck2-close" onClick={onClose} aria-label="Cerrar">×</button>
           </div>
-          <button className="ck-close" onClick={onClose} aria-label="Cerrar">×</button>
-        </header>
-
-        {step < 2 && (
-          <Stepper step={step} onGo={goStep} labels={ck.stepLabels} />
-        )}
-
-        <div className="ck-stage">
-          {step === 3 ? (
-            <Confirmation order={orderNum} info={info} total={total} cart={cart} onClose={onClose} content={content} />
-          ) : (
-            <div className="ck-layout">
-              <main className="ck-main">
-                {step === 0 && (
-                  <StepInfo
-                    info={info} setInfo={setInfo}
-                    touched={touched}
-                    onNext={() => goStep(1)}
-                    content={content}
-                  />
-                )}
-                {step === 1 && (
-                  <StepShipping
-                    shipping={shipping} setShipping={setShipping}
-                    discount={discount} setDiscount={setDiscount}
-                    discountApplied={discountApplied} discountErr={discountErr}
-                    applyDiscount={applyDiscount}
-                    terms={terms} setTerms={setTerms}
-                    total={total} payState={payState}
-                    onBack={() => goStep(0)} onPay={pay}
-                    content={content}
-                  />
-                )}
-              </main>
-              <Summary
+          <button className="ck2-summary-toggle" type="button" onClick={() => setSummaryOpen(o => !o)}>
+            <span>Resumen del pedido <span className="ck2-caret">{summaryOpen ? '▲' : '▼'}</span></span>
+            <span className="ck2-summary-toggle__total">CLP ${fmtCLP(total)}</span>
+          </button>
+          {summaryOpen && (
+            <div className="ck2-summary-drop">
+              <SummaryItems
                 cart={cart} setQty={setQty} removeItem={removeItem}
-                subtotal={subtotal} shipOpt={shipOpt} shipFee={shipFee}
-                discountApplied={discountApplied} discountAmount={discountAmount}
-                total={total}
-                content={content}
+                subtotal={subtotal} shipFee={shipFee} activeShipOpt={activeShipOpt}
+                discountApplied={discountApplied} discountAmount={discountAmount} total={total}
               />
             </div>
           )}
-        </div>
-      </div>
+        </header>
+
+        {/* ═══ BODY ═══ */}
+        <div className="ck2-body">
+
+          {/* ── CONTACTO ── */}
+          <section className="ck2-section">
+            <h2 className="ck2-section-title">Contacto</h2>
+            <div className={emailCls()}>
+              <input
+                type="email" value={info.email} placeholder="Correo electrónico"
+                onChange={e => up('email', e.target.value)}
+                onBlur={() => setTouched(t => ({ ...t, email: 1 }))}
+                autoComplete="email"
+              />
+              {touched.email && !info.email.includes('@') && <span className="ck2-err">Ingresa un email válido</span>}
+            </div>
+            <label className="ck2-check">
+              <input type="checkbox" checked={info.newsletter} onChange={e => up('newsletter', e.target.checked)} />
+              <span>Enviarme novedades y el registro del Protocolo 1×1</span>
+            </label>
+          </section>
+
+          {/* ── ENTREGA ── */}
+          <section className="ck2-section">
+            <h2 className="ck2-section-title">Entrega</h2>
+
+            <div className="ck2-tabs">
+              <button
+                type="button"
+                className={'ck2-tab' + (mode === 'envio' ? ' active' : '')}
+                onClick={() => setMode('envio')}
+              >
+                <span className="ck2-tab-icon">📦</span> Envío
+              </button>
+              <button
+                type="button"
+                className={'ck2-tab' + (mode === 'retiro' ? ' active' : '')}
+                onClick={() => setMode('retiro')}
+              >
+                <span className="ck2-tab-icon">📍</span> Retiro
+              </button>
+            </div>
+
+            {/* ENVÍO — formulario de dirección */}
+            {mode === 'envio' && (
+              <div className="ck2-address-form">
+                <div className="ck2-grid-2">
+                  <div className={fieldCls('firstName')}>
+                    <input type="text" value={info.firstName} placeholder="Nombre"
+                      onChange={e => up('firstName', e.target.value)} autoComplete="given-name" />
+                    {touched.firstName && !info.firstName && <span className="ck2-err">Requerido</span>}
+                  </div>
+                  <div className={fieldCls('lastName')}>
+                    <input type="text" value={info.lastName} placeholder="Apellidos"
+                      onChange={e => up('lastName', e.target.value)} autoComplete="family-name" />
+                    {touched.lastName && !info.lastName && <span className="ck2-err">Requerido</span>}
+                  </div>
+                </div>
+                <div className={fieldCls('address')}>
+                  <input type="text" value={info.address} placeholder="Dirección"
+                    onChange={e => up('address', e.target.value)} autoComplete="street-address" />
+                  {touched.address && !info.address && <span className="ck2-err">Ingresa tu dirección</span>}
+                </div>
+                <div className="ck2-field">
+                  <input type="text" value={info.address2} placeholder="Casa, apartamento, etc. (opcional)"
+                    onChange={e => up('address2', e.target.value)} />
+                </div>
+                <div className="ck2-field">
+                  <input type="text" value={info.postal} placeholder="Código postal (opcional)"
+                    onChange={e => up('postal', e.target.value)} autoComplete="postal-code" />
+                </div>
+                <div className={fieldCls('city')}>
+                  <input type="text" value={info.city} placeholder="Ciudad / Comuna"
+                    onChange={e => up('city', e.target.value)} autoComplete="address-level2" />
+                  {touched.city && !info.city && <span className="ck2-err">Ingresa tu ciudad</span>}
+                </div>
+                <div className={fieldCls('region')}>
+                  <select value={info.region} onChange={e => { up('region', e.target.value); setSelectedShip(null); }}>
+                    <option value="">Región</option>
+                    <option>Arica y Parinacota</option><option>Tarapacá</option>
+                    <option>Antofagasta</option><option>Atacama</option>
+                    <option>Coquimbo</option><option>Valparaíso</option>
+                    <option>Metropolitana</option><option>O'Higgins</option>
+                    <option>Maule</option><option>Ñuble</option>
+                    <option>Biobío</option><option>Araucanía</option>
+                    <option>Los Ríos</option><option>Los Lagos</option>
+                    <option>Aysén</option><option>Magallanes</option>
+                  </select>
+                  {touched.region && !info.region && <span className="ck2-err">Selecciona tu región</span>}
+                </div>
+                <div className={fieldCls('phone')}>
+                  <input type="tel" value={info.phone} placeholder="Teléfono"
+                    onChange={e => up('phone', e.target.value)} autoComplete="tel" />
+                  {touched.phone && !info.phone && <span className="ck2-err">Ingresa tu teléfono</span>}
+                </div>
+              </div>
+            )}
+
+            {/* RETIRO — info fija + datos mínimos */}
+            {mode === 'retiro' && (
+              <div className="ck2-retiro-wrap">
+                <div className="ck2-radio-card ck2-radio-card--selected ck2-radio-card--static">
+                  <span className="ck2-radio-dot ck2-radio-dot--on"></span>
+                  <div className="ck2-radio-card__body">
+                    <span className="ck2-radio-card__name">Retiro en taller · <strong style={{color:'#ECA10C'}}>GRATIS</strong></span>
+                    <span className="ck2-radio-card__meta">📍 Rigoberto Jara 0171</span>
+                    <span className="ck2-radio-card__meta">🕐 Lunes a Viernes · 10:00 – 19:00</span>
+                    <span className="ck2-radio-card__meta" style={{color:'#666'}}>Recibirás un correo cuando tu pedido esté listo para retirar</span>
+                  </div>
+                </div>
+                <div className="ck2-grid-2" style={{marginTop:'14px'}}>
+                  <div className={fieldCls('firstName')}>
+                    <input type="text" value={info.firstName} placeholder="Nombre"
+                      onChange={e => up('firstName', e.target.value)} autoComplete="given-name" />
+                    {touched.firstName && !info.firstName && <span className="ck2-err">Requerido</span>}
+                  </div>
+                  <div className={fieldCls('lastName')}>
+                    <input type="text" value={info.lastName} placeholder="Apellidos"
+                      onChange={e => up('lastName', e.target.value)} autoComplete="family-name" />
+                    {touched.lastName && !info.lastName && <span className="ck2-err">Requerido</span>}
+                  </div>
+                </div>
+                <div className={fieldCls('phone')}>
+                  <input type="tel" value={info.phone} placeholder="Teléfono"
+                    onChange={e => up('phone', e.target.value)} autoComplete="tel" />
+                  {touched.phone && !info.phone && <span className="ck2-err">Ingresa tu teléfono</span>}
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* ── MÉTODO DE ENVÍO STARKEN (solo modo envío) ── */}
+          {mode === 'envio' && (
+            <section className="ck2-section">
+              <h2 className="ck2-section-title">Método de envío</h2>
+              {!info.region ? (
+                <p className="ck2-section-sub" style={{color:'#555',marginBottom:0}}>Selecciona tu región arriba para ver las opciones de Starken</p>
+              ) : (
+                <React.Fragment>
+                  <div className="ck2-ship-weight">
+                    <span>📦</span>
+                    <span>
+                      Peso estimado del pedido: <strong>
+                        {totalGrams >= 1000
+                          ? (totalGrams / 1000).toFixed(2).replace('.', ',') + ' kg'
+                          : totalGrams + ' g'}
+                      </strong>
+                    </span>
+                  </div>
+                  {shipErr && <p className="ck2-ship-warning">Selecciona un método de envío para continuar</p>}
+                  <div className="ck2-ship-list">
+                    {starkenOpts.map(opt => (
+                      <div
+                        key={opt.id}
+                        className={'ck2-radio-card' + (selectedShip === opt.id ? ' ck2-radio-card--selected' : '')}
+                        onClick={() => { setSelectedShip(opt.id); setShipErr(false); }}
+                        role="radio" aria-checked={selectedShip === opt.id}
+                        tabIndex={0}
+                        onKeyDown={e => e.key === 'Enter' && (setSelectedShip(opt.id), setShipErr(false))}
+                      >
+                        <span className={'ck2-radio-dot' + (selectedShip === opt.id ? ' ck2-radio-dot--on' : '')}></span>
+                        <div className="ck2-radio-card__body">
+                          <span className="ck2-radio-card__name">{opt.name}</span>
+                          <span className="ck2-radio-card__meta">{opt.eta}</span>
+                        </div>
+                        <span className="ck2-radio-card__price">+ CLP ${fmtCLP(opt.price)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p style={{fontSize:'11px',color:'#3a3a3a',marginTop:'8px',letterSpacing:'.3px'}}>
+                    Despacho desde Quilicura · Starken opera lunes a sábado
+                  </p>
+                </React.Fragment>
+              )}
+            </section>
+          )}
+
+          {/* ── PAGO ── */}
+          <section className="ck2-section">
+            <h2 className="ck2-section-title">Pago</h2>
+            <p className="ck2-section-sub">Todas las transacciones son seguras y están encriptadas.</p>
+            <div className="ck2-radio-card ck2-radio-card--selected ck2-radio-card--static">
+              <span className="ck2-radio-dot ck2-radio-dot--on"></span>
+              <div className="ck2-radio-card__body">
+                <span className="ck2-radio-card__name">Todos los medios de pago · MercadoPago</span>
+                <div className="ck2-pay-badges">
+                  <span className="ck2-pay-badge">Visa</span>
+                  <span className="ck2-pay-badge">Mastercard</span>
+                  <span className="ck2-pay-badge">Débito</span>
+                  <span className="ck2-pay-badge">+2</span>
+                </div>
+              </div>
+              <span className="ck2-lock-icon">🔒</span>
+            </div>
+            <p className="ck2-pay-note">Serás redirigido a MercadoPago para completar la compra de forma segura.</p>
+          </section>
+
+          {/* ── RESUMEN DEL PEDIDO ── */}
+          <section className="ck2-section">
+            <h2 className="ck2-section-title">Resumen del pedido</h2>
+            <SummaryItems
+              cart={cart} setQty={setQty} removeItem={removeItem}
+              subtotal={subtotal} shipFee={shipFee} activeShipOpt={activeShipOpt}
+              discountApplied={discountApplied} discountAmount={discountAmount} total={total}
+              discount={discount} setDiscount={setDiscount}
+              discountErr={discountErr} applyDiscount={applyDiscount}
+              showDiscount={true}
+            />
+          </section>
+
+          {/* ── CTA ── */}
+          <div className="ck2-cta-block">
+            <label className={'ck2-check ck2-terms-check' + (!terms && touched.terms ? ' ck2-terms-err' : '')}>
+              <input type="checkbox" checked={terms} onChange={e => setTerms(e.target.checked)} />
+              <span>
+                He leído y acepto los{' '}
+                <a href="#" onClick={e => e.preventDefault()}>términos y condiciones</a>
+                {' '}y la{' '}
+                <a href="#" onClick={e => e.preventDefault()}>política de privacidad</a>
+              </span>
+            </label>
+
+            <button
+              type="button"
+              className={'ck2-pay-btn ck2-pay-btn--' + payState}
+              onClick={pay}
+              disabled={payState === 'processing'}
+            >
+              {payState === 'idle' && (
+                <React.Fragment>
+                  CONFIRMAR Y PAGAR · CLP ${fmtCLP(total)}
+                  <span className="ck2-btn-arrow">→</span>
+                </React.Fragment>
+              )}
+              {payState === 'processing' && (
+                <React.Fragment>
+                  <span className="ck2-spin"></span>
+                  Redirigiendo a MercadoPago…
+                </React.Fragment>
+              )}
+            </button>
+
+            <p className="ck2-trust-note">
+              🔒 Pago seguro · SSL · Protocolo 1×1 se activa al confirmar
+            </p>
+          </div>
+
+        </div>{/* /ck2-body */}
+      </div>{/* /ck2-page */}
     </div>
   );
 }
 
 // ============================================================
-// STEPPER
+// SUMMARY ITEMS (reutilizado en header dropdown y sección final)
 // ============================================================
-function Stepper({ step, onGo, labels }) {
-  const steps = (labels && labels.length === 2) ? labels : ['INFORMACIÓN', 'ENVÍO'];
-  return (
-    <nav className="ck-stepper" aria-label="Pasos del checkout">
-      {steps.map((label, i) => (
-        <button
-          key={label}
-          type="button"
-          className={'ck-step' + (i === step ? ' active' : '') + (i < step ? ' done' : '')}
-          onClick={() => i < step && onGo(i)}
-          disabled={i > step}
-        >
-          <span className="ck-step__n">{String(i + 1).padStart(2, '0')}</span>
-          <span className="ck-step__l">{label}</span>
-        </button>
-      ))}
-    </nav>
-  );
-}
-
-// ============================================================
-// STEP 1 — INFORMACIÓN
-// ============================================================
-function StepInfo({ info, setInfo, touched, onNext, content }) {
-  const ck = (content && content.checkout) || {};
-  function up(k, v) { setInfo({ ...info, [k]: v }); }
-  function err(k) { return touched[k] && !info[k]; }
-
-  function submit(e) { e.preventDefault(); onNext(); }
-
-  return (
-    <form className="ck-form" onSubmit={submit} noValidate>
-      <h2 className="ck-h">{ck.infoTitle || 'Información de contacto'}</h2>
-      <p className="ck-sub">{ck.infoSub || 'Recibirás aquí el comprobante y el registro del Protocolo 1×1.'}</p>
-
-      <label className={'ck-field' + (err('email') ? ' invalid' : '')}>
-        <span>EMAIL</span>
-        <input
-          type="email" required value={info.email}
-          onChange={e => up('email', e.target.value)}
-          placeholder="tu@correo.cl" autoComplete="email"
-        />
-      </label>
-
-      <h3 className="ck-h2">{ck.addressTitle || 'Dirección de envío'}</h3>
-
-      <label className="ck-field">
-        <span>PAÍS / REGIÓN</span>
-        <select value={info.country} onChange={e => up('country', e.target.value)}>
-          <option>Chile</option>
-          <option>Argentina</option>
-          <option>Perú</option>
-          <option>Colombia</option>
-          <option>México</option>
-          <option>España</option>
-        </select>
-      </label>
-
-      <div className="ck-grid-2">
-        <label className={'ck-field' + (err('firstName') ? ' invalid' : '')}>
-          <span>NOMBRE</span>
-          <input type="text" required value={info.firstName} onChange={e => up('firstName', e.target.value)} placeholder="María" autoComplete="given-name" />
-        </label>
-        <label className={'ck-field' + (err('lastName') ? ' invalid' : '')}>
-          <span>APELLIDO</span>
-          <input type="text" required value={info.lastName} onChange={e => up('lastName', e.target.value)} placeholder="González" autoComplete="family-name" />
-        </label>
-      </div>
-
-      <label className={'ck-field' + (err('address') ? ' invalid' : '')}>
-        <span>DIRECCIÓN</span>
-        <input type="text" required value={info.address} onChange={e => up('address', e.target.value)} placeholder="Calle, número" autoComplete="street-address" />
-      </label>
-      <label className="ck-field">
-        <span>DEPTO / OFICINA · OPCIONAL</span>
-        <input type="text" value={info.address2} onChange={e => up('address2', e.target.value)} placeholder="Depto 402 · Torre B" />
-      </label>
-
-      <div className="ck-grid-3">
-        <label className={'ck-field' + (err('city') ? ' invalid' : '')}>
-          <span>CIUDAD</span>
-          <input type="text" required value={info.city} onChange={e => up('city', e.target.value)} placeholder="Santiago" autoComplete="address-level2" />
-        </label>
-        <label className={'ck-field' + (err('region') ? ' invalid' : '')}>
-          <span>REGIÓN</span>
-          <select required value={info.region} onChange={e => up('region', e.target.value)}>
-            <option value="">— Selecciona —</option>
-            <option>Arica y Parinacota</option><option>Tarapacá</option><option>Antofagasta</option>
-            <option>Atacama</option><option>Coquimbo</option><option>Valparaíso</option>
-            <option>Metropolitana</option><option>O'Higgins</option><option>Maule</option>
-            <option>Ñuble</option><option>Biobío</option><option>Araucanía</option>
-            <option>Los Ríos</option><option>Los Lagos</option><option>Aysén</option>
-            <option>Magallanes</option>
-          </select>
-        </label>
-        <label className="ck-field">
-          <span>CÓD. POSTAL</span>
-          <input type="text" value={info.postal} onChange={e => up('postal', e.target.value)} placeholder="7500000" autoComplete="postal-code" />
-        </label>
-      </div>
-
-      <label className={'ck-field' + (err('phone') ? ' invalid' : '')}>
-        <span>TELÉFONO</span>
-        <input type="tel" required value={info.phone} onChange={e => up('phone', e.target.value)} placeholder="+56 9 0000 0000" autoComplete="tel" />
-      </label>
-
-      <label className="ck-check">
-        <input type="checkbox" checked={info.newsletter} onChange={e => up('newsletter', e.target.checked)} />
-        <span>Sumarme al boletín mensual del Protocolo 1×1 (sin spam).</span>
-      </label>
-
-      <div className="ck-actions">
-        <button type="submit" className="btn btn--amber">
-          {ck.nextLabel || 'Continuar a envío'} <span className="arrow">→</span>
-        </button>
-      </div>
-    </form>
-  );
-}
-
-// ============================================================
-// STEP 2 — ENVÍO + PAGO DIRECTO MP
-// ============================================================
-function StepShipping({
-  shipping, setShipping,
-  discount, setDiscount, discountApplied, discountErr, applyDiscount,
-  terms, setTerms, total, payState,
-  onBack, onPay, content,
+function SummaryItems({
+  cart, setQty, removeItem,
+  subtotal, shipFee, activeShipOpt, discountApplied, discountAmount, total,
+  discount, setDiscount, discountErr, applyDiscount, showDiscount,
 }) {
-  const ck = (content && content.checkout) || {};
   return (
-    <form className="ck-form" onSubmit={onPay}>
-      <h2 className="ck-h">{ck.shippingTitle || 'Método de envío'}</h2>
-      <p className="ck-sub">{ck.shippingSub || 'Despachamos a todo Chile. Retiro disponible Lun – Vie, 11 a 19h.'}</p>
+    <div className="ck2-summary-inner">
 
-      <div className="ck-options">
-        {SHIPPING_OPTIONS.map(opt => (
-          <label key={opt.id} className={'ck-opt' + (shipping === opt.id ? ' active' : '')}>
-            <input type="radio" name="ship" value={opt.id} checked={shipping === opt.id} onChange={() => setShipping(opt.id)} />
-            <div className="ck-opt__body">
-              <div className="ck-opt__row">
-                <span className="ck-opt__name">{opt.name}</span>
-                <span className="ck-opt__price">{opt.price === 0 ? 'GRATIS' : 'CLP $' + fmtCLP(opt.price)}</span>
-              </div>
-              <div className="ck-opt__eta">{opt.eta}</div>
-            </div>
-            <span className="ck-opt__radio" aria-hidden="true"></span>
-          </label>
-        ))}
-      </div>
-
-      <div className="ck-discount">
-        <label className="ck-field">
-          <span>CÓDIGO DE DESCUENTO</span>
-          <div className="ck-input-row">
-            <input
-              type="text" value={discount}
-              onChange={e => setDiscount(e.target.value.toUpperCase())}
-              placeholder="EJ: BIENVENIDO10"
-            />
-            <button type="button" className="ck-apply" onClick={applyDiscount}>Aplicar</button>
+      {/* Items */}
+      {(cart || []).map(it => (
+        <div key={it.uid || it.id} className="ck2-order-item">
+          <div className="ck2-order-item__thumb">
+            {it.img
+              ? <img src={it.img} alt={it.name} />
+              : <span className="ck2-order-item__thumb-ph">{it.name.slice(0,2).toUpperCase()}</span>
+            }
+            <span className="ck2-order-item__qty-badge">{it.qty || 1}</span>
           </div>
-          {discountApplied && <span className="ck-discount__ok">✓ {discountApplied.code} · −{discountApplied.percent}%</span>}
-          {discountErr && <span className="ck-discount__err">{discountErr}</span>}
-        </label>
+          <div className="ck2-order-item__info">
+            <div className="ck2-order-item__name">{it.name}</div>
+            {it.size  && <div className="ck2-order-item__attr">Talla {it.size}</div>}
+            {it.verse && <div className="ck2-order-item__attr">{it.verse}</div>}
+            {setQty && (
+              <div className="ck2-order-item__controls">
+                <button type="button" onClick={() => setQty(it.uid||it.id, (it.qty||1)-1)}>−</button>
+                <span>{it.qty || 1}</span>
+                <button type="button" onClick={() => setQty(it.uid||it.id, (it.qty||1)+1)}>+</button>
+                <button type="button" className="ck2-remove-btn" onClick={() => removeItem(it.uid||it.id)}>×</button>
+              </div>
+            )}
+          </div>
+          <div className="ck2-order-item__price">CLP ${fmtCLP(parsePrice(it.price) * (it.qty||1))}</div>
+        </div>
+      ))}
+
+      {/* Discount */}
+      {showDiscount && (
+        <div className="ck2-discount-block">
+          <div className="ck2-discount-row">
+            <input
+              type="text"
+              value={discount || ''}
+              placeholder="Código de descuento"
+              onChange={e => setDiscount && setDiscount(e.target.value.toUpperCase())}
+              onKeyDown={e => e.key === 'Enter' && applyDiscount(e)}
+            />
+            <button type="button" onClick={applyDiscount}>Aplicar</button>
+          </div>
+          {discountApplied && (
+            <span className="ck2-discount-ok">✓ {discountApplied.code} · −{discountApplied.percent}%</span>
+          )}
+          {discountErr && <span className="ck2-discount-err">{discountErr}</span>}
+        </div>
+      )}
+
+      {/* Totals */}
+      <div className="ck2-totals">
+        <div className="ck2-total-row">
+          <span>Subtotal</span>
+          <span>CLP ${fmtCLP(subtotal)}</span>
+        </div>
+        {discountApplied && (
+          <div className="ck2-total-row ck2-total-row--disc">
+            <span>Descuento · {discountApplied.code}</span>
+            <span>−CLP ${fmtCLP(discountAmount)}</span>
+          </div>
+        )}
+        <div className="ck2-total-row">
+          <span>Envío{activeShipOpt ? ' · ' + activeShipOpt.name : ''}</span>
+          <span style={!activeShipOpt ? {color:'#555'} : {}}>
+            {!activeShipOpt ? 'Por seleccionar' : (shipFee === 0 ? 'GRATIS' : 'CLP $' + fmtCLP(shipFee))}
+          </span>
+        </div>
+        <div className="ck2-total-row ck2-total-row--total">
+          <strong>Total</strong>
+          <strong>
+            CLP ${fmtCLP(total)}
+            {!activeShipOpt && <span style={{color:'#555',fontSize:'11px',fontWeight:'400'}}> + envío</span>}
+          </strong>
+        </div>
       </div>
 
-      <label className="ck-check">
-        <input type="checkbox" checked={terms} onChange={e => setTerms(e.target.checked)} />
-        <span>Acepto los <a href="#" onClick={(e) => e.preventDefault()}>términos</a> y la <a href="#" onClick={(e) => e.preventDefault()}>política de privacidad</a>.</span>
-      </label>
-
-      <div className="ck-trust">
-        <span className="ck-trust__i">▪</span>
-        <span>{ck.trustTxt || 'Serás redirigido a MercadoPago · Pago cifrado SSL · Protocolo 1×1 se activa al confirmar'}</span>
-      </div>
-
-      <div className="ck-actions ck-actions--split">
-        <button type="button" className="btn btn--ghost" onClick={onBack} disabled={payState === 'processing'}>{ck.backLabel || '← Volver'}</button>
-        <button
-          type="submit"
-          className={'btn btn--amber ck-pay ck-pay--' + payState}
-          disabled={payState === 'processing' || !terms}
-        >
-          {payState === 'idle' && <React.Fragment>IR A MERCADOPAGO <span className="arrow">→</span></React.Fragment>}
-          {payState === 'processing' && <React.Fragment><span className="ck-spin"></span> Redirigiendo…</React.Fragment>}
-        </button>
-      </div>
-    </form>
-  );
-}
-
-// ============================================================
-// STEP 3 — PAGO
-// ============================================================
-function StepPay({
-  payMethod, setPayMethod, card, setCard, cardBrand,
-  discount, setDiscount, discountApplied, discountErr, applyDiscount,
-  terms, setTerms, total, payState, onBack, onPay, cardValid, content,
-}) {
-  const ck = (content && content.checkout) || {};
-  function onCardNum(e) {
-    const formatted = formatCardNumber(e.target.value, cardBrand);
-    setCard({ ...card, num: formatted });
-  }
-  return (
-    <form className="ck-form" onSubmit={onPay}>
-      <h2 className="ck-h">{ck.payTitle || 'Método de pago'}</h2>
-
-      <div className="ck-pay-logos" aria-label="Métodos de pago aceptados">
-        <span className="ck-pay-logo ck-pay-logo--mp">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{verticalAlign:'middle',marginRight:5}}><circle cx="12" cy="12" r="12"/></svg>
-          mercado pago
+      {/* Protocolo */}
+      <div className="ck2-protocol-note">
+        <span className="ck2-protocol-note__badge">1×</span>
+        <span>
+          <strong>Protocolo 1×1.</strong> Esta compra activa una donación de prendas a alguien en situación de calle.
         </span>
       </div>
 
-      <div className="ck-tabs">
-        {PAY_METHODS.map(m => (
-          <button
-            key={m.id} type="button"
-            className={'ck-tab' + (payMethod === m.id ? ' active' : '')}
-            onClick={() => setPayMethod(m.id)}
-          >
-            {m.name}
-          </button>
-        ))}
-      </div>
-      <p className="ck-tab__hint">{PAY_METHODS.find(m => m.id === payMethod)?.hint}</p>
-
-      {payMethod === 'card' && (
-        <div className="ck-card-form">
-          <label className="ck-field">
-            <span>NÚMERO DE TARJETA</span>
-            <div className="ck-input-row">
-              <input
-                type="text" inputMode="numeric"
-                value={card.num} onChange={onCardNum}
-                placeholder="0000 0000 0000 0000"
-                autoComplete="cc-number"
-                maxLength={cardBrand === 'amex' ? 17 : 19}
-              />
-              <CardBrandMark brand={cardBrand} />
-            </div>
-          </label>
-
-          <label className="ck-field">
-            <span>NOMBRE EN LA TARJETA</span>
-            <input
-              type="text" value={card.name}
-              onChange={e => setCard({ ...card, name: e.target.value.toUpperCase() })}
-              placeholder="COMO APARECE EN LA TARJETA"
-              autoComplete="cc-name"
-            />
-          </label>
-
-          <div className="ck-grid-2">
-            <label className="ck-field">
-              <span>VENCIMIENTO</span>
-              <input
-                type="text" inputMode="numeric"
-                value={card.exp} onChange={e => setCard({ ...card, exp: formatExp(e.target.value) })}
-                placeholder="MM/AA" maxLength={5} autoComplete="cc-exp"
-              />
-            </label>
-            <label className="ck-field">
-              <span>CVV</span>
-              <input
-                type="text" inputMode="numeric"
-                value={card.cvv}
-                onChange={e => setCard({ ...card, cvv: e.target.value.replace(/\D/g, '').slice(0, cardBrand === 'amex' ? 4 : 3) })}
-                placeholder={cardBrand === 'amex' ? '4 dígitos' : '3 dígitos'}
-                autoComplete="cc-csc"
-              />
-            </label>
-          </div>
-        </div>
-      )}
-
-      {payMethod === 'webpay' && (
-        <div className="ck-alt">
-          <div className="ck-alt__t">Serás redirigido a Webpay Transbank.</div>
-          <div className="ck-alt__d">Pago seguro · soporta Visa, Mastercard, Redcompra, débito.</div>
-        </div>
-      )}
-      {payMethod === 'transfer' && (
-        <div className="ck-alt">
-          <div className="ck-alt__t">Transferencia electrónica</div>
-          <div className="ck-alt__d">BancoEstado · Cuenta Vista 1234567 · contacto@ruahlabs.cl — confirmaremos al recibirla.</div>
-        </div>
-      )}
-
-      <div className="ck-discount">
-        <label className="ck-field">
-          <span>CÓDIGO DE DESCUENTO</span>
-          <div className="ck-input-row">
-            <input
-              type="text" value={discount}
-              onChange={e => setDiscount(e.target.value.toUpperCase())}
-              placeholder="EJ: BIENVENIDO10"
-            />
-            <button type="button" className="ck-apply" onClick={applyDiscount}>Aplicar</button>
-          </div>
-          {discountApplied && <span className="ck-discount__ok">✓ {discountApplied.code} · −{discountApplied.percent}%</span>}
-          {discountErr && <span className="ck-discount__err">{discountErr}</span>}
-        </label>
-      </div>
-
-      <label className="ck-check">
-        <input type="checkbox" checked={terms} onChange={e => setTerms(e.target.checked)} />
-        <span>Acepto los <a href="#" onClick={(e) => e.preventDefault()}>términos</a> y la <a href="#" onClick={(e) => e.preventDefault()}>política de privacidad</a>.</span>
-      </label>
-
-      <div className="ck-trust">
-        <span className="ck-trust__i">▪</span>
-        <span>{ck.trustTxt || 'Pago cifrado SSL · No guardamos datos de tarjeta · Protocolo 1×1 se activa al confirmar'}</span>
-      </div>
-
-      <div className="ck-actions ck-actions--split">
-        <button type="button" className="btn btn--ghost" onClick={onBack} disabled={payState === 'processing'}>{ck.backLabel || '← Volver'}</button>
-        <button
-          type="submit"
-          className={'btn btn--amber ck-pay ck-pay--' + payState}
-          disabled={payState === 'processing' || !terms || (payMethod === 'card' && !cardValid)}
-        >
-          {payState === 'idle' && <React.Fragment>{ck.payCtaLabel || 'Pagar'} CLP ${fmtCLP(total)} <span className="arrow">→</span></React.Fragment>}
-          {payState === 'processing' && <React.Fragment><span className="ck-spin"></span> Procesando…</React.Fragment>}
-          {payState === 'success' && <React.Fragment>✓ Pago confirmado</React.Fragment>}
-        </button>
-      </div>
-    </form>
-  );
-}
-
-// ============================================================
-// CONFIRMACIÓN
-// ============================================================
-function Confirmation({ order, info, total, cart, onClose, content }) {
-  const ck = (content && content.checkout) || {};
-  return (
-    <div className="ck-confirm">
-      <div className="ck-check-wrap">
-        <svg className="ck-check-svg" viewBox="0 0 64 64" aria-hidden="true">
-          <circle cx="32" cy="32" r="30" stroke="currentColor" strokeWidth="2" fill="none" />
-          <path d="M18 32 L28 42 L46 22" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </div>
-      <h2 className="ck-confirm__t">{ck.confirmedTitle || 'PEDIDO CONFIRMADO.'}</h2>
-      <p className="ck-confirm__sub">
-        Gracias, <strong>{info.firstName || 'hermano'}</strong>. El Protocolo 1×1 ya está activado: una prenda saldrá a la calle a tu nombre.
-      </p>
-
-      <div className="ck-confirm__order">
-        <div className="ck-confirm__row"><span>N° ORDEN</span><code>{order}</code></div>
-        <div className="ck-confirm__row"><span>EMAIL</span><code>{info.email || '—'}</code></div>
-        <div className="ck-confirm__row"><span>TOTAL PAGADO</span><code>CLP ${fmtCLP(total)}</code></div>
-      </div>
-
-      <div className="ck-confirm__items">
-        <div className="ck-confirm__items__hd">PIEZAS EN TU PEDIDO</div>
-        {(cart || []).map(it => (
-          <div className="ck-confirm__item" key={it.id}>
-            <span>{it.name}{it.size ? ' · Talla ' + it.size : ''} {it.qty > 1 ? '× ' + it.qty : ''}</span>
-            <span>CLP ${fmtCLP(parsePrice(it.price) * (it.qty || 1))}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="ck-confirm__actions">
-        <a className="btn btn--ghost" href={'#orden-' + order} onClick={onClose}>Seguir mi orden</a>
-        <button type="button" className="btn btn--amber" onClick={onClose}>
-          Seguir comprando <span className="arrow">→</span>
-        </button>
-      </div>
-
-      <p className="ck-confirm__note">
-        Te enviamos a <strong>{info.email}</strong> el resumen y el seguimiento. Cuando salgamos a ruta, recibirás el registro de entrega (foto al piso, nunca de frente).
-      </p>
     </div>
-  );
-}
-
-// ============================================================
-// SUMMARY (sticky right column)
-// ============================================================
-function Summary({ cart, setQty, removeItem, subtotal, shipOpt, shipFee, discountApplied, discountAmount, total, content }) {
-  const [collapsed, setCollapsed] = React.useState(false);
-  const ck = (content && content.checkout) || {};
-  return (
-    <aside className={'ck-summary' + (collapsed ? ' collapsed' : '')}>
-      <button
-        className="ck-summary__toggle"
-        type="button"
-        onClick={() => setCollapsed(c => !c)}
-        aria-expanded={!collapsed}
-      >
-        <span>{ck.summaryHd || 'RESUMEN DEL PEDIDO'}</span>
-        <span className="ck-summary__total-mini">CLP ${fmtCLP(total)} <span className="caret">{collapsed ? '▾' : '▴'}</span></span>
-      </button>
-
-      <div className="ck-summary__body">
-        <div className="ck-summary__items">
-          {(cart || []).length === 0 && (
-            <div className="ck-summary__empty">CARRITO VACÍO</div>
-          )}
-          {(cart || []).map(it => (
-            <div className="ck-summary__item" key={it.id}>
-              <div className="ck-summary__media">
-                {it.img
-                  ? <img src={it.img} alt={it.name} />
-                  : <span>{it.name.split(' ').slice(-1)[0].slice(0, 2)}</span>}
-                <span className="ck-summary__qty">{it.qty || 1}</span>
-              </div>
-              <div className="ck-summary__info">
-                <div className="ck-summary__name">{it.name}</div>
-                {it.size && <div className="ck-summary__size">TALLA {it.size}</div>}
-                <div className="ck-summary__verse">{it.verse || ''}</div>
-                <div className="ck-summary__qtybar">
-                  <button type="button" onClick={() => setQty(it.uid || it.id, (it.qty || 1) - 1)} aria-label="Menos">−</button>
-                  <span>{it.qty || 1}</span>
-                  <button type="button" onClick={() => setQty(it.uid || it.id, (it.qty || 1) + 1)} aria-label="Más">+</button>
-                  <button type="button" className="ck-summary__rm" onClick={() => removeItem(it.uid || it.id)} aria-label="Eliminar">×</button>
-                </div>
-              </div>
-              <div className="ck-summary__price">CLP ${fmtCLP(parsePrice(it.price) * (it.qty || 1))}</div>
-            </div>
-          ))}
-        </div>
-
-        <div className="ck-summary__rows">
-          <div className="ck-summary__row"><span>Subtotal</span><span>CLP ${fmtCLP(subtotal)}</span></div>
-          <div className="ck-summary__row"><span>Envío · {shipOpt.name}</span><span>{shipFee === 0 ? 'GRATIS' : 'CLP $' + fmtCLP(shipFee)}</span></div>
-          {discountApplied && (
-            <div className="ck-summary__row ck-summary__row--disc">
-              <span>Descuento {discountApplied.code}</span>
-              <span>− CLP ${fmtCLP(discountAmount)}</span>
-            </div>
-          )}
-          <div className="ck-summary__row ck-summary__row--total">
-            <span>TOTAL</span><span>CLP ${fmtCLP(total)}</span>
-          </div>
-        </div>
-
-        <div className="ck-summary__protocol">
-          <span className="ck-summary__protocol__icon">1×</span>
-          <span>{ck.summaryProtocol
-            ? <React.Fragment><strong>PROTOCOLO 1×1.</strong> {ck.summaryProtocol.replace(/^PROTOCOLO 1×1\.?\s*/, '')}</React.Fragment>
-            : <React.Fragment><strong>PROTOCOLO 1×1.</strong> Esta compra dona una prenda filtrada a alguien en situación de calle.</React.Fragment>
-          }</span>
-        </div>
-      </div>
-    </aside>
   );
 }
 
