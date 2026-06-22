@@ -972,11 +972,9 @@ app.post('/api/checkout/welcome', rateLimit('welcome', 5, 60 * 1000), async func
 
   if (!email) return res.status(400).json({ error: 'Email requerido' });
 
-  // Dedup: si el webhook ya procesó este pago, marcar para no reenviar email.
-  // IMPORTANTE: aunque el webhook haya llegado primero, el welcome siempre guarda
-  // el pedido completo (con dirección, teléfono, tallas, etc. del formulario).
-  var alreadyHandledByWebhook = paymentId && _processedPayments.has(paymentId);
-  if (paymentId && !alreadyHandledByWebhook) _processedPayments.add(paymentId);
+  // Welcome siempre guarda el pedido y envía el email — es el path principal.
+  // El webhook es solo respaldo (cliente cierra pestaña antes del redirect).
+  if (paymentId) _processedPayments.add(paymentId);
 
   // Verificar que el pago existe y está aprobado en MercadoPago antes de enviar
   // nada. Sin esto, el endpoint sería un emisor abierto de correo con tu dominio.
@@ -1028,12 +1026,6 @@ app.post('/api/checkout/welcome', rateLimit('welcome', 5, 60 * 1000), async func
     mp_external_ref: req.body.mp_external_ref || null,
     purchased_at:    req.body.purchaseDate   || new Date().toISOString(),
   });
-
-  // Si el webhook ya procesó el email, respondemos y no enviamos duplicado
-  if (alreadyHandledByWebhook) {
-    console.log('[Welcome] pedido guardado, email omitido (webhook ya lo envió):', paymentId);
-    return res.json({ ok: true, club_created: false, email_sent: false, note: 'webhook_handled' });
-  }
 
   var rawPass = generatePassword();
 
