@@ -6007,7 +6007,7 @@ function Checkout({
     const addrLine = mode === 'envio' && info.address ? `${info.address}${info.address2 ? ', ' + info.address2 : ''}, ${info.city}, ${info.region}` : '';
     const discLine = discountApplied ? `Descuento (${discountApplied.code}): -$${fmtCLP(discountAmount)}\n` : '';
     const ref = 'RUAH-' + Date.now().toString().slice(-6);
-    const msg = ['🛍 *PEDIDO RUAH LABS* — ' + ref, '', '*Datos del comprador*', `Nombre: ${info.firstName} ${info.lastName}`, `Email: ${info.email}`, `Teléfono: ${info.phone}`, addrLine ? `Dirección: ${addrLine}` : '', '', '*Productos*', itemsText, '', '*Resumen*', `Subtotal: $${fmtCLP(subtotal)}`, discLine.trim(), `Envío: ${shipLine}`, `*TOTAL A TRANSFERIR: $${fmtCLP(total)}*`, '', '¿Dónde transferimos? ¿Me ayudan con eso? 🙏'].filter(l => l !== null && l !== undefined).join('\n');
+    const msg = ['*¿Dónde transferimos? ¿Nos ayudan con eso?* 🙏', '', '🛍 *PEDIDO RUAH LABS* — ' + ref, '', '*Datos del comprador*', `Nombre: ${info.firstName} ${info.lastName}`, `Email: ${info.email}`, `Teléfono: ${info.phone}`, addrLine ? `Dirección: ${addrLine}` : '', '', '*Productos*', itemsText, '', '*Resumen*', `Subtotal: $${fmtCLP(subtotal)}`, discLine.trim(), `Envío: ${shipLine}`, `*TOTAL A TRANSFERIR: $${fmtCLP(total)}*`, '', '¿Dónde transferimos? ¿Me ayudan con eso? 🙏'].filter(l => l !== null && l !== undefined).join('\n');
     const url = 'https://wa.me/56926237239?text=' + encodeURIComponent(msg);
     window.open(url, '_blank');
   }

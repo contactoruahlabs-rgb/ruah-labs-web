@@ -228,6 +228,8 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
     const ref = 'RUAH-' + Date.now().toString().slice(-6);
 
     const msg = [
+      '*¿Dónde transferimos? ¿Nos ayudan con eso?* 🙏',
+      '',
       '🛍 *PEDIDO RUAH LABS* — ' + ref,
       '',
       '*Datos del comprador*',
