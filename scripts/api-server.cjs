@@ -25,6 +25,13 @@ var SITE_URL          = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:800
 var IS_DEV            = !MP_TOKEN.startsWith('APP_USR-');
 var MP_WEBHOOK_SECRET = process.env.MERCADOPAGO_WEBHOOK_SECRET || '';
 var _processedPayments = new Set();
+// Datos del formulario guardados cuando se crea la preferencia, recuperados por el webhook
+// si el cliente no vuelve al sitio tras pagar. Expiran en 24h.
+var _pendingOrders = new Map();
+setInterval(function() {
+  var now = Date.now();
+  _pendingOrders.forEach(function(v, k) { if (v._exp < now) _pendingOrders.delete(k); });
+}, 60 * 60 * 1000);
 
 // ─── Transbank Webpay Plus ────────────────────────────────────────────────────
 var _tb = null;
@@ -387,6 +394,23 @@ app.post('/api/checkout/create-preference', rateLimit('checkout', 10, 60 * 1000)
         console.error('[MP]', r.status, JSON.stringify(r.body));
         return res.status(r.status).json({ error: r.body.message || 'MP error' });
       }
+      // Guardar datos del formulario para que el webhook los use si el cliente
+      // no vuelve al sitio tras pagar (cierra pestaña, fallo de redirect, móvil).
+      var extRef = prefBody.external_reference;
+      _pendingOrders.set(extRef, {
+        email:          buyerEmail || '',
+        firstName:      buyerFirst || '',
+        lastName:       buyerLast  || '',
+        phone:          buyerPhone || '',
+        address:        buyerAddr  || '',
+        address2:       (info.address2 || '').trim(),
+        city:           (info.city    || '').trim(),
+        region:         (info.region  || '').trim(),
+        cart:           req.body.cart || [],
+        shippingMethod: req.body.shippingMethod || 'std',
+        discount:       discount,
+        _exp:           Date.now() + 24 * 60 * 60 * 1000,
+      });
       var init = IS_DEV ? r.body.sandbox_init_point : r.body.init_point;
       res.json({ init_point: init, preference_id: r.body.id });
     });
@@ -1101,8 +1125,6 @@ app.post('/api/webhooks/mercadopago', function(req, res) {
     var payerEmail = (payment.payer && payment.payer.email) ? payment.payer.email.trim().toLowerCase() : '';
     var payerFirst = cap((payment.payer && payment.payer.first_name) || '');
     var payerLast  = cap((payment.payer && payment.payer.last_name)  || '');
-    if (!payerEmail) { console.warn('[wh] pago sin email:', paymentId); return; }
-
     // Enriquecer items del pago con specs completas (verse, material, etc.) desde la DB
     sbFetch('GET', 'content', { query: 'key=eq.main&select=data&limit=1' }).then(function(r) {
       var row = Array.isArray(r.data) ? r.data[0] : null;
@@ -1127,33 +1149,62 @@ app.post('/api/webhooks/mercadopago', function(req, res) {
       var orderId = 'RL';
       for (var _i = 0; _i < 4; _i++) orderId += _ch[_crypto.randomBytes(1)[0] % _ch.length];
 
-      // Persistir pedido (fallback: solo si welcome no lo procesó antes)
+      // Recuperar datos del formulario guardados al crear la preferencia
+      var pending = _pendingOrders.get(payment.external_reference) || {};
+      _pendingOrders.delete(payment.external_reference);
+
+      var whEmail     = pending.email     || payerEmail;
+      var whFirst     = pending.firstName || payerFirst;
+      var whLast      = pending.lastName  || payerLast;
+      var whPhone     = pending.phone     || '';
+      var whAddress   = pending.address   || '';
+      var whAddress2  = pending.address2  || '';
+      var whCity      = pending.city      || '';
+      var whRegion    = pending.region    || '';
+      var whCart      = (pending.cart && pending.cart.length) ? pending.cart : cart;
+      var whShipMethod = pending.shippingMethod || 'std';
+      var whDiscount  = pending.discount  || null;
+      var whTotal     = parseInt(payment.transaction_amount) || 0;
+
+      if (!whEmail) { console.warn('[wh] pago sin email:', paymentId); return; }
+
       saveOrder({
         order_id:        orderId,
         payment_id:      paymentId,
         payment_method:  'MercadoPago',
         status:          'approved',
-        buyer_email:     payerEmail,
-        buyer_name:      (payerFirst + ' ' + payerLast).trim(),
-        items:           cart,
-        total:           parseInt(payment.transaction_amount) || 0,
-        subtotal:        parseInt(payment.transaction_amount) || 0,
+        buyer_email:     whEmail,
+        buyer_name:      (whFirst + ' ' + whLast).trim(),
+        buyer_phone:     whPhone,
+        shipping_method: whShipMethod,
+        address:         whAddress  || null,
+        address2:        whAddress2 || null,
+        city:            whCity     || null,
+        region:          whRegion   || null,
+        items:           whCart,
+        total:           whTotal,
+        subtotal:        whTotal,
+        discount_code:   whDiscount,
         mp_external_ref: payment.external_reference || null,
+        purchased_at:    new Date().toISOString(),
       });
 
       var rawPass = generatePassword();
       bcrypt.hash(rawPass, 10).then(function(hash) {
         sbFetch('POST', 'club_credentials', {
-          body: { name: (payerFirst + ' ' + payerLast).trim(), email: payerEmail,
+          body: { name: (whFirst + ' ' + whLast).trim(), email: whEmail,
                   password_hash: hash, notes: 'MP webhook #' + paymentId, must_change_password: true },
         }).then(function(cr) {
           var created    = cr.status < 400;
           var passToSend = created ? rawPass : '(ya tienes acceso al club)';
           var subject    = '✓ RUAH LABS · Tu pedido está en camino + acceso al Club';
-          var html       = renderWelcomeTemplate(payerFirst, payerLast, payerEmail, cart, passToSend, orderId)
-                        || buildWelcomeEmail(payerFirst, payerLast, payerEmail, cart, passToSend, orderId);
-          sendEmail(payerEmail, subject, html)
-            .then(function() { console.log('[wh] ✅', payerEmail, '| pago:', paymentId, '| club:', created ? 'creado' : 'ya existía'); })
+          var html       = renderWelcomeTemplate(whFirst, whLast, whEmail, whCart, passToSend, orderId)
+                        || buildWelcomeEmail(whFirst, whLast, whEmail, whCart, passToSend, orderId);
+          sendEmail(whEmail, subject, html)
+            .then(function(er) {
+              if (er && er.statusCode >= 400) console.error('[wh] email error Resend:', JSON.stringify(er));
+              else console.log('[wh] ✅', whEmail, '| pago:', paymentId, '| club:', created ? 'creado' : 'ya existía');
+            })
             .catch(function(e) { console.error('[wh] email error:', e.message); });
         }).catch(function(e) { console.error('[wh] sb error:', e.message); });
       }).catch(function(e) { console.error('[wh] bcrypt error:', e.message); });
