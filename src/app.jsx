@@ -311,9 +311,7 @@ function App() {
           <React.Fragment>
             <Hero content={content} />
             <HomeIntro content={content} />
-            <FeaturedDuo content={content} onOpenProduct={(id) => setProductId(id)} />
-            <Protocol content={content} />
-            <HomeCategoryCarousel content={content} onOpenProduct={(id) => setProductId(id)} />
+            <Products content={content} onOpenProduct={(id) => setProductId(id)} initialCategory="todo" />
             <Testimonials content={content} />
             <CTABlock content={content} />
           </React.Fragment>

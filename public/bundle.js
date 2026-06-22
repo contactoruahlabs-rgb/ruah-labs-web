@@ -184,6 +184,10 @@ const DEFAULT_CONTENT = {
       id: 'l8',
       label: 'Personalizados',
       href: '#design'
+    }, {
+      id: 'l9',
+      label: 'PROTOCOLO 1×1',
+      href: '#protocolo'
     }],
     cta: {
       label: 'Contacto',
@@ -2311,7 +2315,7 @@ function Nav({
     (nav.links || []).forEach(function (l) {
       linkMap[l.id] = l;
     });
-    var mobileOrder = ['l2', 'l6', 'l7', 'l8'];
+    var mobileOrder = ['l2', 'l6', 'l7', 'l8', 'l9'];
     return mobileOrder.map(function (id) {
       var l = linkMap[id];
       if (!l) return null;
@@ -7530,14 +7534,10 @@ function App() {
     content: content
   }), /*#__PURE__*/React.createElement(HomeIntro, {
     content: content
-  }), /*#__PURE__*/React.createElement(FeaturedDuo, {
+  }), /*#__PURE__*/React.createElement(Products, {
     content: content,
-    onOpenProduct: id => setProductId(id)
-  }), /*#__PURE__*/React.createElement(Protocol, {
-    content: content
-  }), /*#__PURE__*/React.createElement(HomeCategoryCarousel, {
-    content: content,
-    onOpenProduct: id => setProductId(id)
+    onOpenProduct: id => setProductId(id),
+    initialCategory: "todo"
   }), /*#__PURE__*/React.createElement(Testimonials, {
     content: content
   }), /*#__PURE__*/React.createElement(CTABlock, {
