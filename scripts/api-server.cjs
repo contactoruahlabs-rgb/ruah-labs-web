@@ -993,6 +993,7 @@ app.post('/api/checkout/welcome', rateLimit('welcome', 5, 60 * 1000), async func
     total_grams:     parseInt(req.body.totalGrams) || null,
     weight_cat:      req.body.weightCat      || null,
     mp_external_ref: req.body.mp_external_ref || null,
+    purchased_at:    req.body.purchaseDate   || new Date().toISOString(),
   });
 
   var rawPass = generatePassword();
