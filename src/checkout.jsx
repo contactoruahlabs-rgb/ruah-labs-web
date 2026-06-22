@@ -245,15 +245,7 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
       `Envío: ${shipLine}`,
       `*TOTAL A TRANSFERIR: $${fmtCLP(total)}*`,
       '',
-      '*Datos para transferencia*',
-      'Nombre: ERICK ALBERTO GONZALEZ ARAVENA',
-      'RUT: 18078955-3',
-      'Banco: TAPP Caja Los Andes',
-      'Tipo: Cuenta Vista',
-      'N° Cuenta: 18078955',
-      'Email: contacto.ruahlabs@gmail.com',
-      '',
-      'Por favor envía el comprobante de transferencia a este WhatsApp para confirmar tu pedido. 📎',
+      '¿Dónde transferimos? ¿Me ayudan con eso? 🙏',
     ].filter(l => l !== null && l !== undefined).join('\n');
 
     const url = 'https://wa.me/56926237239?text=' + encodeURIComponent(msg);
@@ -551,7 +543,7 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
               className={'ck2-radio-card' + (payMethod === 'transfer' ? ' ck2-radio-card--selected' : '')}
               onClick={() => setPayMethod('transfer')} role="radio" aria-checked={payMethod === 'transfer'} tabIndex={0}
               onKeyDown={e => e.key === 'Enter' && setPayMethod('transfer')}
-              style={{marginTop:'8px'}}
+              style={{marginTop:'8px', borderColor:'#eca10c', background: payMethod === 'transfer' ? '#eca10c' : 'transparent', color: payMethod === 'transfer' ? '#000' : undefined}}
             >
               <span className={'ck2-radio-dot' + (payMethod === 'transfer' ? ' ck2-radio-dot--on' : '')}></span>
               <div className="ck2-radio-card__body">
@@ -565,18 +557,8 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
               <span style={{fontSize:'18px'}}>🏦</span>
             </div>
 
-            {/* Datos bancarios */}
             {payMethod === 'transfer' && (
-              <div className="ck2-transfer-box">
-                <p className="ck2-transfer-title">Datos para la transferencia</p>
-                <div className="ck2-transfer-row"><span>Nombre</span><strong>ERICK ALBERTO GONZALEZ ARAVENA</strong></div>
-                <div className="ck2-transfer-row"><span>RUT</span><strong>18.078.955-3</strong></div>
-                <div className="ck2-transfer-row"><span>Banco</span><strong>TAPP Caja Los Andes</strong></div>
-                <div className="ck2-transfer-row"><span>Tipo</span><strong>Cuenta Vista</strong></div>
-                <div className="ck2-transfer-row"><span>N° Cuenta</span><strong>18078955</strong></div>
-                <div className="ck2-transfer-row"><span>Email</span><strong>contacto.ruahlabs@gmail.com</strong></div>
-                <p className="ck2-transfer-note">Al confirmar serás redirigido a WhatsApp para enviar tu comprobante. Tu pedido se activa una vez verificada la transferencia.</p>
-              </div>
+              <p className="ck2-transfer-note" style={{marginTop:'8px'}}>Al confirmar serás redirigido a WhatsApp. Te enviaremos los datos de transferencia por ese medio para confirmar tu pedido.</p>
             )}
           </section>
 

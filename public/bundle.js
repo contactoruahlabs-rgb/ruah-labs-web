@@ -2362,7 +2362,8 @@ function Nav({
 
 // --- Hero ---
 function Hero({
-  content
+  content,
+  isHome
 }) {
   const {
     hero
@@ -2443,31 +2444,11 @@ function Hero({
   }), /*#__PURE__*/React.createElement("div", {
     className: "shell"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "hero__eyebrow"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "line"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "mono-label"
-  }, hero.eyebrow)), /*#__PURE__*/React.createElement("h1", {
-    className: "hero__title"
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(RevealLine, {
-    delay: 50
-  }, hero.titleLine1)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(RevealLine, {
-    delay: 180
-  }, hero.titleLine2)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(RevealLine, {
-    delay: 310
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "amb"
-  }, hero.titleLine3)))), /*#__PURE__*/React.createElement("div", {
     className: "hero__bottom"
   }, /*#__PURE__*/React.createElement(Reveal, {
     delay: 500,
     className: "hero__lede"
-  }, /*#__PURE__*/React.createElement("p", {
-    style: {
-      whiteSpace: 'pre-line'
-    }
-  }, hero.lede), hero.heroPrice && /*#__PURE__*/React.createElement("button", {
+  }, hero.heroPrice && /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "hero__price",
     style: {
@@ -2475,11 +2456,18 @@ function Hero({
       cursor: 'pointer',
       fontFamily: 'inherit'
     },
-    onClick: () => window.dispatchEvent(new CustomEvent('ruah:navigateTo', {
-      detail: {
-        page: 'productos'
-      }
-    }))
+    onClick: () => {
+      if (isHome) {
+        var hel = document.getElementById('home-productos');
+        if (hel) hel.scrollIntoView({
+          behavior: 'smooth'
+        });
+      } else window.dispatchEvent(new CustomEvent('ruah:navigateTo', {
+        detail: {
+          page: 'productos'
+        }
+      }));
+    }
   }, hero.heroPrice)), /*#__PURE__*/React.createElement(Reveal, {
     delay: 650,
     className: "hero__ctas"
@@ -2490,7 +2478,12 @@ function Hero({
       const href = hero.primaryCta.href || '';
       if (href.startsWith('#')) {
         e.preventDefault();
-        window.dispatchEvent(new CustomEvent('ruah:navigateTo', {
+        if (isHome) {
+          var hel = document.getElementById('home-productos');
+          if (hel) hel.scrollIntoView({
+            behavior: 'smooth'
+          });
+        } else window.dispatchEvent(new CustomEvent('ruah:navigateTo', {
           detail: {
             page: href.slice(1)
           }
@@ -6014,7 +6007,7 @@ function Checkout({
     const addrLine = mode === 'envio' && info.address ? `${info.address}${info.address2 ? ', ' + info.address2 : ''}, ${info.city}, ${info.region}` : '';
     const discLine = discountApplied ? `Descuento (${discountApplied.code}): -$${fmtCLP(discountAmount)}\n` : '';
     const ref = 'RUAH-' + Date.now().toString().slice(-6);
-    const msg = ['🛍 *PEDIDO RUAH LABS* — ' + ref, '', '*Datos del comprador*', `Nombre: ${info.firstName} ${info.lastName}`, `Email: ${info.email}`, `Teléfono: ${info.phone}`, addrLine ? `Dirección: ${addrLine}` : '', '', '*Productos*', itemsText, '', '*Resumen*', `Subtotal: $${fmtCLP(subtotal)}`, discLine.trim(), `Envío: ${shipLine}`, `*TOTAL A TRANSFERIR: $${fmtCLP(total)}*`, '', '*Datos para transferencia*', 'Nombre: ERICK ALBERTO GONZALEZ ARAVENA', 'RUT: 18078955-3', 'Banco: TAPP Caja Los Andes', 'Tipo: Cuenta Vista', 'N° Cuenta: 18078955', 'Email: contacto.ruahlabs@gmail.com', '', 'Por favor envía el comprobante de transferencia a este WhatsApp para confirmar tu pedido. 📎'].filter(l => l !== null && l !== undefined).join('\n');
+    const msg = ['🛍 *PEDIDO RUAH LABS* — ' + ref, '', '*Datos del comprador*', `Nombre: ${info.firstName} ${info.lastName}`, `Email: ${info.email}`, `Teléfono: ${info.phone}`, addrLine ? `Dirección: ${addrLine}` : '', '', '*Productos*', itemsText, '', '*Resumen*', `Subtotal: $${fmtCLP(subtotal)}`, discLine.trim(), `Envío: ${shipLine}`, `*TOTAL A TRANSFERIR: $${fmtCLP(total)}*`, '', '¿Dónde transferimos? ¿Me ayudan con eso? 🙏'].filter(l => l !== null && l !== undefined).join('\n');
     const url = 'https://wa.me/56926237239?text=' + encodeURIComponent(msg);
     window.open(url, '_blank');
   }
@@ -6392,7 +6385,10 @@ function Checkout({
     tabIndex: 0,
     onKeyDown: e => e.key === 'Enter' && setPayMethod('transfer'),
     style: {
-      marginTop: '8px'
+      marginTop: '8px',
+      borderColor: '#eca10c',
+      background: payMethod === 'transfer' ? '#eca10c' : 'transparent',
+      color: payMethod === 'transfer' ? '#000' : undefined
     }
   }, /*#__PURE__*/React.createElement("span", {
     className: 'ck2-radio-dot' + (payMethod === 'transfer' ? ' ck2-radio-dot--on' : '')
@@ -6412,25 +6408,12 @@ function Checkout({
     style: {
       fontSize: '18px'
     }
-  }, "\uD83C\uDFE6")), payMethod === 'transfer' && /*#__PURE__*/React.createElement("div", {
-    className: "ck2-transfer-box"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "ck2-transfer-title"
-  }, "Datos para la transferencia"), /*#__PURE__*/React.createElement("div", {
-    className: "ck2-transfer-row"
-  }, /*#__PURE__*/React.createElement("span", null, "Nombre"), /*#__PURE__*/React.createElement("strong", null, "ERICK ALBERTO GONZALEZ ARAVENA")), /*#__PURE__*/React.createElement("div", {
-    className: "ck2-transfer-row"
-  }, /*#__PURE__*/React.createElement("span", null, "RUT"), /*#__PURE__*/React.createElement("strong", null, "18.078.955-3")), /*#__PURE__*/React.createElement("div", {
-    className: "ck2-transfer-row"
-  }, /*#__PURE__*/React.createElement("span", null, "Banco"), /*#__PURE__*/React.createElement("strong", null, "TAPP Caja Los Andes")), /*#__PURE__*/React.createElement("div", {
-    className: "ck2-transfer-row"
-  }, /*#__PURE__*/React.createElement("span", null, "Tipo"), /*#__PURE__*/React.createElement("strong", null, "Cuenta Vista")), /*#__PURE__*/React.createElement("div", {
-    className: "ck2-transfer-row"
-  }, /*#__PURE__*/React.createElement("span", null, "N\xB0 Cuenta"), /*#__PURE__*/React.createElement("strong", null, "18078955")), /*#__PURE__*/React.createElement("div", {
-    className: "ck2-transfer-row"
-  }, /*#__PURE__*/React.createElement("span", null, "Email"), /*#__PURE__*/React.createElement("strong", null, "contacto.ruahlabs@gmail.com")), /*#__PURE__*/React.createElement("p", {
-    className: "ck2-transfer-note"
-  }, "Al confirmar ser\xE1s redirigido a WhatsApp para enviar tu comprobante. Tu pedido se activa una vez verificada la transferencia."))), /*#__PURE__*/React.createElement("section", {
+  }, "\uD83C\uDFE6")), payMethod === 'transfer' && /*#__PURE__*/React.createElement("p", {
+    className: "ck2-transfer-note",
+    style: {
+      marginTop: '8px'
+    }
+  }, "Al confirmar ser\xE1s redirigido a WhatsApp. Te enviaremos los datos de transferencia por ese medio para confirmar tu pedido.")), /*#__PURE__*/React.createElement("section", {
     className: "ck2-section"
   }, /*#__PURE__*/React.createElement("h2", {
     className: "ck2-section-title"
@@ -7531,8 +7514,15 @@ function App() {
       }
     }, "ERROR AL CARGAR SECCI\xD3N \u2014 RECARGA LA P\xC1GINA")
   }, /*#__PURE__*/React.createElement("main", null, activePage ? renderPage() : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Hero, {
-    content: content
-  })))), /*#__PURE__*/React.createElement(Footer, {
+    content: content,
+    isHome: true
+  }), /*#__PURE__*/React.createElement("div", {
+    id: "home-productos"
+  }, /*#__PURE__*/React.createElement(Products, {
+    content: content,
+    onOpenProduct: id => setProductId(id),
+    initialCategory: "todo"
+  }))))), /*#__PURE__*/React.createElement(Footer, {
     content: content,
     onOpenAdmin: () => setAdminOpen(true),
     onNavigate: openPage

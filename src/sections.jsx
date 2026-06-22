@@ -295,7 +295,7 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
 }
 
 // --- Hero ---
-function Hero({ content }) {
+function Hero({ content, isHome }) {
   const { hero } = content;
   const FALLBACK_VIDEO_DESKTOP = 'https://res.cloudinary.com/dh05zwrbp/video/upload/v1781323721/ruahlabs/dk5p5bmllg4bzap3kovl.mp4';
   const FALLBACK_VIDEO_MOBILE  = 'https://res.cloudinary.com/dh05zwrbp/video/upload/v1781323714/ruahlabs/kv8jqlkslwzfedpjcjia.mp4';
@@ -328,28 +328,13 @@ function Hero({ content }) {
       )}
       <div className="hero__texture" aria-hidden="true"></div>
       <div className="shell">
-        <div className="hero__eyebrow">
-          <span className="line"></span>
-          <span className="mono-label">{hero.eyebrow}</span>
-        </div>
-
-        <h1 className="hero__title">
-          <div><RevealLine delay={50}>{hero.titleLine1}</RevealLine></div>
-          <div><RevealLine delay={180}>{hero.titleLine2}</RevealLine></div>
-          <div>
-            <RevealLine delay={310}>
-              <span className="amb">{hero.titleLine3}</span>
-            </RevealLine>
-          </div>
-        </h1>
 
         <div className="hero__bottom">
           <Reveal delay={500} className="hero__lede">
-            <p style={{whiteSpace:'pre-line'}}>{hero.lede}</p>
-            {hero.heroPrice && (
+              {hero.heroPrice && (
               <button type="button" className="hero__price"
                 style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
-                onClick={() => window.dispatchEvent(new CustomEvent('ruah:navigateTo', { detail: { page: 'productos' } }))}>
+                onClick={() => { if (isHome) { var hel = document.getElementById('home-productos'); if (hel) hel.scrollIntoView({behavior:'smooth'}); } else window.dispatchEvent(new CustomEvent('ruah:navigateTo', { detail: { page: 'productos' } })); }}>
                 {hero.heroPrice}
               </button>
             )}
@@ -361,7 +346,8 @@ function Hero({ content }) {
                    const href = hero.primaryCta.href || '';
                    if (href.startsWith('#')) {
                      e.preventDefault();
-                     window.dispatchEvent(new CustomEvent('ruah:navigateTo', { detail: { page: href.slice(1) } }));
+                     if (isHome) { var hel = document.getElementById('home-productos'); if (hel) hel.scrollIntoView({behavior:'smooth'}); }
+                     else window.dispatchEvent(new CustomEvent('ruah:navigateTo', { detail: { page: href.slice(1) } }));
                    }
                  }}>
                 {hero.primaryCta.label}

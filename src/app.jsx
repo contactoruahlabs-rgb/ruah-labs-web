@@ -309,7 +309,10 @@ function App() {
       <main>
         {activePage ? renderPage() : (
           <React.Fragment>
-            <Hero content={content} />
+            <Hero content={content} isHome={true} />
+            <div id="home-productos">
+              <Products content={content} onOpenProduct={(id) => setProductId(id)} initialCategory="todo" />
+            </div>
           </React.Fragment>
         )}
       </main>
