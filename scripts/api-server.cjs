@@ -659,6 +659,10 @@ function saveOrder(record) {
   return sbFetch('POST', 'orders', {
     body:   record,
     prefer: 'return=minimal,resolution=ignore-duplicates',
+  }).then(function(r) {
+    if (r.status >= 400) console.error('[orders] insert error status', r.status, JSON.stringify(r.data));
+    else console.log('[orders] ✅ guardado order_id:', record.order_id, 'payment:', record.payment_id);
+    return r;
   }).catch(function(e) { console.error('[orders] insert error:', e.message); });
 }
 
