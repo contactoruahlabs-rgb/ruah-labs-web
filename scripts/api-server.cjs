@@ -333,12 +333,23 @@ app.post('/api/checkout/create-preference', rateLimit('checkout', 10, 60 * 1000)
       items.push({ id: 'shipping', title: 'Envío', quantity: 1, unit_price: shipFee, currency_id: 'CLP' });
     }
 
+    var buyerEmail = (info && info.email) ? String(info.email).trim().toLowerCase() : null;
+    var buyerFirst = (info && info.firstName) ? String(info.firstName).trim() : null;
+    var buyerLast  = (info && info.lastName)  ? String(info.lastName).trim()  : null;
+
     var prefBody = {
       items:     items,
       statement_descriptor: 'RUAH LABS',
       external_reference:   'RUAH-' + Date.now(),
       metadata: { discount_code: discount },
+      binary_mode: false,
     };
+
+    if (buyerEmail) {
+      prefBody.payer = { email: buyerEmail };
+      if (buyerFirst) prefBody.payer.name = buyerFirst;
+      if (buyerLast)  prefBody.payer.surname = buyerLast;
+    }
 
     if (SITE_URL && !SITE_URL.includes('localhost')) {
       prefBody.back_urls = {
