@@ -336,6 +336,9 @@ app.post('/api/checkout/create-preference', rateLimit('checkout', 10, 60 * 1000)
     var buyerEmail = (info && info.email) ? String(info.email).trim().toLowerCase() : null;
     var buyerFirst = (info && info.firstName) ? String(info.firstName).trim() : null;
     var buyerLast  = (info && info.lastName)  ? String(info.lastName).trim()  : null;
+    var buyerPhone = (info && info.phone) ? String(info.phone).replace(/[^0-9]/g, '') : '';
+    if (buyerPhone.length > 9 && buyerPhone.indexOf('56') === 0) buyerPhone = buyerPhone.slice(2);
+    var buyerRut   = (info && info.rut) ? String(info.rut).replace(/[^0-9kK]/g, '').toUpperCase() : '';
 
     var prefBody = {
       items:     items,
@@ -345,10 +348,21 @@ app.post('/api/checkout/create-preference', rateLimit('checkout', 10, 60 * 1000)
       binary_mode: false,
     };
 
+    // notification_url: webhook server-to-server (respaldo si el cliente cierra la pestaña)
+    if (API_BASE && !API_BASE.includes('localhost')) {
+      prefBody.notification_url = API_BASE + '/api/webhooks/mercadopago';
+    }
+
+    // payer completo: MP Chile usa email + nombre + teléfono + RUT para el scoring
+    // antifraude. Mientras más datos reales del comprador, menos rechazos "por seguridad".
     if (buyerEmail) {
       prefBody.payer = { email: buyerEmail };
       if (buyerFirst) prefBody.payer.name = buyerFirst;
       if (buyerLast)  prefBody.payer.surname = buyerLast;
+      if (buyerPhone) prefBody.payer.phone = { area_code: '56', number: buyerPhone };
+      if (buyerRut && buyerRut.length >= 8) {
+        prefBody.payer.identification = { type: 'RUT', number: buyerRut };
+      }
     }
 
     if (SITE_URL && !SITE_URL.includes('localhost')) {
