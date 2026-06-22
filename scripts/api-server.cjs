@@ -309,6 +309,8 @@ app.post('/api/checkout/create-preference', rateLimit('checkout', 10, 60 * 1000)
       return {
         id:          String(it.id),
         title:       it.name || 'Producto RUAH LABS',
+        description: it.name || 'Producto RUAH LABS',
+        category_id: 'fashion',
         quantity:    Math.max(1, parseInt(it.qty, 10) || 1),
         unit_price:  price,
         currency_id: 'CLP',
@@ -339,6 +341,8 @@ app.post('/api/checkout/create-preference', rateLimit('checkout', 10, 60 * 1000)
     var buyerPhone = (info && info.phone) ? String(info.phone).replace(/[^0-9]/g, '') : '';
     if (buyerPhone.length > 9 && buyerPhone.indexOf('56') === 0) buyerPhone = buyerPhone.slice(2);
     var buyerRut   = (info && info.rut) ? String(info.rut).replace(/[^0-9kK]/g, '').toUpperCase() : '';
+    var buyerAddr  = (info && info.address) ? String(info.address).trim() : '';
+    var buyerZip   = (info && info.postal)  ? String(info.postal).replace(/[^0-9]/g, '') : '';
 
     var prefBody = {
       items:     items,
@@ -362,6 +366,10 @@ app.post('/api/checkout/create-preference', rateLimit('checkout', 10, 60 * 1000)
       if (buyerPhone) prefBody.payer.phone = { area_code: '56', number: buyerPhone };
       if (buyerRut && buyerRut.length >= 8) {
         prefBody.payer.identification = { type: 'RUT', number: buyerRut };
+      }
+      if (buyerAddr) {
+        prefBody.payer.address = { street_name: buyerAddr };
+        if (buyerZip) prefBody.payer.address.zip_code = buyerZip;
       }
     }
 
