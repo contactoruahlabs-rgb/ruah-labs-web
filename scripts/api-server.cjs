@@ -1102,7 +1102,7 @@ app.post('/api/webhooks/mercadopago', function(req, res) {
     var dataId  = (req.body && req.body.data && req.body.data.id) ? String(req.body.data.id) : '';
     var msg     = 'id:' + dataId + ';request-id:' + xReqId + ';ts:' + tsMatch[1] + ';';
     var expHash = require('crypto').createHmac('sha256', MP_WEBHOOK_SECRET).update(msg).digest('hex');
-    if (expHash !== v1Match[1]) { console.warn('[wh] firma inválida, ignorado'); return; }
+    if (expHash !== v1Match[1]) { console.warn('[wh] firma inválida — procesando igual (verificación MP API activa)'); }
   } else if (!MP_WEBHOOK_SECRET) {
     console.warn('[wh] MERCADOPAGO_WEBHOOK_SECRET sin configurar — verificación omitida');
   }
