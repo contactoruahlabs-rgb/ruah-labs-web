@@ -988,9 +988,7 @@ app.post('/api/checkout/welcome', rateLimit('welcome', 5, 60 * 1000), async func
         console.warn('[Welcome] pago no aprobado o inexistente:', paymentId, pay.body && pay.body.status);
         return res.status(402).json({ error: 'Pago no aprobado' });
       }
-      // Usar el email del pagador real cuando MP lo entrega (evita suplantación)
-      var payerEmail = pay.body.payer && pay.body.payer.email;
-      if (payerEmail) email = String(payerEmail).trim().toLowerCase();
+      // Usar siempre el email ingresado en el checkout (no el de la cuenta MP del cliente)
       paymentMethod = formatPM((pay.body.payment_method_id || '').toLowerCase(), pay.body.payment_type_id || '');
       emailOpts.paymentMethod = paymentMethod;
     } catch(e) {
