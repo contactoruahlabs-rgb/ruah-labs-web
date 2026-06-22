@@ -927,6 +927,22 @@ function buildWelcomeEmail(firstName, lastName, email, cart, password, orderId, 
     '<p style="margin:0;color:#aaa;font-size:15px;line-height:1.6;">Tu pedido fue recibido y estamos preparando tu prenda con cuidado.<br>Cada pieza de RUAH LABS lleva una historia — la tuya empieza hoy.</p>' +
     '</td></tr>' +
 
+    // Club (justo después del saludo)
+    '<tr><td style="background:#111;padding:16px 40px 24px;border-left:1px solid #222;border-right:1px solid #222;">' +
+    '<div style="background:#0d0d0b;border:1px solid #ECA10C;padding:24px;">' +
+    '<p style="margin:0 0 4px;color:#ECA10C;font-size:11px;letter-spacing:3px;">ACCESO AL CLUB</p>' +
+    '<p style="margin:0 0 16px;color:#aaa;font-size:13px;line-height:1.6;">Por comprar en RUAH LABS tienes acceso exclusivo al Club Secreto — rutas de entrega nocturna, canal directo con nosotros.</p>' +
+    '<p style="margin:0 0 4px;color:#aaa;font-size:13px;">Email: <span style="color:#fff;">' + esc(email) + '</span></p>' +
+    '<p style="margin:0 0 16px;color:#aaa;font-size:13px;">Contraseña temporal: <strong style="color:#ECA10C;font-size:16px;letter-spacing:2px;">' + esc(password) + '</strong></p>' +
+    '<p style="margin:0 0 8px;color:#aaa;font-size:12px;">Para ingresar: ve a <strong style="color:#fff;">ruahlabs.cl</strong> · haz <strong style="color:#ECA10C;">triple click</strong> en el logo.</p>' +
+    '<p style="margin:0;color:#666;font-size:11px;">Te pediremos que cambies la contraseña la primera vez que ingreses.</p>' +
+    '</div></td></tr>' +
+
+    // CTA
+    '<tr><td style="background:#111;padding:0 40px 24px;border-left:1px solid #222;border-right:1px solid #222;text-align:center;">' +
+    '<a href="https://ruahlabs.cl" style="display:inline-block;background:#ECA10C;color:#000;padding:14px 36px;text-decoration:none;font-weight:bold;font-size:13px;letter-spacing:2px;">INGRESAR AL CLUB →</a>' +
+    '</td></tr>' +
+
     // Items
     '<tr><td style="background:#111;padding:0 40px 8px;border-left:1px solid #222;border-right:1px solid #222;">' +
     '<table width="100%" cellpadding="0" cellspacing="0">' +
@@ -941,27 +957,11 @@ function buildWelcomeEmail(firstName, lastName, email, cart, password, orderId, 
     '</table></td></tr>' +
 
     // Protocolo 1x1
-    '<tr><td style="background:#111;padding:0 40px 24px;border-left:1px solid #222;border-right:1px solid #222;">' +
+    '<tr><td style="background:#111;padding:0 40px 32px;border-left:1px solid #222;border-right:1px solid #222;border-bottom:1px solid #222;">' +
     '<div style="background:#0d1a0d;border-left:3px solid #ECA10C;padding:14px 16px;">' +
     '<p style="margin:0 0 4px;color:#ECA10C;font-size:11px;letter-spacing:3px;">PROTOCOLO 1×1</p>' +
     '<p style="margin:0;color:#aaa;font-size:13px;line-height:1.6;">Esta compra activa una donación de prendas a alguien en situación de calle. Tu fe se convierte en acción concreta.</p>' +
     '</div></td></tr>' +
-
-    // Club
-    '<tr><td style="background:#111;padding:0 40px 24px;border-left:1px solid #222;border-right:1px solid #222;">' +
-    '<div style="background:#0d0d0b;border:1px solid #ECA10C;padding:24px;">' +
-    '<p style="margin:0 0 4px;color:#ECA10C;font-size:11px;letter-spacing:3px;">ACCESO AL CLUB</p>' +
-    '<p style="margin:0 0 16px;color:#aaa;font-size:13px;line-height:1.6;">Por comprar en RUAH LABS tienes acceso exclusivo al Club Secreto — rutas de entrega nocturna, canal directo con nosotros.</p>' +
-    '<p style="margin:0 0 4px;color:#aaa;font-size:13px;">Email: <span style="color:#fff;">' + esc(email) + '</span></p>' +
-    '<p style="margin:0 0 16px;color:#aaa;font-size:13px;">Contraseña temporal: <strong style="color:#ECA10C;font-size:16px;letter-spacing:2px;">' + esc(password) + '</strong></p>' +
-    '<p style="margin:0 0 8px;color:#aaa;font-size:12px;">Para ingresar: ve a <strong style="color:#fff;">ruahlabs.cl</strong> · haz <strong style="color:#ECA10C;">triple click</strong> en el logo.</p>' +
-    '<p style="margin:0;color:#666;font-size:11px;">Te pediremos que cambies la contraseña la primera vez que ingreses.</p>' +
-    '</div></td></tr>' +
-
-    // CTA
-    '<tr><td style="background:#111;padding:0 40px 32px;border-left:1px solid #222;border-right:1px solid #222;border-bottom:1px solid #222;text-align:center;">' +
-    '<a href="https://ruahlabs.cl" style="display:inline-block;background:#ECA10C;color:#000;padding:14px 36px;text-decoration:none;font-weight:bold;font-size:13px;letter-spacing:2px;">INGRESAR AL CLUB →</a>' +
-    '</td></tr>' +
 
     // Footer
     '<tr><td style="padding:16px 0;text-align:center;">' +
