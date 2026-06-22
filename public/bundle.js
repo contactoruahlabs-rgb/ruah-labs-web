@@ -5847,6 +5847,7 @@ function Checkout({
   const [terms, setTerms] = React.useState(false);
   const [payState, setPayState] = React.useState('idle');
   const [touched, setTouched] = React.useState({});
+  const [payMethod, setPayMethod] = React.useState('mp'); // 'mp' | 'transfer'
   const [summaryOpen, setSummaryOpen] = React.useState(false);
   React.useEffect(() => {
     if (open) {
@@ -5989,6 +5990,29 @@ function Checkout({
     setShipErr(false);
     if (!terms) return false;
     return true;
+  }
+
+  // ── Pay por Transferencia → WhatsApp ──
+  function payTransfer(e) {
+    e && e.preventDefault();
+    if (!validate()) {
+      requestAnimationFrame(() => {
+        const el = document.querySelector('.ck2-field.invalid input, .ck2-field.invalid select');
+        if (el) el.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      });
+      return;
+    }
+    const itemsText = cart.map(it => `• ${it.name}${it.size ? ' (Talla ' + it.size + ')' : ''} x${it.qty || 1} — $${fmtCLP(parsePrice(it.price) * (it.qty || 1))}`).join('\n');
+    const shipLine = activeShipOpt ? mode === 'retiro' ? 'Retiro en tienda (Quilicura)' : activeShipOpt.name + ' — $' + fmtCLP(shipFee) : 'Sin método de envío';
+    const addrLine = mode === 'envio' && info.address ? `${info.address}${info.address2 ? ', ' + info.address2 : ''}, ${info.city}, ${info.region}` : '';
+    const discLine = discountApplied ? `Descuento (${discountApplied.code}): -$${fmtCLP(discountAmount)}\n` : '';
+    const ref = 'RUAH-' + Date.now().toString().slice(-6);
+    const msg = ['🛍 *PEDIDO RUAH LABS* — ' + ref, '', '*Datos del comprador*', `Nombre: ${info.firstName} ${info.lastName}`, `Email: ${info.email}`, `Teléfono: ${info.phone}`, addrLine ? `Dirección: ${addrLine}` : '', '', '*Productos*', itemsText, '', '*Resumen*', `Subtotal: $${fmtCLP(subtotal)}`, discLine.trim(), `Envío: ${shipLine}`, `*TOTAL A TRANSFERIR: $${fmtCLP(total)}*`, '', '*Datos para transferencia*', 'Nombre: ERICK ALBERTO GONZALEZ ARAVENA', 'RUT: 18078955-3', 'Banco: TAPP Caja Los Andes', 'Tipo: Cuenta Vista', 'N° Cuenta: 18078955', 'Email: contacto.ruahlabs@gmail.com', '', 'Por favor envía el comprobante de transferencia a este WhatsApp para confirmar tu pedido. 📎'].filter(l => l !== null && l !== undefined).join('\n');
+    const url = 'https://wa.me/56926237239?text=' + encodeURIComponent(msg);
+    window.open(url, '_blank');
   }
 
   // ── Pay ──
@@ -6329,12 +6353,15 @@ function Checkout({
     className: "ck2-section"
   }, /*#__PURE__*/React.createElement("h2", {
     className: "ck2-section-title"
-  }, "Pago"), /*#__PURE__*/React.createElement("p", {
-    className: "ck2-section-sub"
-  }, "Todas las transacciones son seguras y est\xE1n encriptadas."), /*#__PURE__*/React.createElement("div", {
-    className: "ck2-radio-card ck2-radio-card--selected ck2-radio-card--static"
+  }, "M\xE9todo de pago"), /*#__PURE__*/React.createElement("div", {
+    className: 'ck2-radio-card' + (payMethod === 'mp' ? ' ck2-radio-card--selected' : ''),
+    onClick: () => setPayMethod('mp'),
+    role: "radio",
+    "aria-checked": payMethod === 'mp',
+    tabIndex: 0,
+    onKeyDown: e => e.key === 'Enter' && setPayMethod('mp')
   }, /*#__PURE__*/React.createElement("span", {
-    className: "ck2-radio-dot ck2-radio-dot--on"
+    className: 'ck2-radio-dot' + (payMethod === 'mp' ? ' ck2-radio-dot--on' : '')
   }), /*#__PURE__*/React.createElement("div", {
     className: "ck2-radio-card__body"
   }, /*#__PURE__*/React.createElement("span", {
@@ -6351,9 +6378,55 @@ function Checkout({
     className: "ck2-pay-badge"
   }, "+2"))), /*#__PURE__*/React.createElement("span", {
     className: "ck2-lock-icon"
-  }, "\uD83D\uDD12")), /*#__PURE__*/React.createElement("p", {
+  }, "\uD83D\uDD12")), payMethod === 'mp' && /*#__PURE__*/React.createElement("p", {
     className: "ck2-pay-note"
-  }, "Ser\xE1s redirigido a MercadoPago para completar la compra de forma segura.")), /*#__PURE__*/React.createElement("section", {
+  }, "Ser\xE1s redirigido a MercadoPago para completar la compra de forma segura."), /*#__PURE__*/React.createElement("div", {
+    className: 'ck2-radio-card' + (payMethod === 'transfer' ? ' ck2-radio-card--selected' : ''),
+    onClick: () => setPayMethod('transfer'),
+    role: "radio",
+    "aria-checked": payMethod === 'transfer',
+    tabIndex: 0,
+    onKeyDown: e => e.key === 'Enter' && setPayMethod('transfer'),
+    style: {
+      marginTop: '8px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    className: 'ck2-radio-dot' + (payMethod === 'transfer' ? ' ck2-radio-dot--on' : '')
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-radio-card__body"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ck2-radio-card__name"
+  }, "Transferencia bancaria"), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-pay-badges"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "ck2-pay-badge"
+  }, "Cuenta RUT"), /*#__PURE__*/React.createElement("span", {
+    className: "ck2-pay-badge"
+  }, "D\xE9bito"), /*#__PURE__*/React.createElement("span", {
+    className: "ck2-pay-badge"
+  }, "Cualquier banco"))), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '18px'
+    }
+  }, "\uD83C\uDFE6")), payMethod === 'transfer' && /*#__PURE__*/React.createElement("div", {
+    className: "ck2-transfer-box"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "ck2-transfer-title"
+  }, "Datos para la transferencia"), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-transfer-row"
+  }, /*#__PURE__*/React.createElement("span", null, "Nombre"), /*#__PURE__*/React.createElement("strong", null, "ERICK ALBERTO GONZALEZ ARAVENA")), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-transfer-row"
+  }, /*#__PURE__*/React.createElement("span", null, "RUT"), /*#__PURE__*/React.createElement("strong", null, "18.078.955-3")), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-transfer-row"
+  }, /*#__PURE__*/React.createElement("span", null, "Banco"), /*#__PURE__*/React.createElement("strong", null, "TAPP Caja Los Andes")), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-transfer-row"
+  }, /*#__PURE__*/React.createElement("span", null, "Tipo"), /*#__PURE__*/React.createElement("strong", null, "Cuenta Vista")), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-transfer-row"
+  }, /*#__PURE__*/React.createElement("span", null, "N\xB0 Cuenta"), /*#__PURE__*/React.createElement("strong", null, "18078955")), /*#__PURE__*/React.createElement("div", {
+    className: "ck2-transfer-row"
+  }, /*#__PURE__*/React.createElement("span", null, "Email"), /*#__PURE__*/React.createElement("strong", null, "contacto.ruahlabs@gmail.com")), /*#__PURE__*/React.createElement("p", {
+    className: "ck2-transfer-note"
+  }, "Al confirmar ser\xE1s redirigido a WhatsApp para enviar tu comprobante. Tu pedido se activa una vez verificada la transferencia."))), /*#__PURE__*/React.createElement("section", {
     className: "ck2-section"
   }, /*#__PURE__*/React.createElement("h2", {
     className: "ck2-section-title"
@@ -6388,16 +6461,18 @@ function Checkout({
     onClick: e => e.preventDefault()
   }, "pol\xEDtica de privacidad"))), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    className: 'ck2-pay-btn ck2-pay-btn--' + payState,
-    onClick: pay,
+    className: 'ck2-pay-btn ck2-pay-btn--' + (payMethod === 'transfer' ? 'wsp' : payState),
+    onClick: payMethod === 'transfer' ? payTransfer : pay,
     disabled: payState === 'processing'
-  }, payState === 'idle' && /*#__PURE__*/React.createElement(React.Fragment, null, "CONFIRMAR Y PAGAR \xB7 CLP $", fmtCLP(total), /*#__PURE__*/React.createElement("span", {
+  }, payMethod === 'transfer' ? /*#__PURE__*/React.createElement(React.Fragment, null, "CONFIRMAR Y ENVIAR POR WHATSAPP", /*#__PURE__*/React.createElement("span", {
     className: "ck2-btn-arrow"
-  }, "\u2192")), payState === 'processing' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+  }, "\u2192")) : payState === 'idle' ? /*#__PURE__*/React.createElement(React.Fragment, null, "CONFIRMAR Y PAGAR \xB7 CLP $", fmtCLP(total), /*#__PURE__*/React.createElement("span", {
+    className: "ck2-btn-arrow"
+  }, "\u2192")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
     className: "ck2-spin"
   }), "Redirigiendo a MercadoPago\u2026")), /*#__PURE__*/React.createElement("p", {
     className: "ck2-trust-note"
-  }, "\uD83D\uDD12 Pago seguro \xB7 SSL \xB7 Protocolo 1\xD71 se activa al confirmar")))));
+  }, payMethod === 'transfer' ? '💬 Te abriremos WhatsApp con todos los datos de tu pedido' : '🔒 Pago seguro · SSL · Protocolo 1×1 se activa al confirmar')))));
 }
 
 // ============================================================
@@ -7072,9 +7147,9 @@ function App() {
   // Page navigation: null = home, or section key ('nosotros','servicios','productos','cuadros','iglesias','evento','protocolo','comunidad')
   const [activePage, setActivePage] = React.useState(() => {
     try {
-      return sessionStorage.getItem('ruah-page') || null;
+      return sessionStorage.getItem('ruah-page') || 'productos';
     } catch (_) {
-      return null;
+      return 'productos';
     }
   });
   const [pageCategory, setPageCategory] = React.useState('todo');

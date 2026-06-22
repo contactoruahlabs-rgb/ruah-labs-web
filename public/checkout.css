@@ -489,3 +489,44 @@
   margin: 10px 0 0;
   letter-spacing: .5px;
 }
+
+/* ── Transferencia bancaria ── */
+.ck2-transfer-box {
+  margin-top: 12px;
+  background: #f8f6f0;
+  border: 1px solid #e0d8c8;
+  border-radius: 10px;
+  padding: 16px;
+}
+.ck2-transfer-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  margin: 0 0 12px;
+  color: #1a1a1a;
+}
+.ck2-transfer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 5px 0;
+  border-bottom: 1px solid #ede8dd;
+  font-size: 13px;
+  gap: 12px;
+}
+.ck2-transfer-row:last-of-type { border-bottom: none; }
+.ck2-transfer-row span { color: #666; flex-shrink: 0; }
+.ck2-transfer-row strong { color: #1a1a1a; text-align: right; word-break: break-all; }
+.ck2-transfer-note {
+  margin: 12px 0 0;
+  font-size: 11px;
+  color: #666;
+  line-height: 1.5;
+  text-align: center;
+}
+.ck2-pay-btn--wsp {
+  background: #25D366;
+  color: #fff;
+}
+.ck2-pay-btn--wsp:hover:not(:disabled) { background: #1ebe57; }

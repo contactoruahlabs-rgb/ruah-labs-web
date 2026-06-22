@@ -101,6 +101,7 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
   const [terms, setTerms]             = React.useState(false);
   const [payState, setPayState]       = React.useState('idle');
   const [touched, setTouched]         = React.useState({});
+  const [payMethod, setPayMethod]     = React.useState('mp'); // 'mp' | 'transfer'
   const [summaryOpen, setSummaryOpen] = React.useState(false);
 
   React.useEffect(() => {
@@ -202,6 +203,61 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
     setShipErr(false);
     if (!terms) return false;
     return true;
+  }
+
+  // ── Pay por Transferencia → WhatsApp ──
+  function payTransfer(e) {
+    e && e.preventDefault();
+    if (!validate()) {
+      requestAnimationFrame(() => {
+        const el = document.querySelector('.ck2-field.invalid input, .ck2-field.invalid select');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+      return;
+    }
+    const itemsText = cart.map(it =>
+      `• ${it.name}${it.size ? ' (Talla ' + it.size + ')' : ''} x${it.qty || 1} — $${fmtCLP(parsePrice(it.price) * (it.qty || 1))}`
+    ).join('\n');
+    const shipLine = activeShipOpt
+      ? (mode === 'retiro' ? 'Retiro en tienda (Quilicura)' : activeShipOpt.name + ' — $' + fmtCLP(shipFee))
+      : 'Sin método de envío';
+    const addrLine = mode === 'envio' && info.address
+      ? `${info.address}${info.address2 ? ', ' + info.address2 : ''}, ${info.city}, ${info.region}`
+      : '';
+    const discLine = discountApplied ? `Descuento (${discountApplied.code}): -$${fmtCLP(discountAmount)}\n` : '';
+    const ref = 'RUAH-' + Date.now().toString().slice(-6);
+
+    const msg = [
+      '🛍 *PEDIDO RUAH LABS* — ' + ref,
+      '',
+      '*Datos del comprador*',
+      `Nombre: ${info.firstName} ${info.lastName}`,
+      `Email: ${info.email}`,
+      `Teléfono: ${info.phone}`,
+      addrLine ? `Dirección: ${addrLine}` : '',
+      '',
+      '*Productos*',
+      itemsText,
+      '',
+      '*Resumen*',
+      `Subtotal: $${fmtCLP(subtotal)}`,
+      discLine.trim(),
+      `Envío: ${shipLine}`,
+      `*TOTAL A TRANSFERIR: $${fmtCLP(total)}*`,
+      '',
+      '*Datos para transferencia*',
+      'Nombre: ERICK ALBERTO GONZALEZ ARAVENA',
+      'RUT: 18078955-3',
+      'Banco: TAPP Caja Los Andes',
+      'Tipo: Cuenta Vista',
+      'N° Cuenta: 18078955',
+      'Email: contacto.ruahlabs@gmail.com',
+      '',
+      'Por favor envía el comprobante de transferencia a este WhatsApp para confirmar tu pedido. 📎',
+    ].filter(l => l !== null && l !== undefined).join('\n');
+
+    const url = 'https://wa.me/56926237239?text=' + encodeURIComponent(msg);
+    window.open(url, '_blank');
   }
 
   // ── Pay ──
@@ -466,10 +522,15 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
 
           {/* ── PAGO ── */}
           <section className="ck2-section">
-            <h2 className="ck2-section-title">Pago</h2>
-            <p className="ck2-section-sub">Todas las transacciones son seguras y están encriptadas.</p>
-            <div className="ck2-radio-card ck2-radio-card--selected ck2-radio-card--static">
-              <span className="ck2-radio-dot ck2-radio-dot--on"></span>
+            <h2 className="ck2-section-title">Método de pago</h2>
+
+            {/* Selector MP */}
+            <div
+              className={'ck2-radio-card' + (payMethod === 'mp' ? ' ck2-radio-card--selected' : '')}
+              onClick={() => setPayMethod('mp')} role="radio" aria-checked={payMethod === 'mp'} tabIndex={0}
+              onKeyDown={e => e.key === 'Enter' && setPayMethod('mp')}
+            >
+              <span className={'ck2-radio-dot' + (payMethod === 'mp' ? ' ck2-radio-dot--on' : '')}></span>
               <div className="ck2-radio-card__body">
                 <span className="ck2-radio-card__name">Todos los medios de pago · MercadoPago</span>
                 <div className="ck2-pay-badges">
@@ -481,7 +542,42 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
               </div>
               <span className="ck2-lock-icon">🔒</span>
             </div>
-            <p className="ck2-pay-note">Serás redirigido a MercadoPago para completar la compra de forma segura.</p>
+            {payMethod === 'mp' && (
+              <p className="ck2-pay-note">Serás redirigido a MercadoPago para completar la compra de forma segura.</p>
+            )}
+
+            {/* Selector Transferencia */}
+            <div
+              className={'ck2-radio-card' + (payMethod === 'transfer' ? ' ck2-radio-card--selected' : '')}
+              onClick={() => setPayMethod('transfer')} role="radio" aria-checked={payMethod === 'transfer'} tabIndex={0}
+              onKeyDown={e => e.key === 'Enter' && setPayMethod('transfer')}
+              style={{marginTop:'8px'}}
+            >
+              <span className={'ck2-radio-dot' + (payMethod === 'transfer' ? ' ck2-radio-dot--on' : '')}></span>
+              <div className="ck2-radio-card__body">
+                <span className="ck2-radio-card__name">Transferencia bancaria</span>
+                <div className="ck2-pay-badges">
+                  <span className="ck2-pay-badge">Cuenta RUT</span>
+                  <span className="ck2-pay-badge">Débito</span>
+                  <span className="ck2-pay-badge">Cualquier banco</span>
+                </div>
+              </div>
+              <span style={{fontSize:'18px'}}>🏦</span>
+            </div>
+
+            {/* Datos bancarios */}
+            {payMethod === 'transfer' && (
+              <div className="ck2-transfer-box">
+                <p className="ck2-transfer-title">Datos para la transferencia</p>
+                <div className="ck2-transfer-row"><span>Nombre</span><strong>ERICK ALBERTO GONZALEZ ARAVENA</strong></div>
+                <div className="ck2-transfer-row"><span>RUT</span><strong>18.078.955-3</strong></div>
+                <div className="ck2-transfer-row"><span>Banco</span><strong>TAPP Caja Los Andes</strong></div>
+                <div className="ck2-transfer-row"><span>Tipo</span><strong>Cuenta Vista</strong></div>
+                <div className="ck2-transfer-row"><span>N° Cuenta</span><strong>18078955</strong></div>
+                <div className="ck2-transfer-row"><span>Email</span><strong>contacto.ruahlabs@gmail.com</strong></div>
+                <p className="ck2-transfer-note">Al confirmar serás redirigido a WhatsApp para enviar tu comprobante. Tu pedido se activa una vez verificada la transferencia.</p>
+              </div>
+            )}
           </section>
 
           {/* ── RESUMEN DEL PEDIDO ── */}
@@ -511,17 +607,21 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
 
             <button
               type="button"
-              className={'ck2-pay-btn ck2-pay-btn--' + payState}
-              onClick={pay}
+              className={'ck2-pay-btn ck2-pay-btn--' + (payMethod === 'transfer' ? 'wsp' : payState)}
+              onClick={payMethod === 'transfer' ? payTransfer : pay}
               disabled={payState === 'processing'}
             >
-              {payState === 'idle' && (
+              {payMethod === 'transfer' ? (
+                <React.Fragment>
+                  CONFIRMAR Y ENVIAR POR WHATSAPP
+                  <span className="ck2-btn-arrow">→</span>
+                </React.Fragment>
+              ) : payState === 'idle' ? (
                 <React.Fragment>
                   CONFIRMAR Y PAGAR · CLP ${fmtCLP(total)}
                   <span className="ck2-btn-arrow">→</span>
                 </React.Fragment>
-              )}
-              {payState === 'processing' && (
+              ) : (
                 <React.Fragment>
                   <span className="ck2-spin"></span>
                   Redirigiendo a MercadoPago…
@@ -530,7 +630,9 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
             </button>
 
             <p className="ck2-trust-note">
-              🔒 Pago seguro · SSL · Protocolo 1×1 se activa al confirmar
+              {payMethod === 'transfer'
+                ? '💬 Te abriremos WhatsApp con todos los datos de tu pedido'
+                : '🔒 Pago seguro · SSL · Protocolo 1×1 se activa al confirmar'}
             </p>
           </div>
 

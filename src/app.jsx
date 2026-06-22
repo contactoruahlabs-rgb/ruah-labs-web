@@ -25,7 +25,7 @@ function App() {
   const [toast,        setToast]        = React.useState(null);
   // Page navigation: null = home, or section key ('nosotros','servicios','productos','cuadros','iglesias','evento','protocolo','comunidad')
   const [activePage,   setActivePage]   = React.useState(() => {
-    try { return sessionStorage.getItem('ruah-page') || null; } catch(_) { return null; }
+    try { return sessionStorage.getItem('ruah-page') || 'productos'; } catch(_) { return 'productos'; }
   });
   const [pageCategory, setPageCategory] = React.useState('todo');
 
