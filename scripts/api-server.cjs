@@ -1048,7 +1048,11 @@ app.post('/api/checkout/welcome', rateLimit('welcome', 5, 60 * 1000), async func
       var html = renderWelcomeTemplate(firstName, lastName, email, cart, passToSend || '(ya tienes acceso al club)', orderId, emailOpts) || buildWelcomeEmail(firstName, lastName, email, cart, passToSend || '(ya tienes acceso al club)', orderId, emailOpts);
 
       return sendEmail(email, subject, html).then(function(emailResult) {
-        console.log('[Welcome]', email, '| Club:', created ? 'creado' : 'ya existía', '| Email:', RESEND_KEY ? 'enviado' : 'simulado');
+        if (emailResult && emailResult.statusCode >= 400) {
+          console.error('[Welcome] Resend error:', JSON.stringify(emailResult));
+        } else {
+          console.log('[Welcome] ✅', email, '| Club:', created ? 'creado' : 'ya existía', '| Email id:', emailResult && emailResult.id);
+        }
         res.json({ ok: true, club_created: created, email_sent: !!RESEND_KEY });
       });
     });
@@ -1283,5 +1287,6 @@ app.listen(3001, function() {
   console.log('   Supabase URL:', SB_URL ? '✅ ' + SB_URL : '❌ NO CONFIGURADO');
   console.log('   Supabase SVC key:', SB_SVC ? '✅ configurada (' + SB_SVC.slice(0,12) + '...)' : '❌ NO CONFIGURADA');
   console.log('   Admin auth:', 'Supabase JWT (' + ADMIN_LOGIN_EMAIL + ')');
+  console.log('   Resend email:', RESEND_KEY && RESEND_KEY !== 'YOUR_RESEND_API_KEY' ? '✅ configurado (from: ' + FROM_EMAIL + ')' : '❌ NO CONFIGURADO — emails simulados');
   console.log('   Cloudinary key:', CLD_KEY ? '✅ ' + CLD_KEY : '❌ NO CONFIGURADA');
 });
