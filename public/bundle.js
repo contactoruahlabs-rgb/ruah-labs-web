@@ -7532,16 +7532,6 @@ function App() {
     }, "ERROR AL CARGAR SECCI\xD3N \u2014 RECARGA LA P\xC1GINA")
   }, /*#__PURE__*/React.createElement("main", null, activePage ? renderPage() : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Hero, {
     content: content
-  }), /*#__PURE__*/React.createElement(HomeIntro, {
-    content: content
-  }), /*#__PURE__*/React.createElement(Products, {
-    content: content,
-    onOpenProduct: id => setProductId(id),
-    initialCategory: "todo"
-  }), /*#__PURE__*/React.createElement(Testimonials, {
-    content: content
-  }), /*#__PURE__*/React.createElement(CTABlock, {
-    content: content
   })))), /*#__PURE__*/React.createElement(Footer, {
     content: content,
     onOpenAdmin: () => setAdminOpen(true),

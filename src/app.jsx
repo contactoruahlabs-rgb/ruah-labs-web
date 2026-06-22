@@ -310,10 +310,6 @@ function App() {
         {activePage ? renderPage() : (
           <React.Fragment>
             <Hero content={content} />
-            <HomeIntro content={content} />
-            <Products content={content} onOpenProduct={(id) => setProductId(id)} initialCategory="todo" />
-            <Testimonials content={content} />
-            <CTABlock content={content} />
           </React.Fragment>
         )}
       </main>
