@@ -21,6 +21,7 @@ let compiled = 0;
 let copied   = 0;
 
 const BUILD_VERSION = Date.now().toString(36);
+const BUNDLE_FILE   = 'bundle.' + BUILD_VERSION + '.js';
 
 // Archivos que van al bundle principal (orden de carga importa)
 const BUNDLE_ORDER = ['supabase-rest', 'data', 'sections', 'extras', 'eventos', 'club', 'checkout', 'secret', 'app'];
@@ -77,10 +78,10 @@ function processDir(srcDir, outDir) {
         '$1="$2?v=' + BUILD_VERSION + '"'
       );
 
-      // Inyectar bundle.js justo después de admin.js (admin debe cargarse primero)
+      // Inyectar bundle con hash en el nombre (Cloudflare edge cache por URL path)
       html = html.replace(
         /(<script src="admin\.js\?v=[^"]*"><\/script>)/,
-        '$1\n  <script src="bundle.js?v=' + BUILD_VERSION + '"></script>'
+        '$1\n  <script src="' + BUNDLE_FILE + '"></script>'
       );
 
       fs.writeFileSync(outPath, html);
@@ -110,13 +111,13 @@ processDir(SRC, OUT);
 const bundleParts = BUNDLE_ORDER
   .filter(name => bundleChunks[name])
   .map(name => '/* ' + name + ' */\n' + bundleChunks[name]);
-fs.writeFileSync(path.join(OUT, 'bundle.js'), bundleParts.join('\n\n'));
+fs.writeFileSync(path.join(OUT, BUNDLE_FILE), bundleParts.join('\n\n'));
 
 console.log('');
 console.log('✅ Build completado');
 console.log('   JSX compilados:', compiled);
 console.log('   Archivos copiados/acumulados:', copied);
-console.log('   Bundle: bundle.js (' + BUNDLE_ORDER.filter(n => bundleChunks[n]).join(', ') + ')');
+console.log('   Bundle: ' + BUNDLE_FILE + ' (' + BUNDLE_ORDER.filter(n => bundleChunks[n]).join(', ') + ')');
 console.log('   Separado (protegido): admin.js');
 console.log('');
 console.log('📦 Deploy: npx wrangler@4.100.0 deploy');
