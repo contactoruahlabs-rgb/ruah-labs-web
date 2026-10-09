@@ -45,8 +45,8 @@ export default {
       if (request.method === 'POST') {
         const body   = await request.text();
         const params = new URLSearchParams(body);
-        const token  = params.get('token') || '';
-        const secret = env.ADMIN_TOKEN || '';
+        const token  = (params.get('token') || '').trim();
+        const secret = (env.ADMIN_TOKEN || '').trim();
         if (secret && token === secret) {
           const cookie = 'rl_adm=' + encodeURIComponent(token)
             + '; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=86400';
@@ -64,6 +64,60 @@ export default {
         LOGIN_HTML.replace('{{ERROR}}', ''),
         { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
       );
+    }
+
+    // ── CORS preflight for API routes ────────────────────────────────
+    if (request.method === 'OPTIONS' && url.pathname.startsWith('/api/')) {
+      return new Response(null, { status: 204, headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST,GET,DELETE,OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type,x-admin-key',
+      }});
+    }
+
+    // ── POST /api/images/sign — Cloudinary signed upload ─────────────
+    if (url.pathname === '/api/images/sign' && request.method === 'POST') {
+      const apiHeaders = {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      };
+      const adminKey = request.headers.get('x-admin-key') || '';
+      if (!adminKey) return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 403, headers: apiHeaders });
+
+      // Validate Supabase JWT
+      const SB_URL = 'https://txrpxzsqqomdlnxmyvxn.supabase.co';
+      const SB_KEY = env.SUPABASE_ANON_KEY || env.SUPABASE_SERVICE_KEY || '';
+      if (SB_KEY) {
+        try {
+          const r = await fetch(SB_URL + '/auth/v1/user', {
+            headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + adminKey },
+          });
+          const u = await r.json();
+          if (!u || u.email !== 'contacto.ruahlabs@gmail.com') {
+            return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 403, headers: apiHeaders });
+          }
+        } catch(e) {
+          return new Response(JSON.stringify({ error: 'Error validando token' }), { status: 500, headers: apiHeaders });
+        }
+      }
+
+      const CLD_KEY    = env.CLOUDINARY_API_KEY    || '';
+      const CLD_SECRET = env.CLOUDINARY_API_SECRET || '';
+      const CLD_CLOUD  = env.CLOUDINARY_CLOUD_NAME || 'dschjfuwz';
+      if (!CLD_KEY || !CLD_SECRET) {
+        return new Response(JSON.stringify({ error: 'Cloudinary no configurado' }), { status: 500, headers: apiHeaders });
+      }
+
+      const timestamp = Math.round(Date.now() / 1000);
+      const folder = 'ruahlabs';
+      const toSign = 'folder=' + folder + '&timestamp=' + timestamp + CLD_SECRET;
+      const enc = new TextEncoder().encode(toSign);
+      const hashBuf = await crypto.subtle.digest('SHA-256', enc);
+      const signature = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+      return new Response(JSON.stringify({ cloudName: CLD_CLOUD, apiKey: CLD_KEY, timestamp, signature, folder }), {
+        status: 200, headers: apiHeaders,
+      });
     }
 
     // ── Protect admin.js (only when ADMIN_TOKEN secret is configured) ─
