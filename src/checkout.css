@@ -1,7 +1,6 @@
 /* ============================================================
    RUAH LABS — Checkout 2.0 (ck2-*)
-   Página única estilo Kaya Unite · branding RUAH LABS oscuro
-   Colores: #0a0a0a fondo · #ECA10C ámbar · #fff texto
+   KITH-style: fondo blanco · tipografía negra · limpio
 ============================================================ */
 
 /* ── OVERLAY (pantalla completa) ── */
@@ -9,13 +8,12 @@
   position: fixed;
   inset: 0;
   z-index: 2147483400;
-  background: #0a0a0a;
-  color: #fff;
-  overflow-y: scroll;          /* scroll en lugar de auto — más fiable en iOS */
+  background: #fff !important;
+  color: #1a1a1a !important;
+  overflow-y: scroll;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   animation: ck2-fade .22s ease;
-  /* Evita que el header sticky quede pegado fuera de pantalla en iOS */
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
 }
@@ -35,8 +33,8 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  background: #0a0a0a;
-  border-bottom: 1px solid #1e1e1e;
+  background: #fff;
+  border-bottom: 1px solid #e5e5e5;
 }
 .ck2-header__inner {
   display: flex;
@@ -44,10 +42,18 @@
   justify-content: space-between;
   padding: 14px 20px;
 }
+.ck2-header__logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  background: #0e0e0c;
+  padding: 7px 20px;
+}
 .ck2-header__logo {
-  height: 28px;
+  height: 22px;
   width: auto;
   object-fit: contain;
+  filter: brightness(0) invert(1);
+  display: block;
 }
 .ck2-close {
   background: none;
@@ -59,7 +65,7 @@
   padding: 4px 8px;
   transition: color .15s;
 }
-.ck2-close:hover { color: #fff; }
+.ck2-close:hover { color: #1a1a1a; }
 
 /* ── SUMMARY TOGGLE (mobile-first collapsible header summary) ── */
 .ck2-summary-toggle {
@@ -68,21 +74,21 @@
   justify-content: space-between;
   width: 100%;
   padding: 10px 20px;
-  background: #111;
+  background: #f5f5f5;
   border: none;
-  border-top: 1px solid #1e1e1e;
-  color: #ECA10C;
+  border-top: 1px solid #e5e5e5;
+  color: #1a1a1a;
   font-size: 13px;
   letter-spacing: .5px;
   cursor: pointer;
   text-align: left;
 }
-.ck2-summary-toggle__total { font-weight: 700; color: #fff; }
+.ck2-summary-toggle__total { font-weight: 700; color: #1a1a1a; }
 .ck2-caret { font-size: 10px; margin-left: 4px; }
 
 .ck2-summary-drop {
-  background: #0f0f0f;
-  border-bottom: 1px solid #1e1e1e;
+  background: #f5f5f5;
+  border-bottom: 1px solid #e5e5e5;
   padding: 16px 20px;
 }
 
@@ -93,7 +99,7 @@
 
 /* ── SECTION ── */
 .ck2-section {
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid #e5e5e5;
   padding: 28px 0;
 }
 .ck2-section-title {
@@ -101,12 +107,12 @@
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: #fff;
+  color: #1a1a1a;
   margin: 0 0 16px;
 }
 .ck2-section-sub {
   font-size: 12px;
-  color: #555;
+  color: #888;
   margin: -8px 0 14px;
   letter-spacing: .3px;
 }
@@ -115,7 +121,7 @@
 .ck2-tabs {
   display: flex;
   gap: 0;
-  border: 1px solid #2a2a2a;
+  border: 1px solid #e0e0e0;
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 18px;
@@ -123,7 +129,7 @@
 .ck2-tab {
   flex: 1;
   padding: 10px 16px;
-  background: #111;
+  background: #f5f5f5;
   border: none;
   color: #888;
   font-size: 13px;
@@ -136,9 +142,9 @@
   justify-content: center;
   gap: 6px;
 }
-.ck2-tab + .ck2-tab { border-left: 1px solid #2a2a2a; }
-.ck2-tab.active { background: #ECA10C; color: #000; }
-.ck2-tab:hover:not(.active) { background: #1a1a1a; color: #fff; }
+.ck2-tab + .ck2-tab { border-left: 1px solid #e0e0e0; }
+.ck2-tab.active { background: #1a1a1a; color: #fff; }
+.ck2-tab:hover:not(.active) { background: #e5e5e5; color: #1a1a1a; }
 .ck2-tab-icon { font-size: 14px; }
 
 /* ── RADIO CARDS ── */
@@ -148,37 +154,37 @@
   align-items: flex-start;
   gap: 12px;
   padding: 14px 16px;
-  border: 1px solid #2a2a2a;
+  border: 1px solid #e5e5e5;
   border-radius: 4px;
   cursor: pointer;
   transition: border-color .15s, background .15s;
-  background: #111;
+  background: #fff;
 }
-.ck2-radio-card:hover:not(.ck2-radio-card--static) { border-color: #444; background: #141414; }
-.ck2-radio-card--selected { border-color: #ECA10C !important; background: #131004 !important; }
+.ck2-radio-card:hover:not(.ck2-radio-card--static) { border-color: #bbb; background: #fafafa; }
+.ck2-radio-card--selected { border-color: #1a1a1a !important; background: #f5f5f5 !important; }
 .ck2-radio-card--static  { cursor: default; }
 
 .ck2-radio-dot {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 2px solid #444;
+  border: 2px solid #ccc;
   flex-shrink: 0;
   margin-top: 2px;
   transition: border-color .15s;
 }
-.ck2-radio-dot--on { border-color: #ECA10C; box-shadow: inset 0 0 0 3px #ECA10C; }
+.ck2-radio-dot--on { border-color: #1a1a1a; box-shadow: inset 0 0 0 3px #1a1a1a; }
 
 .ck2-radio-card__body { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-.ck2-radio-card__name { font-size: 13px; font-weight: 600; color: #fff; }
-.ck2-radio-card__meta { font-size: 12px; color: #777; }
-.ck2-radio-card__price { font-size: 13px; font-weight: 700; color: #fff; white-space: nowrap; margin-top: 2px; }
+.ck2-radio-card__name { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+.ck2-radio-card__meta { font-size: 12px; color: #888; }
+.ck2-radio-card__price { font-size: 13px; font-weight: 700; color: #1a1a1a; white-space: nowrap; margin-top: 2px; }
 
 /* ── PAGO BADGES ── */
 .ck2-pay-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
 .ck2-pay-badge {
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: #f5f5f5;
+  border: 1px solid #e5e5e5;
   color: #888;
   font-size: 10px;
   padding: 2px 7px;
@@ -186,7 +192,7 @@
   letter-spacing: .5px;
 }
 .ck2-lock-icon { font-size: 16px; margin-top: 2px; }
-.ck2-pay-note { font-size: 12px; color: #555; margin: 10px 0 0; }
+.ck2-pay-note { font-size: 12px; color: #888; margin: 10px 0 0; }
 .ck2-pay-note--mobile { display: none; }
 @media (max-width: 600px) { .ck2-pay-note--mobile { display: block; color: #888; } }
 
@@ -206,10 +212,10 @@
 }
 .ck2-field input,
 .ck2-field select {
-  background: #111;
-  border: 1px solid #2a2a2a;
+  background: #fff;
+  border: 1px solid #d0d0d0;
   border-radius: 4px;
-  color: #fff;
+  color: #1a1a1a;
   font-size: 14px;
   padding: 11px 14px;
   outline: none;
@@ -220,14 +226,14 @@
   appearance: none;
   font-family: inherit;
 }
-.ck2-field input::placeholder { color: #444; }
-.ck2-field select option { background: #111; color: #fff; }
+.ck2-field input::placeholder { color: #aaa; }
+.ck2-field select option { background: #fff; color: #1a1a1a; }
 .ck2-field input:focus,
-.ck2-field select:focus { border-color: #ECA10C; }
+.ck2-field select:focus { border-color: #1a1a1a; }
 .ck2-field.valid input,
-.ck2-field.valid select { border-color: #2a5c1a; }
+.ck2-field.valid select { border-color: #2a7c1a; }
 .ck2-field.invalid input,
-.ck2-field.invalid select { border-color: #7a1a1a; }
+.ck2-field.invalid select { border-color: #c04040; }
 .ck2-err { font-size: 11px; color: #c04040; margin-top: 3px; }
 
 /* ── CHECKBOX ── */
@@ -237,18 +243,18 @@
   gap: 10px;
   cursor: pointer;
   font-size: 12px;
-  color: #888;
+  color: #666;
   line-height: 1.5;
 }
 .ck2-check input[type="checkbox"] {
   width: 16px;
   height: 16px;
   flex-shrink: 0;
-  accent-color: #ECA10C;
+  accent-color: #1a1a1a;
   margin-top: 1px;
 }
-.ck2-check a { color: #ECA10C; text-decoration: none; }
-.ck2-check a:hover { text-decoration: underline; }
+.ck2-check a { color: #1a1a1a; text-decoration: underline; }
+.ck2-check a:hover { opacity: .7; }
 
 /* ── TERMS ── */
 .ck2-terms-check { margin-bottom: 14px; }
@@ -262,7 +268,7 @@
   align-items: flex-start;
   gap: 12px;
   padding: 14px 0;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid #e5e5e5;
 }
 .ck2-order-item:first-child { padding-top: 0; }
 .ck2-order-item:last-of-type { border-bottom: none; }
@@ -272,24 +278,24 @@
   width: 60px;
   height: 60px;
   flex-shrink: 0;
-  border: 1px solid #2a2a2a;
+  border: 1px solid #e5e5e5;
   border-radius: 4px;
   overflow: hidden;
-  background: #111;
+  background: #f5f5f5;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .ck2-order-item__thumb img { width: 100%; height: 100%; object-fit: cover; }
-.ck2-order-item__thumb-ph { font-size: 11px; color: #555; letter-spacing: 1px; }
+.ck2-order-item__thumb-ph { font-size: 11px; color: #aaa; letter-spacing: 1px; }
 .ck2-order-item__qty-badge {
   position: absolute;
   top: -6px;
   right: -6px;
   width: 18px;
   height: 18px;
-  background: #ECA10C;
-  color: #000;
+  background: #1a1a1a;
+  color: #fff;
   border-radius: 50%;
   font-size: 10px;
   font-weight: 700;
@@ -299,8 +305,8 @@
 }
 
 .ck2-order-item__info { flex: 1; display: flex; flex-direction: column; gap: 3px; }
-.ck2-order-item__name { font-size: 13px; font-weight: 600; color: #fff; }
-.ck2-order-item__attr { font-size: 11px; color: #666; }
+.ck2-order-item__name { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+.ck2-order-item__attr { font-size: 11px; color: #888; }
 .ck2-order-item__controls {
   display: flex;
   align-items: center;
@@ -310,10 +316,10 @@
 .ck2-order-item__controls button {
   width: 24px;
   height: 24px;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: #f5f5f5;
+  border: 1px solid #e5e5e5;
   border-radius: 3px;
-  color: #fff;
+  color: #1a1a1a;
   font-size: 14px;
   cursor: pointer;
   display: flex;
@@ -323,24 +329,24 @@
   padding: 0;
   transition: background .1s;
 }
-.ck2-order-item__controls button:hover { background: #2a2a2a; }
+.ck2-order-item__controls button:hover { background: #e5e5e5; }
 .ck2-order-item__controls span { font-size: 13px; min-width: 18px; text-align: center; }
-.ck2-remove-btn { color: #c04040 !important; font-size: 16px !important; border-color: #3a1010 !important; background: #1a0808 !important; }
-.ck2-remove-btn:hover { color: #ff4444 !important; background: #2a0a0a !important; border-color: #5a1414 !important; }
-.ck2-order-item__price { font-size: 13px; font-weight: 700; color: #fff; white-space: nowrap; margin-top: 2px; }
+.ck2-remove-btn { color: #c04040 !important; font-size: 16px !important; border-color: #ffd5d5 !important; background: #fff5f5 !important; }
+.ck2-remove-btn:hover { color: #ff4444 !important; background: #ffeeee !important; border-color: #ffbbbb !important; }
+.ck2-order-item__price { font-size: 13px; font-weight: 700; color: #1a1a1a; white-space: nowrap; margin-top: 2px; }
 
 /* ── DISCOUNT ── */
-.ck2-discount-block { padding: 14px 0; border-bottom: 1px solid #1a1a1a; }
+.ck2-discount-block { padding: 14px 0; border-bottom: 1px solid #e5e5e5; }
 .ck2-discount-row {
   display: flex;
   gap: 8px;
 }
 .ck2-discount-row input {
   flex: 1;
-  background: #111;
-  border: 1px solid #2a2a2a;
+  background: #fff;
+  border: 1px solid #d0d0d0;
   border-radius: 4px;
-  color: #fff;
+  color: #1a1a1a;
   font-size: 13px;
   padding: 9px 12px;
   outline: none;
@@ -348,13 +354,13 @@
   letter-spacing: 1px;
   transition: border-color .15s;
 }
-.ck2-discount-row input:focus { border-color: #ECA10C; }
-.ck2-discount-row input::placeholder { color: #444; letter-spacing: 0; }
+.ck2-discount-row input:focus { border-color: #1a1a1a; }
+.ck2-discount-row input::placeholder { color: #aaa; letter-spacing: 0; }
 .ck2-discount-row button {
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
   border-radius: 4px;
-  color: #fff;
+  color: #1a1a1a;
   font-size: 12px;
   padding: 9px 16px;
   cursor: pointer;
@@ -364,7 +370,7 @@
   white-space: nowrap;
   font-family: inherit;
 }
-.ck2-discount-row button:hover { background: #2a2a2a; border-color: #444; }
+.ck2-discount-row button:hover { background: #e5e5e5; border-color: #ccc; }
 .ck2-discount-ok  { display: block; font-size: 12px; color: #5c9c4a; margin-top: 6px; }
 .ck2-discount-err { display: block; font-size: 12px; color: #c04040; margin-top: 6px; }
 
@@ -377,12 +383,12 @@
   font-size: 13px;
   color: #888;
 }
-.ck2-total-row--disc { color: #5c9c4a; }
+.ck2-total-row--disc { color: #2a7c1a; }
 .ck2-total-row--total {
   font-size: 16px;
-  color: #fff;
+  color: #1a1a1a;
   padding-top: 10px;
-  border-top: 1px solid #2a2a2a;
+  border-top: 1px solid #e5e5e5;
   margin-top: 4px;
 }
 .ck2-total-row--total strong { font-weight: 700; }
@@ -393,17 +399,17 @@
   align-items: flex-start;
   gap: 10px;
   padding: 12px;
-  background: #0d1200;
-  border-left: 3px solid #ECA10C;
+  background: #f5f5f5;
+  border-left: 3px solid #1a1a1a;
   border-radius: 2px;
   margin-top: 4px;
   font-size: 12px;
-  color: #999;
+  color: #666;
   line-height: 1.5;
 }
 .ck2-protocol-note__badge {
-  background: #ECA10C;
-  color: #000;
+  background: #1a1a1a;
+  color: #fff;
   font-size: 10px;
   font-weight: 900;
   padding: 2px 5px;
@@ -424,30 +430,31 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 15px 20px;
-  background: #ECA10C;
-  color: #000;
+  padding: 16px 20px;
+  background: #1a1a1a;
+  color: #fff;
   border: none;
-  border-radius: 4px;
-  font-size: 14px;
+  border-radius: 0;
+  font-size: 13px;
   font-weight: 900;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
   cursor: pointer;
   transition: background .15s, opacity .15s;
   font-family: inherit;
   line-height: 1;
 }
-.ck2-pay-btn:hover:not(:disabled) { background: #f5b020; }
-.ck2-pay-btn:disabled { opacity: .7; cursor: not-allowed; }
-.ck2-pay-btn--processing { background: #333; color: #888; }
+.ck2-pay-btn:hover:not(:disabled) { background: #333; }
+.ck2-pay-btn:disabled { opacity: .5; cursor: not-allowed; }
+.ck2-pay-btn--processing { background: #888; color: #fff; }
 .ck2-btn-arrow { font-size: 16px; }
 
 /* ── SPINNER ── */
 .ck2-spin {
   width: 16px;
   height: 16px;
-  border: 2px solid #444;
-  border-top-color: #ECA10C;
+  border: 2px solid #e5e5e5;
+  border-top-color: #1a1a1a;
   border-radius: 50%;
   animation: ck2-spin .7s linear infinite;
   flex-shrink: 0;
@@ -463,11 +470,11 @@
   color: #666;
   margin-bottom: 12px;
   padding: 8px 12px;
-  background: #111;
-  border: 1px solid #1e1e1e;
+  background: #f5f5f5;
+  border: 1px solid #e5e5e5;
   border-radius: 4px;
 }
-.ck2-ship-weight strong { color: #aaa; }
+.ck2-ship-weight strong { color: #666; }
 
 /* ── SHIP WARNING ── */
 .ck2-ship-warning {
@@ -475,7 +482,7 @@
   color: #c04040;
   margin: 0 0 10px;
   padding: 8px 12px;
-  background: #1a0a0a;
+  background: #fff5f5;
   border-left: 2px solid #c04040;
   border-radius: 2px;
 }
@@ -485,7 +492,7 @@
 .ck2-trust-note {
   text-align: center;
   font-size: 11px;
-  color: #444;
+  color: #aaa;
   margin: 10px 0 0;
   letter-spacing: .5px;
 }

@@ -317,10 +317,12 @@ function Checkout({ open, cart, content, onClose, onUpdateCart }) {
         {/* ═══ HEADER ═══ */}
         <header className="ck2-header">
           <div className="ck2-header__inner">
-            <img
-              src="https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323723/ruahlabs/s6aaamzrfbcwd46icjxu.png"
-              alt="RUAH LABS" className="ck2-header__logo"
-            />
+            <div className="ck2-header__logo-wrap">
+              <img
+                src={(window.__resources && window.__resources.logoWordmark) || 'https://res.cloudinary.com/dschjfuwz/image/upload/v1783626385/ruahlabs/rehdonkp0hmenayjmomx.png'}
+                alt="RUAH LABS" className="ck2-header__logo"
+              />
+            </div>
             <button className="ck2-close" onClick={onClose} aria-label="Cerrar">×</button>
           </div>
           <button className="ck2-summary-toggle" type="button" onClick={() => setSummaryOpen(o => !o)}>
