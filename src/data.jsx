@@ -108,7 +108,6 @@ const DEFAULT_CONTENT = {
   nav: {
     links: [
       { id: 'l2', label: 'Comprar',         href: '#productos', dropdown: true },
-      { id: 'l7', label: 'Eventos',          href: '#evento' },
       { id: 'l8', label: 'Personalizados',  href: '#design' },
       { id: 'l9', label: 'PROTOCOLO 1×1',  href: '#protocolo' },
       { id: 'l10', label: 'BLOG',           href: '/blog' },

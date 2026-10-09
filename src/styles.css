@@ -420,7 +420,7 @@ section { padding-block: var(--section-pad-y); position: relative; }
 .mobile-menu {
   position: fixed; inset: 0;
   z-index: 55;
-  background: #0e0e0c;
+  background: #E6E6E6;
   opacity: 0;
   pointer-events: none;
   transition: opacity .3s ease;
@@ -440,7 +440,7 @@ section { padding-block: var(--section-pad-y); position: relative; }
 .mobile-menu__head {
   display: flex; align-items: center; justify-content: space-between;
   padding: 20px 28px;
-  border-bottom: 1px solid rgba(245,241,232,0.08);
+  border-bottom: 1px solid rgba(10,10,10,0.1);
   flex-shrink: 0;
 }
 .mobile-menu__logo {
@@ -448,17 +448,17 @@ section { padding-block: var(--section-pad-y); position: relative; }
   font-size: 15px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--ivory);
+  color: var(--ink);
 }
 .mobile-menu__x {
   width: 36px; height: 36px;
   display: flex; align-items: center; justify-content: center;
   font-size: 20px; line-height: 1;
-  color: rgba(245,241,232,0.5);
+  color: rgba(10,10,10,0.5);
   background: transparent; border: none; cursor: pointer;
   transition: color .2s;
 }
-.mobile-menu__x:hover { color: var(--ivory); }
+.mobile-menu__x:hover { color: var(--ink); }
 
 /* Nav */
 .mobile-menu__nav {
@@ -474,15 +474,15 @@ section { padding-block: var(--section-pad-y); position: relative; }
   font-family: var(--serif);
   font-size: 28px;
   letter-spacing: 0.06em;
-  color: rgba(245,241,232,0.82);
-  border-bottom: 1px solid rgba(245,241,232,0.07);
+  color: rgba(10,10,10,0.75);
+  border-bottom: 1px solid rgba(10,10,10,0.08);
   transition: color .18s;
   cursor: pointer; background: transparent;
   border-top: none; border-left: none; border-right: none;
   width: 100%; text-align: center;
   line-height: 1.1;
 }
-.m-link:hover, .m-link:active { color: var(--ivory); }
+.m-link:hover, .m-link:active { color: var(--ink); }
 .m-link--amber { color: #eca10c; }
 .m-link--amber:hover, .m-link--amber:active { color: #eca10c; }
 .m-link--cta {
@@ -494,7 +494,7 @@ section { padding-block: var(--section-pad-y); position: relative; }
 .m-link__arr {
   font-size: 20px;
   font-family: var(--mono);
-  color: rgba(245,241,232,0.22);
+  color: rgba(10,10,10,0.2);
   line-height: 1;
   flex-shrink: 0;
 }
@@ -514,12 +514,12 @@ section { padding-block: var(--section-pad-y); position: relative; }
   font-family: var(--serif);
   font-size: 20px;
   letter-spacing: 0.06em;
-  color: rgba(245,241,232,0.4);
-  border-bottom: 1px solid rgba(245,241,232,0.04);
+  color: rgba(10,10,10,0.45);
+  border-bottom: 1px solid rgba(10,10,10,0.05);
   transition: color .18s;
   line-height: 1.1;
 }
-.m-sub__link:hover { color: rgba(245,241,232,0.8); }
+.m-sub__link:hover { color: var(--ink); }
 
 /* ---------- Hero ---------- */
 .hero {
@@ -1650,6 +1650,7 @@ section { padding-block: var(--section-pad-y); position: relative; }
   text-transform: uppercase;
   margin-bottom: 48px;
   overflow: hidden;
+  padding-bottom: 0.18em;
   color: var(--c-footerWordmark, inherit);
 }
 .footer__wordmark .static {
@@ -1749,10 +1750,31 @@ section { padding-block: var(--section-pad-y); position: relative; }
 /* ---------- Mobile ---------- */
 @media (max-width: 1180px) {
   .nav__links, .nav__cta { display: none; }
-  .hamb { display: inline-flex; }
-  .nav__brand-img { height: 32px; }
-  /* Cart + hamburger side by side */
-  .nav__cart { margin-right: 8px; }
+  .hamb {
+    display: inline-flex;
+    order: 1;
+    border: none;
+    background: transparent;
+    width: 44px; height: 44px;
+  }
+  .nav__brand {
+    order: 2;
+    background: #0e0e0c;
+    padding: 7px 20px;
+    min-height: 36px;
+    border-radius: 0;
+  }
+  .nav__brand-img {
+    height: 22px;
+    filter: brightness(0) invert(1);
+  }
+  .nav__cart {
+    order: 3;
+    margin-right: 0;
+    border: none;
+    background: transparent;
+  }
+  .nav__cart__img { filter: brightness(0); }
 }
 
 @media (max-width: 900px) {
@@ -1859,7 +1881,9 @@ section { padding-block: var(--section-pad-y); position: relative; }
   .footer__bottom { flex-direction: column; align-items: flex-start; }
 
   .pd { grid-template-columns: 1fr; height: auto; max-height: 95vh; overflow-y: auto; }
-  .pd__body { padding: 32px 24px; }
+  .pd__body { padding: 24px 20px; height: auto; overflow: visible; }
+  .pd__scrollable { flex: unset; min-height: auto; overflow-y: visible; }
+  .pd__cta { margin-top: 0; padding-top: 12px; padding-bottom: 4px; }
   .pd__main { aspect-ratio: 2/3; }
   .pd__ph { font-size: 80px; }
 }

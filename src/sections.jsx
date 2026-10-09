@@ -241,7 +241,7 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
             {(function() {
               var linkMap = {};
               (nav.links || []).forEach(function(l) { linkMap[l.id] = l; });
-              var mobileOrder = ['l2','l6','l7','l8','l9'];
+              var mobileOrder = ['l2','l8','l9','l10'];
               return mobileOrder.map(function(id) {
                 var l = linkMap[id];
                 if (!l) return null;
@@ -308,8 +308,8 @@ function Hero({ content, isHome }) {
         </React.Fragment>
       ) : (
         <React.Fragment>
-          <video className="hero__video-bg hero__video-bg--desktop" src={srcDesktop} autoPlay muted loop playsInline preload="metadata" aria-hidden="true" />
-          <video className="hero__video-bg hero__video-bg--mobile"  src={srcMobile}  autoPlay muted loop playsInline preload="metadata" aria-hidden="true" />
+          <video className="hero__video-bg hero__video-bg--desktop" src={srcDesktop} autoPlay muted loop playsInline preload="auto" aria-hidden="true" />
+          <video className="hero__video-bg hero__video-bg--mobile"  src={srcMobile}  autoPlay muted loop playsInline preload="auto" aria-hidden="true" />
         </React.Fragment>
       )}
       <div className="hero__texture" aria-hidden="true"></div>
