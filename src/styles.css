@@ -405,15 +405,16 @@ section { padding-block: var(--section-pad-y); position: relative; }
   border-radius: 999px;
   border: 1px solid var(--line);
 }
-.hamb__bars { width: 18px; height: 12px; position: relative; }
+.hamb__bars { width: 18px; height: 1.5px; background: var(--ink); position: relative; }
 .hamb__bars::before, .hamb__bars::after {
   content: ''; position: absolute; left: 0; right: 0; height: 1.5px; background: var(--ink);
-  transition: transform .3s ease, top .3s ease;
+  transition: transform .3s ease, top .3s ease, opacity .3s ease;
 }
-.hamb__bars::before { top: 2px; }
-.hamb__bars::after  { top: 9px; }
-.hamb.open .hamb__bars::before { top: 5.5px; transform: rotate(45deg); }
-.hamb.open .hamb__bars::after  { top: 5.5px; transform: rotate(-45deg); }
+.hamb__bars::before { top: -6px; }
+.hamb__bars::after  { top: 6px; }
+.hamb.open .hamb__bars { background: transparent; }
+.hamb.open .hamb__bars::before { top: 0; transform: rotate(45deg); }
+.hamb.open .hamb__bars::after  { top: 0; transform: rotate(-45deg); }
 
 /* ── Mobile menu — right-side drawer ── */
 /* ── Menú móvil fullscreen (estilo limpio) ── */
@@ -1296,7 +1297,7 @@ section { padding-block: var(--section-pad-y); position: relative; }
   opacity: 0.55;
   flex-shrink: 0;
 }
-.pd__thumb img { width: 100%; height: 100%; object-fit: cover; }
+.pd__thumb img { width: 100%; height: 100%; object-fit: contain; background: #f0f0f0; }
 .pd__thumb.active { opacity: 1; border-color: var(--amber); }
 .pd__thumb:hover { opacity: 1; }
 
@@ -1778,6 +1779,7 @@ section { padding-block: var(--section-pad-y); position: relative; }
     grid-template-columns: 1fr auto 1fr;
     padding: 0 16px;
     gap: 0;
+    min-height: 60px;
   }
   .nav__links, .nav__cta { display: none !important; }
   .hamb {
@@ -1865,12 +1867,9 @@ section { padding-block: var(--section-pad-y); position: relative; }
   }
   .hero__title { font-size: clamp(28px, 9vw, 64px); }
 
-  /* 2. Mobile menu compacto para caber en una pantalla */
+  /* 2. Mobile menu items uniform size */
   .mobile-menu { padding-top: 80px; overflow-y: auto; }
-  .mobile-menu a, .mobile-menu .m-group__head {
-    font-size: clamp(24px, 6vw, 38px);
-    padding: 12px 0;
-  }
+  .mobile-menu .m-link { font-size: 16px; padding: 18px 28px; }
 
   .hero__bottom { grid-template-columns: 1fr; gap: 24px; }
   .btn--hero-p, .btn--hero-s { min-width: 0; flex: 1; padding: 14px 16px; font-size: 11px; }
@@ -1936,7 +1935,7 @@ section { padding-block: var(--section-pad-y); position: relative; }
   .pd__cta { margin-top: 0; padding-top: 12px; padding-bottom: 4px; }
   .pd__media { height: auto; }
   .pd__main { flex: none; width: 100%; aspect-ratio: 1/1; }
-  .pd__main img { object-fit: cover; }
+  .pd__main img { object-fit: contain; }
   .pd__ph { font-size: 80px; }
 }
 
