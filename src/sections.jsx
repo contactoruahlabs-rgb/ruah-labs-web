@@ -280,77 +280,30 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
 }
 
 // --- Hero ---
-function Hero({ content, isHome }) {
-  const { hero } = content;
-  const FALLBACK_VIDEO_DESKTOP = 'https://res.cloudinary.com/dschjfuwz/video/upload/v1783626383/ruahlabs/idpoxkmoqkj8cn7pbtoe.mp4';
-  const FALLBACK_VIDEO_MOBILE  = 'https://res.cloudinary.com/dschjfuwz/video/upload/v1783627118/ruahlabs/rblhrehk6s7udupugviu.mp4';
-  const bgType = hero.bgType || 'video';
-  const srcDesktop = bgType === 'image' ? (hero.imageBgDesktop || '') : (hero.videoBgDesktop || FALLBACK_VIDEO_DESKTOP);
-  const srcMobile  = bgType === 'image' ? (hero.imageBgMobile  || '') : (hero.videoBgMobile  || FALLBACK_VIDEO_MOBILE);
-
-  const AUDIENCE = [
-    { label: 'Soy individuo', page: 'productos' },
-    { label: 'Soy iglesia',   page: 'iglesias' },
-    { label: 'Soy empresa',   page: 'evento' },
-  ];
-
+function Hero({ isHome }) {
   return (
     <React.Fragment>
-    <section className={'hero' + (bgType === 'image' ? ' hero--image' : '')} id="top">
-      {bgType === 'image' ? (
-        <React.Fragment>
-          {srcDesktop && <img className="hero__video-bg hero__video-bg--desktop" src={srcDesktop} alt="" aria-hidden="true" style={{objectFit:'cover'}} />}
-          {srcMobile  && <img className="hero__video-bg hero__video-bg--mobile"  src={srcMobile}  alt="" aria-hidden="true" style={{objectFit:'cover'}} />}
-          {!srcDesktop && !srcMobile && <React.Fragment>
-            <video className="hero__video-bg hero__video-bg--desktop" src={FALLBACK_VIDEO_DESKTOP} autoPlay muted loop playsInline preload="metadata" aria-hidden="true" />
-            <video className="hero__video-bg hero__video-bg--mobile"  src={FALLBACK_VIDEO_MOBILE}  autoPlay muted loop playsInline preload="metadata" aria-hidden="true" />
-          </React.Fragment>}
-        </React.Fragment>
-      ) : (
-        <React.Fragment>
-          <video className="hero__video-bg hero__video-bg--desktop" src={srcDesktop} autoPlay muted loop playsInline preload="auto" aria-hidden="true" />
-          <video className="hero__video-bg hero__video-bg--mobile"  src={srcMobile}  autoPlay muted loop playsInline preload="auto" aria-hidden="true" />
-        </React.Fragment>
-      )}
-      <div className="hero__texture" aria-hidden="true"></div>
+    <section className="hero hero--color" id="top">
       <div className="shell">
-
-        <div className={'hero__bottom' + (!hero.heroPrice ? ' hero__bottom--ctas-only' : '')}>
-          {hero.heroPrice && (
-            <Reveal delay={500} className="hero__lede">
-              <button type="button" className="hero__price"
-                style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
-                onClick={() => { if (isHome) { var hel = document.getElementById('home-productos'); if (hel) hel.scrollIntoView({behavior:'smooth'}); } else window.dispatchEvent(new CustomEvent('ruah:navigateTo', { detail: { page: 'productos' } })); }}>
-                {hero.heroPrice}
-              </button>
-            </Reveal>
-          )}
-          <Reveal delay={650} className="hero__ctas">
-            {hero.primaryCta.show !== false && (
-              <a className="btn btn--hero-p" href={hero.primaryCta.href}
-                 onClick={e => {
-                   const href = hero.primaryCta.href || '';
-                   if (href.startsWith('#')) {
-                     e.preventDefault();
-                     if (isHome) { var hel = document.getElementById('home-productos'); if (hel) hel.scrollIntoView({behavior:'smooth'}); }
-                     else window.dispatchEvent(new CustomEvent('ruah:navigateTo', { detail: { page: href.slice(1) } }));
-                   }
-                 }}>
-                {hero.primaryCta.label}
-              </a>
-            )}
-            {hero.secondaryCta.show !== false && (
-              <a className="btn btn--hero-s" href={hero.secondaryCta.href}>
-                {hero.secondaryCta.label}
-              </a>
-            )}
+        <div className="hero__bottom hero__bottom--ctas-only">
+          <Reveal delay={200} className="hero__ctas">
+            <a className="btn btn--hero-p" href="#productos"
+               onClick={e => {
+                 e.preventDefault();
+                 if (isHome) { var hel = document.getElementById('home-productos'); if (hel) hel.scrollIntoView({behavior:'smooth'}); }
+                 else window.dispatchEvent(new CustomEvent('ruah:navigateTo', { detail: { page: 'productos' } }));
+               }}>
+              IR A TIENDA
+            </a>
+            <a className="btn btn--hero-s" href="/blog">
+              BLOG
+            </a>
           </Reveal>
         </div>
       </div>
-
     </section>
-    </React.Fragment>);
-
+    </React.Fragment>
+  );
 }
 
 // --- Home Intro (post-hero info strip) ---
