@@ -29,7 +29,7 @@ const DEFAULT_CONTENT = {
     // NUNCA volver a guardar hashes aquí: este objeto se sirve público.
   },
   theme: {
-    ivory: '#f5f1e8',
+    ivory: '#E6E6E6',
     amber: '#eca10c',
     gray:  '#6b6b62',
     black: '#0a0a0a',
@@ -108,10 +108,10 @@ const DEFAULT_CONTENT = {
   nav: {
     links: [
       { id: 'l2', label: 'Comprar',         href: '#productos', dropdown: true },
-      { id: 'l6', label: 'Iglesias',         href: '#iglesias' },
       { id: 'l7', label: 'Eventos',          href: '#evento' },
       { id: 'l8', label: 'Personalizados',  href: '#design' },
       { id: 'l9', label: 'PROTOCOLO 1×1',  href: '#protocolo' },
+      { id: 'l10', label: 'BLOG',           href: '/blog' },
     ],
     cta: { label: 'Contacto', href: '#contacto' },
   },
@@ -162,10 +162,10 @@ const DEFAULT_CONTENT = {
     titleLine3: 'ACCIÓN',
     accentWord: 'ACCIÓN',
     lede: 'Cada prenda que sale de nuestro taller activa el Protocolo 1×1\nEstampado y sublimación profesional para iglesias, marcas y eventos.\nUna prenda vendida ES una prenda donada a la calle.',
-    primaryCta:   { label: 'Ver productos',    href: '#productos', show: true },
-    secondaryCta: { label: 'Cotizar proyecto', href: '#contacto',  show: false },
-    marquee: 'ESTAMPADO PROFESIONAL · SUBLIMACIÓN · ASESORÍA CREATIVA · MERCH · IGLESIAS · EVENTOS · DROPS LIMITADOS',
-    heroPrice: 'Desde $12.990 · Envío a todo Chile',
+    primaryCta:   { label: 'IR A TIENDA',  href: '#productos', show: true },
+    secondaryCta: { label: 'BLOG',         href: '/blog',      show: true },
+    marquee: 'ESTAMPADO PROFESIONAL · SUBLIMACIÓN · ASESORÍA CREATIVA · MERCH · EVENTOS · DROPS LIMITADOS · PERSONALIZADOS',
+    heroPrice: '',
   },
   about: {
     eyebrow: '[ 00 ] QUIÉNES SOMOS',
@@ -240,7 +240,6 @@ const DEFAULT_CONTENT = {
       { id: 'sv3', name: 'Eventos',                desc: 'Diseño y producción de merchandising para conferencias, festivales, conciertos y activaciones. Entrega rápida, calidad garantizada.' },
       { id: 'sv4', name: 'Asesoría creativa',       desc: 'Identidad visual, naming, manual de marca y contenido distintivo. Tu marca, lista para vestirse.' },
       { id: 'sv5', name: 'Diseños personalizados', desc: 'Tu versículo, tu idea, tu tipografía. Diseño autoral hecho por una diseñadora profesional, sin plantillas.' },
-      { id: 'sv6', name: 'RUAH Live',              desc: 'Estación de estampado en vivo para matrimonios, cumpleaños, baby showers, corporativos y activaciones. Tus invitados eligen, ven cómo se hace, y se llevan algo único en menos de dos minutos.' },
       { id: 'sv7', name: 'Cuadros decorativos',    desc: 'Piezas minimalistas y disruptivas para casa, oficina e iglesia. Todo centrado en Cristo.' },
     ],
   },
@@ -671,10 +670,10 @@ const DEFAULT_CONTENT = {
       { id: 'cp3', ttl: 'PROTOCOLO 1×1',    big: '742',   desc: 'Prendas entregadas a la fecha. Cada una con su historia.' },
     ],
     routes: [
-      { id: 'r1', name: 'Patronato Norte',  date: '12 JUN · 21:00', meta: 'Punto: Plaza Brasil · 9 personas anotadas · 40 prendas listas', joined: false },
-      { id: 'r2', name: 'Estación Central',  date: '19 JUN · 20:30', meta: 'Punto: Av. Alameda · Buscamos 6 personas más · 60 prendas listas', joined: false },
-      { id: 'r3', name: 'Mapocho Sur',       date: '26 JUN · 21:00', meta: 'Punto: Puente Recoleta · 4 personas anotadas · 35 prendas + comida', joined: false },
-      { id: 'r4', name: 'Bellavista Centro', date: '03 JUL · 21:30', meta: 'Punto: Pío Nono · Coordinador: Daniel · 25 prendas exclusivas', joined: false },
+      { id: 'r1', name: 'Patronato Norte',  date: '12 JUN · 21:00', meta: 'Punto: Plaza Brasil · 9 personas anotadas · 40 prendas listas', mapEmbed: '', mapName: 'Patronato Norte, Santiago', joined: false },
+      { id: 'r2', name: 'Estación Central',  date: '19 JUN · 20:30', meta: 'Punto: Av. Alameda · Buscamos 6 personas más · 60 prendas listas', mapEmbed: '', mapName: 'Estación Central, Santiago', joined: false },
+      { id: 'r3', name: 'Mapocho Sur',       date: '26 JUN · 21:00', meta: 'Punto: Puente Recoleta · 4 personas anotadas · 35 prendas + comida', mapEmbed: '', mapName: 'Puente Recoleta, Santiago', joined: false },
+      { id: 'r4', name: 'Bellavista Centro', date: '03 JUL · 21:30', meta: 'Punto: Pío Nono · Coordinador: Daniel · 25 prendas exclusivas', mapEmbed: '', mapName: 'Pío Nono, Bellavista', joined: false },
     ],
     meetings: [
       { id: 'm1', day: '15', mon: 'JUN', name: 'Estudio Bíblico',     det: 'Romanos 12. Casa de Marcela — Ñuñoa. 19:30 hrs.' },
@@ -688,14 +687,16 @@ const DEFAULT_CONTENT = {
       { id: 'f3', when: 'AYER · SEBASTIÁN R.',     what: 'Tengo bolsa con 22 prendas filtradas listas. ¿Quién las pasa a buscar esta semana?' },
       { id: 'f4', when: 'HACE 2 DÍAS · EQUIPO',    what: 'Drop 04 sale el 20 de junio. Miembros del club tienen 24 hrs de acceso anticipado.' },
     ],
-    photoRegistryTitle: 'REGISTRO FOTOGRÁFICO',
-    photoRegistrySubtitle: 'Reuniones, rutas, talleres y momentos secretos del movimiento.',
-    photos: [
-      { id: 'ph1', img: '', caption: 'Ruta del 12 de junio — Patronato' },
-      { id: 'ph2', img: '', caption: 'Taller de filtrado — junio' },
-      { id: 'ph3', img: '', caption: 'Estudio bíblico mensual' },
-      { id: 'ph4', img: '', caption: 'Coordinación de entregas' },
+    bannerImages: [],
+    photoItems: [
+      { id: 'pcat1', name: 'REGISTRO FOTOGRÁFICO', coverImg: '', albums: [] },
+      { id: 'pcat2', name: 'TALLER DE FILTRADO',    coverImg: '', albums: [] },
+      { id: 'pcat3', name: 'ESTUDIO BÍBLICO MENSUAL', coverImg: '', albums: [] },
+      { id: 'pcat4', name: 'COORDINACIÓN DE ENTREGAS', coverImg: '', albums: [] },
     ],
+    shirtMeanings: {
+      collections: [],
+    },
   },
 };
 
@@ -750,6 +751,7 @@ function migrateContent(c) {
   if (!c.launch) c.launch = DEFAULT_CONTENT.launch;
   if (!c.launch.imageMobile)  c.launch.imageMobile  = DEFAULT_CONTENT.launch.imageMobile;
   if (!c.launch.imageDesktop) c.launch.imageDesktop = DEFAULT_CONTENT.launch.imageDesktop;
+  if (c.club && !c.club.shirtMeanings) c.club.shirtMeanings = { collections: [] };
 
   // Página de Envíos y Devoluciones
   if (!c.envios) c.envios = DEFAULT_CONTENT.envios;
@@ -766,6 +768,7 @@ function migrateContent(c) {
 
   c.nav = c.nav || { ...DEFAULT_CONTENT.nav };
   c.nav.links = mergeById(c.nav.links, DEFAULT_CONTENT.nav.links);
+  c.nav.links = c.nav.links.filter(l => l.id !== 'l6' && !/ruah.?live/i.test(l.label) && !/iglesias/i.test(l.label));
   // Force label overrides (design → Personalizados)
   const l8 = (c.nav.links || []).find(l => l.id === 'l8');
   if (l8) l8.label = 'Personalizados';
@@ -808,16 +811,9 @@ if (!c.cuadros.sendFields)  c.cuadros.sendFields  = DEFAULT_CONTENT.cuadros.send
     if (!c.eventos.gallerySub)    c.eventos.gallerySub    = DEFAULT_CONTENT.eventos.gallerySub;
   }
 
-  // Ensure services.items includes all defaults (e.g. sv6 RUAH Live)
   if (c.services && c.services.items) {
     c.services.items = mergeById(c.services.items, DEFAULT_CONTENT.services.items);
-    // Update RUAH Live description if it has the old text
-    c.services.items = c.services.items.map(it => {
-      if (it.id === 'sv6' && (it.desc || '').includes('Transmisiones en vivo')) {
-        return { ...it, desc: DEFAULT_CONTENT.services.items.find(x => x.id === 'sv6').desc };
-      }
-      return it;
-    });
+    c.services.items = c.services.items.filter(it => it.id !== 'sv6');
   }
 
   // Ensure club photos exist
@@ -864,6 +860,11 @@ if (!c.cuadros.sendFields)  c.cuadros.sendFields  = DEFAULT_CONTENT.cuadros.send
   if (c.iglesias && c.iglesias.services) {
     c.iglesias.services = c.iglesias.services.map(it => ({ ...it, name: replaceBranding(it.name), desc: replaceBranding(it.desc) }));
   }
+
+  if (!c.club) c.club = DEFAULT_CONTENT.club;
+  if (!c.club.bannerImages) c.club.bannerImages = [];
+  if (!c.club.photoItems) c.club.photoItems = DEFAULT_CONTENT.club.photoItems;
+  c.club.routes = (c.club.routes || []).map(r => ({ mapEmbed: '', mapName: r.name, ...r }));
 
   return c;
 }
@@ -1149,7 +1150,7 @@ function useContentStore() {
 
   React.useEffect(() => {
     const root = document.documentElement;
-    root.style.setProperty('--ivory', content.theme.ivory);
+    root.style.setProperty('--ivory', '#E6E6E6');
     root.style.setProperty('--amber', content.theme.amber);
     root.style.setProperty('--gray',  content.theme.gray);
     root.style.setProperty('--black', content.theme.black);

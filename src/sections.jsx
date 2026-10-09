@@ -113,6 +113,8 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
     '#protocolo': 'protocolo',
     '#comunidad': 'comunidad',
     '#design':    'design',
+    '/blog':      'blog',
+    '/envios':    'envios',
   };
 
   function navigate(href) {
@@ -163,23 +165,14 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
   return (
     <React.Fragment>
       <nav className={'nav' + (scrolled ? ' scrolled' : '') + (activePage ? ' has-page' : '')} ref={navRef}>
-        <a
-          href="#top"
-          className="nav__brand"
-          onClick={onBrandClick}
-          aria-label={content.brand.name}
-          title="·">
-
-          <img src={(window.__resources && window.__resources.logoWordmark) || "https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323723/ruahlabs/s0c7jhjeiwvrjclesxmj.png"} alt="RUAH LABS" className="nav__brand-img" />
-        </a>
-
-        <div className="nav__links">
+        {/* Left links */}
+        <div className="nav__links nav__links--left">
           {activePage && (
             <button type="button" className="nav__link nav__link--inicio" onClick={() => onGoHome && onGoHome()}>
               ← INICIO
             </button>
           )}
-          {nav.links.map((l) =>
+          {nav.links.filter((_, i) => i < Math.ceil(nav.links.length / 2)).map((l) =>
           <div className={'nav__link-wrap' + (openDrop === l.id ? ' open' : '')} key={l.id}>
               {l.dropdown ?
             <React.Fragment>
@@ -187,29 +180,19 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
                 className={'nav__link' + (openDrop === l.id ? ' open' : '')}
                 onClick={() => setOpenDrop((o) => o === l.id ? null : l.id)}
                 aria-expanded={openDrop === l.id}>
-                
                     {l.label}
-                    <span className="caret">▼</span>
+                    <span className="caret">▾</span>
                   </button>
                   <div className="nav__dropdown" role="menu">
                     {products.categories.map((c) =>
-                <a
-                  key={c.id}
-                  href="#productos"
-                  onClick={(e) => {e.preventDefault();navigateCategory(c.slug);}}>
-                  
+                <a key={c.id} href="#productos" onClick={(e) => {e.preventDefault();navigateCategory(c.slug);}}>
                         <span>{c.name}</span>
                         <span className="arr">→</span>
                       </a>
                 )}
                   </div>
                 </React.Fragment> :
-
-            <a
-              className="nav__link"
-              href={l.href}
-              onClick={(e) => {e.preventDefault();navigate(l.href);}}>
-              
+            <a className="nav__link" href={l.href} onClick={(e) => {e.preventDefault();navigate(l.href);}}>
                   {l.label}
                 </a>
             }
@@ -217,26 +200,28 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
           )}
         </div>
 
-        <a className="nav__cta" href={nav.cta.href} onClick={(e) => {e.preventDefault();navigate(nav.cta.href);}}>
-          {nav.cta.label}
-          <span className="arrow">→</span>
+        {/* Center logo */}
+        <a href="#top" className="nav__brand" onClick={onBrandClick} aria-label={content.brand.name} title="·">
+          <img src={(window.__resources && window.__resources.logoWordmark) || "https://res.cloudinary.com/dschjfuwz/image/upload/v1783626385/ruahlabs/rehdonkp0hmenayjmomx.png"} alt="RUAH LABS" className="nav__brand-img" />
         </a>
 
-        <button
-          className="nav__cart"
-          type="button"
-          onClick={onOpenCheckout}
-          aria-label={'Carrito (' + cartCount + ')'}
-          title="Ir a pagar"
-        >
-          <img
-            src={(window.__resources && window.__resources.cartIcon) || 'https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323690/ruahlabs/lmlhjytfctlr3apdcebc.png'}
-            alt=""
-            className="nav__cart__img"
-            aria-hidden="true"
-          />
-          {cartCount > 0 && <span className="nav__cart__b">{cartCount}</span>}
-        </button>
+        {/* Right links + actions */}
+        <div className="nav__links nav__links--right">
+          {nav.links.filter((_, i) => i >= Math.ceil(nav.links.length / 2)).map((l) =>
+          <div className={'nav__link-wrap' + (openDrop === l.id ? ' open' : '')} key={l.id}>
+            <a className="nav__link" href={l.href} onClick={(e) => {e.preventDefault();navigate(l.href);}}>
+                {l.label}
+              </a>
+            </div>
+          )}
+          <a className="nav__cta" href={nav.cta.href} onClick={(e) => {e.preventDefault();navigate(nav.cta.href);}}>
+            {nav.cta.label}
+          </a>
+          <button className="nav__cart" type="button" onClick={onOpenCheckout} aria-label={'Carrito (' + cartCount + ')'} title="Ir a pagar">
+            <img src={(window.__resources && window.__resources.cartIcon) || 'https://res.cloudinary.com/dschjfuwz/image/upload/v1783626378/ruahlabs/c5zvz67bnnyksibjmncp.png'} alt="" className="nav__cart__img" aria-hidden="true" />
+            {cartCount > 0 && <span className="nav__cart__b">{cartCount}</span>}
+          </button>
+        </div>
 
         <button
           className={'hamb' + (mobileOpen ? ' open' : '')}
@@ -297,8 +282,8 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
 // --- Hero ---
 function Hero({ content, isHome }) {
   const { hero } = content;
-  const FALLBACK_VIDEO_DESKTOP = 'https://res.cloudinary.com/dh05zwrbp/video/upload/v1781323721/ruahlabs/dk5p5bmllg4bzap3kovl.mp4';
-  const FALLBACK_VIDEO_MOBILE  = 'https://res.cloudinary.com/dh05zwrbp/video/upload/v1781323714/ruahlabs/kv8jqlkslwzfedpjcjia.mp4';
+  const FALLBACK_VIDEO_DESKTOP = 'https://res.cloudinary.com/dschjfuwz/video/upload/v1783626383/ruahlabs/idpoxkmoqkj8cn7pbtoe.mp4';
+  const FALLBACK_VIDEO_MOBILE  = 'https://res.cloudinary.com/dschjfuwz/video/upload/v1783627118/ruahlabs/rblhrehk6s7udupugviu.mp4';
   const bgType = hero.bgType || 'video';
   const srcDesktop = bgType === 'image' ? (hero.imageBgDesktop || '') : (hero.videoBgDesktop || FALLBACK_VIDEO_DESKTOP);
   const srcMobile  = bgType === 'image' ? (hero.imageBgMobile  || '') : (hero.videoBgMobile  || FALLBACK_VIDEO_MOBILE);
@@ -310,7 +295,8 @@ function Hero({ content, isHome }) {
   ];
 
   return (
-    <section className="hero" id="top">
+    <React.Fragment>
+    <section className={'hero' + (bgType === 'image' ? ' hero--image' : '')} id="top">
       {bgType === 'image' ? (
         <React.Fragment>
           {srcDesktop && <img className="hero__video-bg hero__video-bg--desktop" src={srcDesktop} alt="" aria-hidden="true" style={{objectFit:'cover'}} />}
@@ -329,19 +315,19 @@ function Hero({ content, isHome }) {
       <div className="hero__texture" aria-hidden="true"></div>
       <div className="shell">
 
-        <div className="hero__bottom">
-          <Reveal delay={500} className="hero__lede">
-              {hero.heroPrice && (
+        <div className={'hero__bottom' + (!hero.heroPrice ? ' hero__bottom--ctas-only' : '')}>
+          {hero.heroPrice && (
+            <Reveal delay={500} className="hero__lede">
               <button type="button" className="hero__price"
                 style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
                 onClick={() => { if (isHome) { var hel = document.getElementById('home-productos'); if (hel) hel.scrollIntoView({behavior:'smooth'}); } else window.dispatchEvent(new CustomEvent('ruah:navigateTo', { detail: { page: 'productos' } })); }}>
                 {hero.heroPrice}
               </button>
-            )}
-          </Reveal>
+            </Reveal>
+          )}
           <Reveal delay={650} className="hero__ctas">
             {hero.primaryCta.show !== false && (
-              <a className="btn btn--amber" href={hero.primaryCta.href}
+              <a className="btn btn--hero-p" href={hero.primaryCta.href}
                  onClick={e => {
                    const href = hero.primaryCta.href || '';
                    if (href.startsWith('#')) {
@@ -351,43 +337,19 @@ function Hero({ content, isHome }) {
                    }
                  }}>
                 {hero.primaryCta.label}
-                <span className="arrow">→</span>
               </a>
             )}
             {hero.secondaryCta.show !== false && (
-              <a className="btn btn--white" href={hero.secondaryCta.href}>
+              <a className="btn btn--hero-s" href={hero.secondaryCta.href}>
                 {hero.secondaryCta.label}
               </a>
             )}
           </Reveal>
-          <Reveal delay={800} className="hero__audience">
-            {AUDIENCE.map((a) => (
-              <button key={a.page} type="button" className="hero__aud-btn"
-                onClick={() => window.dispatchEvent(new CustomEvent('ruah:navigateTo', { detail: { page: a.page } }))}>
-                {a.label} →
-              </button>
-            ))}
-          </Reveal>
         </div>
       </div>
 
-      <div className="hero__marquee">
-        <div className="marquee__track" aria-hidden="true">
-          <span>
-            {Array.from({ length: 2 }).map((_, i) =>
-            <React.Fragment key={i}>
-                {hero.marquee.split('·').map((piece, j) =>
-              <React.Fragment key={j}>
-                    {piece.trim()}
-                    <span className="star">✦</span>
-                  </React.Fragment>
-              )}
-              </React.Fragment>
-            )}
-          </span>
-        </div>
-      </div>
-    </section>);
+    </section>
+    </React.Fragment>);
 
 }
 
@@ -1023,21 +985,6 @@ function Products({ content, onOpenProduct, initialCategory }) {
   return (
     <section className="products" id="productos">
       <div className="shell">
-        <div className="sec-head">
-          <Reveal>
-            <div className="sec-head__num">{p.eyebrow}</div>
-          </Reveal>
-          <div>
-            <h2 className="sec-head__title sec-head__title--products">
-              <RevealLine>{p.title}</RevealLine>{' '}
-              <RevealLine delay={120}><span className="amb">{p.titleEm}</span></RevealLine>
-            </h2>
-            <Reveal delay={250} className="sec-head__sub">
-              <p>{p.sub}</p>
-            </Reveal>
-          </div>
-        </div>
-
         <Reveal>
           <div className="cat-bar" role="tablist" aria-label="Categorías de producto">
             {p.categories.map((c) =>
@@ -1355,6 +1302,19 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
             {sizeErr && <p className="pd__size-err">Selecciona una talla para continuar</p>}
           </div>
 
+          <div className="pd__cta">
+            <button
+              type="button"
+              className={'btn pd__add-btn' + (selectedSize ? ' pd__add-btn--active' : ' pd__add-btn--idle')}
+              onClick={() => {
+                if (!selectedSize) { setSizeErr(true); document.querySelector('.pd__sizes')?.scrollIntoView({ behavior:'smooth', block:'center' }); return; }
+                if (onBuyNow) onBuyNow(product.id, selectedSize);
+              }}
+            >
+              {selectedSize ? 'AGREGAR AL CARRO →' : 'SELECCIONA UNA TALLA'}
+            </button>
+          </div>
+
           <div className="pd__scrollable">
             {product.description &&
             <p className="pd__desc">{product.description}</p>
@@ -1386,29 +1346,6 @@ function ProductDetail({ productId, content, onClose, onBuyNow, onAddToCart, ove
             <span className="txt">
               <strong>PROTOCOLO 1×1 ACTIVO.</strong>&nbsp;Comprar esta pieza dona una prenda a alguien en situación de calle.
             </span>
-          </div>
-
-          <div className="pd__cta">
-            <button
-              type="button"
-              className="btn btn--amber"
-              onClick={() => {
-                if (!selectedSize) { setSizeErr(true); document.querySelector('.pd__sizes')?.scrollIntoView({ behavior:'smooth', block:'center' }); return; }
-                if (onBuyNow) onBuyNow(product.id, selectedSize); else onClose();
-              }}
-            >
-              Ir a pagar <span className="arrow">→</span>
-            </button>
-            <button
-              type="button"
-              className="btn btn--ghost"
-              onClick={() => {
-                if (!selectedSize) { setSizeErr(true); document.querySelector('.pd__sizes')?.scrollIntoView({ behavior:'smooth', block:'center' }); return; }
-                if (onAddToCart) onAddToCart(product.id, 1, selectedSize);
-              }}
-            >
-              Añadir al carrito
-            </button>
           </div>
         </div>
       </div>

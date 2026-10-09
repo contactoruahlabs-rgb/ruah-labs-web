@@ -93,7 +93,7 @@ const DEFAULT_CONTENT = {
     // NUNCA volver a guardar hashes aquí: este objeto se sirve público.
   },
   theme: {
-    ivory: '#f5f1e8',
+    ivory: '#E6E6E6',
     amber: '#eca10c',
     gray: '#6b6b62',
     black: '#0a0a0a'
@@ -173,10 +173,6 @@ const DEFAULT_CONTENT = {
       href: '#productos',
       dropdown: true
     }, {
-      id: 'l6',
-      label: 'Iglesias',
-      href: '#iglesias'
-    }, {
       id: 'l7',
       label: 'Eventos',
       href: '#evento'
@@ -188,6 +184,10 @@ const DEFAULT_CONTENT = {
       id: 'l9',
       label: 'PROTOCOLO 1×1',
       href: '#protocolo'
+    }, {
+      id: 'l10',
+      label: 'BLOG',
+      href: '/blog'
     }],
     cta: {
       label: 'Contacto',
@@ -253,17 +253,17 @@ const DEFAULT_CONTENT = {
     accentWord: 'ACCIÓN',
     lede: 'Cada prenda que sale de nuestro taller activa el Protocolo 1×1\nEstampado y sublimación profesional para iglesias, marcas y eventos.\nUna prenda vendida ES una prenda donada a la calle.',
     primaryCta: {
-      label: 'Ver productos',
+      label: 'IR A TIENDA',
       href: '#productos',
       show: true
     },
     secondaryCta: {
-      label: 'Cotizar proyecto',
-      href: '#contacto',
-      show: false
+      label: 'BLOG',
+      href: '/blog',
+      show: true
     },
-    marquee: 'ESTAMPADO PROFESIONAL · SUBLIMACIÓN · ASESORÍA CREATIVA · MERCH · IGLESIAS · EVENTOS · DROPS LIMITADOS',
-    heroPrice: 'Desde $12.990 · Envío a todo Chile'
+    marquee: 'ESTAMPADO PROFESIONAL · SUBLIMACIÓN · ASESORÍA CREATIVA · MERCH · EVENTOS · DROPS LIMITADOS · PERSONALIZADOS',
+    heroPrice: ''
   },
   about: {
     eyebrow: '[ 00 ] QUIÉNES SOMOS',
@@ -410,10 +410,6 @@ const DEFAULT_CONTENT = {
       id: 'sv5',
       name: 'Diseños personalizados',
       desc: 'Tu versículo, tu idea, tu tipografía. Diseño autoral hecho por una diseñadora profesional, sin plantillas.'
-    }, {
-      id: 'sv6',
-      name: 'RUAH Live',
-      desc: 'Estación de estampado en vivo para matrimonios, cumpleaños, baby showers, corporativos y activaciones. Tus invitados eligen, ven cómo se hace, y se llevan algo único en menos de dos minutos.'
     }, {
       id: 'sv7',
       name: 'Cuadros decorativos',
@@ -1350,24 +1346,32 @@ const DEFAULT_CONTENT = {
       name: 'Patronato Norte',
       date: '12 JUN · 21:00',
       meta: 'Punto: Plaza Brasil · 9 personas anotadas · 40 prendas listas',
+      mapEmbed: '',
+      mapName: 'Patronato Norte, Santiago',
       joined: false
     }, {
       id: 'r2',
       name: 'Estación Central',
       date: '19 JUN · 20:30',
       meta: 'Punto: Av. Alameda · Buscamos 6 personas más · 60 prendas listas',
+      mapEmbed: '',
+      mapName: 'Estación Central, Santiago',
       joined: false
     }, {
       id: 'r3',
       name: 'Mapocho Sur',
       date: '26 JUN · 21:00',
       meta: 'Punto: Puente Recoleta · 4 personas anotadas · 35 prendas + comida',
+      mapEmbed: '',
+      mapName: 'Puente Recoleta, Santiago',
       joined: false
     }, {
       id: 'r4',
       name: 'Bellavista Centro',
       date: '03 JUL · 21:30',
       meta: 'Punto: Pío Nono · Coordinador: Daniel · 25 prendas exclusivas',
+      mapEmbed: '',
+      mapName: 'Pío Nono, Bellavista',
       joined: false
     }],
     meetings: [{
@@ -1412,25 +1416,31 @@ const DEFAULT_CONTENT = {
       when: 'HACE 2 DÍAS · EQUIPO',
       what: 'Drop 04 sale el 20 de junio. Miembros del club tienen 24 hrs de acceso anticipado.'
     }],
-    photoRegistryTitle: 'REGISTRO FOTOGRÁFICO',
-    photoRegistrySubtitle: 'Reuniones, rutas, talleres y momentos secretos del movimiento.',
-    photos: [{
-      id: 'ph1',
-      img: '',
-      caption: 'Ruta del 12 de junio — Patronato'
+    bannerImages: [],
+    photoItems: [{
+      id: 'pcat1',
+      name: 'REGISTRO FOTOGRÁFICO',
+      coverImg: '',
+      albums: []
     }, {
-      id: 'ph2',
-      img: '',
-      caption: 'Taller de filtrado — junio'
+      id: 'pcat2',
+      name: 'TALLER DE FILTRADO',
+      coverImg: '',
+      albums: []
     }, {
-      id: 'ph3',
-      img: '',
-      caption: 'Estudio bíblico mensual'
+      id: 'pcat3',
+      name: 'ESTUDIO BÍBLICO MENSUAL',
+      coverImg: '',
+      albums: []
     }, {
-      id: 'ph4',
-      img: '',
-      caption: 'Coordinación de entregas'
-    }]
+      id: 'pcat4',
+      name: 'COORDINACIÓN DE ENTREGAS',
+      coverImg: '',
+      albums: []
+    }],
+    shirtMeanings: {
+      collections: []
+    }
   }
 };
 
@@ -1482,6 +1492,9 @@ function migrateContent(c) {
   if (!c.launch) c.launch = DEFAULT_CONTENT.launch;
   if (!c.launch.imageMobile) c.launch.imageMobile = DEFAULT_CONTENT.launch.imageMobile;
   if (!c.launch.imageDesktop) c.launch.imageDesktop = DEFAULT_CONTENT.launch.imageDesktop;
+  if (c.club && !c.club.shirtMeanings) c.club.shirtMeanings = {
+    collections: []
+  };
 
   // Página de Envíos y Devoluciones
   if (!c.envios) c.envios = DEFAULT_CONTENT.envios;
@@ -1505,6 +1518,7 @@ function migrateContent(c) {
     ...DEFAULT_CONTENT.nav
   };
   c.nav.links = mergeById(c.nav.links, DEFAULT_CONTENT.nav.links);
+  c.nav.links = c.nav.links.filter(l => l.id !== 'l6' && !/ruah.?live/i.test(l.label) && !/iglesias/i.test(l.label));
   // Force label overrides (design → Personalizados)
   const l8 = (c.nav.links || []).find(l => l.id === 'l8');
   if (l8) l8.label = 'Personalizados';
@@ -1550,20 +1564,9 @@ function migrateContent(c) {
     if (!c.eventos.galleryTitle) c.eventos.galleryTitle = DEFAULT_CONTENT.eventos.galleryTitle;
     if (!c.eventos.gallerySub) c.eventos.gallerySub = DEFAULT_CONTENT.eventos.gallerySub;
   }
-
-  // Ensure services.items includes all defaults (e.g. sv6 RUAH Live)
   if (c.services && c.services.items) {
     c.services.items = mergeById(c.services.items, DEFAULT_CONTENT.services.items);
-    // Update RUAH Live description if it has the old text
-    c.services.items = c.services.items.map(it => {
-      if (it.id === 'sv6' && (it.desc || '').includes('Transmisiones en vivo')) {
-        return {
-          ...it,
-          desc: DEFAULT_CONTENT.services.items.find(x => x.id === 'sv6').desc
-        };
-      }
-      return it;
-    });
+    c.services.items = c.services.items.filter(it => it.id !== 'sv6');
   }
 
   // Ensure club photos exist
@@ -1617,6 +1620,14 @@ function migrateContent(c) {
       desc: replaceBranding(it.desc)
     }));
   }
+  if (!c.club) c.club = DEFAULT_CONTENT.club;
+  if (!c.club.bannerImages) c.club.bannerImages = [];
+  if (!c.club.photoItems) c.club.photoItems = DEFAULT_CONTENT.club.photoItems;
+  c.club.routes = (c.club.routes || []).map(r => ({
+    mapEmbed: '',
+    mapName: r.name,
+    ...r
+  }));
   return c;
 }
 function mergeById(userList, defaultList) {
@@ -1923,7 +1934,7 @@ function useContentStore() {
   }, []);
   React.useEffect(() => {
     const root = document.documentElement;
-    root.style.setProperty('--ivory', content.theme.ivory);
+    root.style.setProperty('--ivory', '#E6E6E6');
     root.style.setProperty('--amber', content.theme.amber);
     root.style.setProperty('--gray', content.theme.gray);
     root.style.setProperty('--black', content.theme.black);
@@ -2167,7 +2178,9 @@ function Nav({
     '#evento': 'evento',
     '#protocolo': 'protocolo',
     '#comunidad': 'comunidad',
-    '#design': 'design'
+    '#design': 'design',
+    '/blog': 'blog',
+    '/envios': 'envios'
   };
   function navigate(href) {
     setOpenDrop(null);
@@ -2223,23 +2236,13 @@ function Nav({
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("nav", {
     className: 'nav' + (scrolled ? ' scrolled' : '') + (activePage ? ' has-page' : ''),
     ref: navRef
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#top",
-    className: "nav__brand",
-    onClick: onBrandClick,
-    "aria-label": content.brand.name,
-    title: "\xB7"
-  }, /*#__PURE__*/React.createElement("img", {
-    src: window.__resources && window.__resources.logoWordmark || "https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323723/ruahlabs/s0c7jhjeiwvrjclesxmj.png",
-    alt: "RUAH LABS",
-    className: "nav__brand-img"
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "nav__links"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "nav__links nav__links--left"
   }, activePage && /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "nav__link nav__link--inicio",
     onClick: () => onGoHome && onGoHome()
-  }, "\u2190 INICIO"), nav.links.map(l => /*#__PURE__*/React.createElement("div", {
+  }, "\u2190 INICIO"), nav.links.filter((_, i) => i < Math.ceil(nav.links.length / 2)).map(l => /*#__PURE__*/React.createElement("div", {
     className: 'nav__link-wrap' + (openDrop === l.id ? ' open' : ''),
     key: l.id
   }, l.dropdown ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
@@ -2248,7 +2251,7 @@ function Nav({
     "aria-expanded": openDrop === l.id
   }, l.label, /*#__PURE__*/React.createElement("span", {
     className: "caret"
-  }, "\u25BC")), /*#__PURE__*/React.createElement("div", {
+  }, "\u25BE")), /*#__PURE__*/React.createElement("div", {
     className: "nav__dropdown",
     role: "menu"
   }, products.categories.map(c => /*#__PURE__*/React.createElement("a", {
@@ -2268,28 +2271,48 @@ function Nav({
       navigate(l.href);
     }
   }, l.label)))), /*#__PURE__*/React.createElement("a", {
+    href: "#top",
+    className: "nav__brand",
+    onClick: onBrandClick,
+    "aria-label": content.brand.name,
+    title: "\xB7"
+  }, /*#__PURE__*/React.createElement("img", {
+    src: window.__resources && window.__resources.logoWordmark || "https://res.cloudinary.com/dschjfuwz/image/upload/v1783626385/ruahlabs/rehdonkp0hmenayjmomx.png",
+    alt: "RUAH LABS",
+    className: "nav__brand-img"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "nav__links nav__links--right"
+  }, nav.links.filter((_, i) => i >= Math.ceil(nav.links.length / 2)).map(l => /*#__PURE__*/React.createElement("div", {
+    className: 'nav__link-wrap' + (openDrop === l.id ? ' open' : ''),
+    key: l.id
+  }, /*#__PURE__*/React.createElement("a", {
+    className: "nav__link",
+    href: l.href,
+    onClick: e => {
+      e.preventDefault();
+      navigate(l.href);
+    }
+  }, l.label))), /*#__PURE__*/React.createElement("a", {
     className: "nav__cta",
     href: nav.cta.href,
     onClick: e => {
       e.preventDefault();
       navigate(nav.cta.href);
     }
-  }, nav.cta.label, /*#__PURE__*/React.createElement("span", {
-    className: "arrow"
-  }, "\u2192")), /*#__PURE__*/React.createElement("button", {
+  }, nav.cta.label), /*#__PURE__*/React.createElement("button", {
     className: "nav__cart",
     type: "button",
     onClick: onOpenCheckout,
     "aria-label": 'Carrito (' + cartCount + ')',
     title: "Ir a pagar"
   }, /*#__PURE__*/React.createElement("img", {
-    src: window.__resources && window.__resources.cartIcon || 'https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323690/ruahlabs/lmlhjytfctlr3apdcebc.png',
+    src: window.__resources && window.__resources.cartIcon || 'https://res.cloudinary.com/dschjfuwz/image/upload/v1783626378/ruahlabs/c5zvz67bnnyksibjmncp.png',
     alt: "",
     className: "nav__cart__img",
     "aria-hidden": "true"
   }), cartCount > 0 && /*#__PURE__*/React.createElement("span", {
     className: "nav__cart__b"
-  }, cartCount)), /*#__PURE__*/React.createElement("button", {
+  }, cartCount))), /*#__PURE__*/React.createElement("button", {
     className: 'hamb' + (mobileOpen ? ' open' : ''),
     "aria-label": "Men\xFA",
     onClick: () => setMobileOpen(o => !o)
@@ -2368,8 +2391,8 @@ function Hero({
   const {
     hero
   } = content;
-  const FALLBACK_VIDEO_DESKTOP = 'https://res.cloudinary.com/dh05zwrbp/video/upload/v1781323721/ruahlabs/dk5p5bmllg4bzap3kovl.mp4';
-  const FALLBACK_VIDEO_MOBILE = 'https://res.cloudinary.com/dh05zwrbp/video/upload/v1781323714/ruahlabs/kv8jqlkslwzfedpjcjia.mp4';
+  const FALLBACK_VIDEO_DESKTOP = 'https://res.cloudinary.com/dschjfuwz/video/upload/v1783626383/ruahlabs/idpoxkmoqkj8cn7pbtoe.mp4';
+  const FALLBACK_VIDEO_MOBILE = 'https://res.cloudinary.com/dschjfuwz/video/upload/v1783627118/ruahlabs/rblhrehk6s7udupugviu.mp4';
   const bgType = hero.bgType || 'video';
   const srcDesktop = bgType === 'image' ? hero.imageBgDesktop || '' : hero.videoBgDesktop || FALLBACK_VIDEO_DESKTOP;
   const srcMobile = bgType === 'image' ? hero.imageBgMobile || '' : hero.videoBgMobile || FALLBACK_VIDEO_MOBILE;
@@ -2383,8 +2406,8 @@ function Hero({
     label: 'Soy empresa',
     page: 'evento'
   }];
-  return /*#__PURE__*/React.createElement("section", {
-    className: "hero",
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("section", {
+    className: 'hero' + (bgType === 'image' ? ' hero--image' : ''),
     id: "top"
   }, bgType === 'image' ? /*#__PURE__*/React.createElement(React.Fragment, null, srcDesktop && /*#__PURE__*/React.createElement("img", {
     className: "hero__video-bg hero__video-bg--desktop",
@@ -2444,11 +2467,11 @@ function Hero({
   }), /*#__PURE__*/React.createElement("div", {
     className: "shell"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "hero__bottom"
-  }, /*#__PURE__*/React.createElement(Reveal, {
+    className: 'hero__bottom' + (!hero.heroPrice ? ' hero__bottom--ctas-only' : '')
+  }, hero.heroPrice && /*#__PURE__*/React.createElement(Reveal, {
     delay: 500,
     className: "hero__lede"
-  }, hero.heroPrice && /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "hero__price",
     style: {
@@ -2472,7 +2495,7 @@ function Hero({
     delay: 650,
     className: "hero__ctas"
   }, hero.primaryCta.show !== false && /*#__PURE__*/React.createElement("a", {
-    className: "btn btn--amber",
+    className: "btn btn--hero-p",
     href: hero.primaryCta.href,
     onClick: e => {
       const href = hero.primaryCta.href || '';
@@ -2490,37 +2513,10 @@ function Hero({
         }));
       }
     }
-  }, hero.primaryCta.label, /*#__PURE__*/React.createElement("span", {
-    className: "arrow"
-  }, "\u2192")), hero.secondaryCta.show !== false && /*#__PURE__*/React.createElement("a", {
-    className: "btn btn--white",
+  }, hero.primaryCta.label), hero.secondaryCta.show !== false && /*#__PURE__*/React.createElement("a", {
+    className: "btn btn--hero-s",
     href: hero.secondaryCta.href
-  }, hero.secondaryCta.label)), /*#__PURE__*/React.createElement(Reveal, {
-    delay: 800,
-    className: "hero__audience"
-  }, AUDIENCE.map(a => /*#__PURE__*/React.createElement("button", {
-    key: a.page,
-    type: "button",
-    className: "hero__aud-btn",
-    onClick: () => window.dispatchEvent(new CustomEvent('ruah:navigateTo', {
-      detail: {
-        page: a.page
-      }
-    }))
-  }, a.label, " \u2192"))))), /*#__PURE__*/React.createElement("div", {
-    className: "hero__marquee"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "marquee__track",
-    "aria-hidden": "true"
-  }, /*#__PURE__*/React.createElement("span", null, Array.from({
-    length: 2
-  }).map((_, i) => /*#__PURE__*/React.createElement(React.Fragment, {
-    key: i
-  }, hero.marquee.split('·').map((piece, j) => /*#__PURE__*/React.createElement(React.Fragment, {
-    key: j
-  }, piece.trim(), /*#__PURE__*/React.createElement("span", {
-    className: "star"
-  }, "\u2726")))))))));
+  }, hero.secondaryCta.label))))));
 }
 
 // --- Home Intro (post-hero info strip) ---
@@ -3397,20 +3393,7 @@ function Products({
     id: "productos"
   }, /*#__PURE__*/React.createElement("div", {
     className: "shell"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "sec-head"
   }, /*#__PURE__*/React.createElement(Reveal, null, /*#__PURE__*/React.createElement("div", {
-    className: "sec-head__num"
-  }, p.eyebrow)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
-    className: "sec-head__title sec-head__title--products"
-  }, /*#__PURE__*/React.createElement(RevealLine, null, p.title), ' ', /*#__PURE__*/React.createElement(RevealLine, {
-    delay: 120
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "amb"
-  }, p.titleEm))), /*#__PURE__*/React.createElement(Reveal, {
-    delay: 250,
-    className: "sec-head__sub"
-  }, /*#__PURE__*/React.createElement("p", null, p.sub)))), /*#__PURE__*/React.createElement(Reveal, null, /*#__PURE__*/React.createElement("div", {
     className: "cat-bar",
     role: "tablist",
     "aria-label": "Categor\xEDas de producto"
@@ -3922,6 +3905,22 @@ function ProductDetail({
   }, s))), sizeErr && /*#__PURE__*/React.createElement("p", {
     className: "pd__size-err"
   }, "Selecciona una talla para continuar")), /*#__PURE__*/React.createElement("div", {
+    className: "pd__cta"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: 'btn pd__add-btn' + (selectedSize ? ' pd__add-btn--active' : ' pd__add-btn--idle'),
+    onClick: () => {
+      if (!selectedSize) {
+        setSizeErr(true);
+        document.querySelector('.pd__sizes')?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+        return;
+      }
+      if (onBuyNow) onBuyNow(product.id, selectedSize);
+    }
+  }, selectedSize ? 'AGREGAR AL CARRO →' : 'SELECCIONA UNA TALLA')), /*#__PURE__*/React.createElement("div", {
     className: "pd__scrollable"
   }, product.description && /*#__PURE__*/React.createElement("p", {
     className: "pd__desc"
@@ -3974,39 +3973,7 @@ function ProductDetail({
     className: "icon"
   }, "1\xD7"), /*#__PURE__*/React.createElement("span", {
     className: "txt"
-  }, /*#__PURE__*/React.createElement("strong", null, "PROTOCOLO 1\xD71 ACTIVO."), "\xA0Comprar esta pieza dona una prenda a alguien en situaci\xF3n de calle.")), /*#__PURE__*/React.createElement("div", {
-    className: "pd__cta"
-  }, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "btn btn--amber",
-    onClick: () => {
-      if (!selectedSize) {
-        setSizeErr(true);
-        document.querySelector('.pd__sizes')?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
-        return;
-      }
-      if (onBuyNow) onBuyNow(product.id, selectedSize);else onClose();
-    }
-  }, "Ir a pagar ", /*#__PURE__*/React.createElement("span", {
-    className: "arrow"
-  }, "\u2192")), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "btn btn--ghost",
-    onClick: () => {
-      if (!selectedSize) {
-        setSizeErr(true);
-        document.querySelector('.pd__sizes')?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
-        return;
-      }
-      if (onAddToCart) onAddToCart(product.id, 1, selectedSize);
-    }
-  }, "A\xF1adir al carrito")))));
+  }, /*#__PURE__*/React.createElement("strong", null, "PROTOCOLO 1\xD71 ACTIVO."), "\xA0Comprar esta pieza dona una prenda a alguien en situaci\xF3n de calle.")))));
 }
 
 // --- Manifesto ---
@@ -5393,58 +5360,400 @@ Object.assign(window, {
 // RUAH LABS CLUB — Secret area
 // ============================================================
 
+function ClubImageBanner({
+  images
+}) {
+  var valid = (images || []).filter(function (b) {
+    return b.img;
+  });
+  var [idx, setIdx] = React.useState(0);
+  React.useEffect(function () {
+    if (valid.length < 2) return;
+    var t = setInterval(function () {
+      setIdx(function (i) {
+        return (i + 1) % valid.length;
+      });
+    }, 4000);
+    return function () {
+      clearInterval(t);
+    };
+  }, [valid.length]);
+  if (!valid.length) return null;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "club__img-banner"
+  }, valid.map(function (b, i) {
+    return /*#__PURE__*/React.createElement("div", {
+      key: b.id || i,
+      className: 'club__img-slide' + (i === idx ? ' active' : '')
+    }, /*#__PURE__*/React.createElement("img", {
+      src: b.img,
+      alt: b.caption || ''
+    }), b.caption && /*#__PURE__*/React.createElement("div", {
+      className: "club__img-caption"
+    }, b.caption));
+  }), valid.length > 1 && /*#__PURE__*/React.createElement("div", {
+    className: "club__img-dots"
+  }, valid.map(function (_, i) {
+    return /*#__PURE__*/React.createElement("span", {
+      key: i,
+      className: i === idx ? 'active' : '',
+      onClick: function () {
+        setIdx(i);
+      }
+    });
+  })));
+}
+function ClubPanelsBanner({
+  panels
+}) {
+  var [idx, setIdx] = React.useState(0);
+  React.useEffect(function () {
+    if (!panels || panels.length < 2) return;
+    var t = setInterval(function () {
+      setIdx(function (i) {
+        return (i + 1) % panels.length;
+      });
+    }, 3500);
+    return function () {
+      clearInterval(t);
+    };
+  }, [panels && panels.length]);
+  if (!panels || !panels.length) return null;
+  var p = panels[idx];
+  return /*#__PURE__*/React.createElement("div", {
+    className: "club__panels-banner"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "club__panels-banner-inner"
+  }, panels.map(function (panel, i) {
+    return /*#__PURE__*/React.createElement("div", {
+      key: panel.id,
+      className: 'club__pbslide' + (i === idx ? ' active' : '')
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "ttl"
+    }, panel.ttl), /*#__PURE__*/React.createElement("div", {
+      className: "big"
+    }, panel.big), /*#__PURE__*/React.createElement("div", {
+      className: "desc"
+    }, panel.desc));
+  })), panels.length > 1 && /*#__PURE__*/React.createElement("div", {
+    className: "club__pb-dots"
+  }, panels.map(function (_, i) {
+    return /*#__PURE__*/React.createElement("span", {
+      key: i,
+      className: i === idx ? 'active' : '',
+      onClick: function () {
+        setIdx(i);
+      }
+    });
+  })));
+}
+function ShirtMeaningsSection({
+  collections
+}) {
+  var [view, setView] = React.useState('list'); // 'list' | 'collection' | 'item'
+  var [selectedCol, setSCol] = React.useState(null);
+  var [selectedItem, setSItem] = React.useState(null);
+  var [filter, setFilter] = React.useState('all');
+  var [openSections, setOpenSections] = React.useState({});
+  var TYPE_LABELS = {
+    coleccion: 'Colección',
+    personalizada: 'Personalizada',
+    singulares: 'Singulares'
+  };
+  var all = collections || [];
+  var filtered = filter === 'all' ? all : all.filter(function (c) {
+    return c.type === filter;
+  });
+  var viewRef = React.useRef('list');
+  function setViewTracked(v) {
+    setView(v);
+    viewRef.current = v;
+  }
+  React.useEffect(function () {
+    function handlePop() {
+      var v = viewRef.current;
+      if (v === 'item') {
+        setSItem(null);
+        setViewTracked('collection');
+        setOpenSections({});
+      } else if (v === 'collection') {
+        setSCol(null);
+        setSItem(null);
+        setViewTracked('list');
+      }
+    }
+    window.addEventListener('popstate', handlePop);
+    return function () {
+      window.removeEventListener('popstate', handlePop);
+    };
+  }, []);
+  function openCollection(col) {
+    history.pushState({
+      sm: 'collection'
+    }, '');
+    setSCol(col);
+    setSItem(null);
+    setViewTracked('collection');
+    setOpenSections({});
+  }
+  function openItem(item) {
+    history.pushState({
+      sm: 'item'
+    }, '');
+    setSItem(item);
+    setViewTracked('item');
+    setOpenSections({});
+  }
+  function backToList() {
+    history.back();
+  }
+  function backToCollection() {
+    history.back();
+  }
+  function toggleSection(id) {
+    setOpenSections(function (s) {
+      return Object.assign({}, s, {
+        [id]: !s[id]
+      });
+    });
+  }
+  if (view === 'item' && selectedItem) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "sm__wrap"
+    }, /*#__PURE__*/React.createElement("button", {
+      className: "sm__back",
+      onClick: backToCollection
+    }, "\u2190 ", selectedCol && selectedCol.name), /*#__PURE__*/React.createElement("div", {
+      className: "sm__item-hero"
+    }, selectedItem.img && /*#__PURE__*/React.createElement("div", {
+      className: "sm__item-img"
+    }, /*#__PURE__*/React.createElement("img", {
+      src: selectedItem.img,
+      alt: selectedItem.name
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "sm__item-meta"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "num"
+    }, selectedItem.verse), /*#__PURE__*/React.createElement("h3", {
+      className: "sm__item-name"
+    }, selectedItem.name))), /*#__PURE__*/React.createElement("div", {
+      className: "sm__accordion"
+    }, (selectedItem.sections || []).map(function (sec, i) {
+      var isOpen = !!openSections[sec.id];
+      return /*#__PURE__*/React.createElement("div", {
+        key: sec.id,
+        className: 'sm__acc-item' + (isOpen ? ' open' : '')
+      }, /*#__PURE__*/React.createElement("button", {
+        className: "sm__acc-head",
+        onClick: function () {
+          toggleSection(sec.id);
+        }
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "sm__acc-num"
+      }, String(i + 1).padStart(2, '0')), /*#__PURE__*/React.createElement("span", {
+        className: "sm__acc-title"
+      }, sec.title), /*#__PURE__*/React.createElement("span", {
+        className: "sm__acc-arrow"
+      }, isOpen ? '−' : '+')), isOpen && /*#__PURE__*/React.createElement("div", {
+        className: "sm__acc-body"
+      }, sec.pdfUrl ? /*#__PURE__*/React.createElement("div", {
+        className: "sm__pdf-viewer"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "sm__pdf-actions"
+      }, /*#__PURE__*/React.createElement("a", {
+        href: sec.pdfUrl,
+        target: "_blank",
+        rel: "noreferrer",
+        className: "sm__pdf-btn"
+      }, "Abrir PDF \u2197"), /*#__PURE__*/React.createElement("a", {
+        href: sec.pdfUrl,
+        download: true,
+        className: "sm__pdf-btn sm__pdf-btn--dl"
+      }, "Descargar \u2193")), /*#__PURE__*/React.createElement("iframe", {
+        src: sec.pdfUrl,
+        title: sec.title
+      })) : (sec.body || '').split('\n\n').map(function (para, pi) {
+        return para ? /*#__PURE__*/React.createElement("p", {
+          key: pi
+        }, para) : null;
+      })));
+    })));
+  }
+  if (view === 'collection' && selectedCol) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "sm__wrap"
+    }, /*#__PURE__*/React.createElement("button", {
+      className: "sm__back",
+      onClick: backToList
+    }, "\u2190 Todas las colecciones"), /*#__PURE__*/React.createElement("div", {
+      className: "sm__col-header"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "num"
+    }, TYPE_LABELS[selectedCol.type] || selectedCol.type), /*#__PURE__*/React.createElement("h3", null, selectedCol.name)), !(selectedCol.items && selectedCol.items.length) && /*#__PURE__*/React.createElement("p", {
+      className: "sm__empty"
+    }, "Esta colecci\xF3n no tiene poleras a\xFAn."), /*#__PURE__*/React.createElement("div", {
+      className: "sm__item-grid"
+    }, (selectedCol.items || []).map(function (item) {
+      return /*#__PURE__*/React.createElement("div", {
+        key: item.id,
+        className: "sm__item-card",
+        onClick: function () {
+          openItem(item);
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "sm__item-thumb"
+      }, item.img ? /*#__PURE__*/React.createElement("img", {
+        src: item.img,
+        alt: item.name
+      }) : /*#__PURE__*/React.createElement("div", {
+        className: "sm__item-ph"
+      }, "\u25C9")), /*#__PURE__*/React.createElement("div", {
+        className: "sm__item-info"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "sm__item-verse"
+      }, item.verse), /*#__PURE__*/React.createElement("div", {
+        className: "sm__item-label"
+      }, item.name), /*#__PURE__*/React.createElement("div", {
+        className: "sm__item-cta"
+      }, "Leer reflexi\xF3n \u2192")));
+    })));
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    className: "sm__wrap"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "sm__filters"
+  }, ['all', 'coleccion', 'personalizada', 'singulares'].map(function (t) {
+    return /*#__PURE__*/React.createElement("button", {
+      key: t,
+      className: 'sm__filter' + (filter === t ? ' active' : ''),
+      onClick: function () {
+        setFilter(t);
+      }
+    }, t === 'all' ? 'Todo' : TYPE_LABELS[t]);
+  })), !filtered.length && /*#__PURE__*/React.createElement("p", {
+    className: "sm__empty"
+  }, "A\xFAn no hay colecciones cargadas."), /*#__PURE__*/React.createElement("div", {
+    className: "sm__col-grid"
+  }, filtered.map(function (col) {
+    return /*#__PURE__*/React.createElement("div", {
+      key: col.id,
+      className: "sm__col-card",
+      onClick: function () {
+        openCollection(col);
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "sm__col-cover"
+    }, col.coverImg ? /*#__PURE__*/React.createElement("img", {
+      src: col.coverImg,
+      alt: col.name
+    }) : /*#__PURE__*/React.createElement("div", {
+      className: "sm__col-ph"
+    }, "\u25C9")), /*#__PURE__*/React.createElement("div", {
+      className: "sm__col-type"
+    }, TYPE_LABELS[col.type] || col.type), /*#__PURE__*/React.createElement("div", {
+      className: "sm__col-name"
+    }, col.name), /*#__PURE__*/React.createElement("div", {
+      className: "sm__col-count"
+    }, (col.items || []).length, " polera", (col.items || []).length !== 1 ? 's' : ''), /*#__PURE__*/React.createElement("div", {
+      className: "sm__col-cta"
+    }, "Ver significado \u2192"));
+  })));
+}
 function Club({
   open,
   content,
   onClose,
   store
 }) {
-  const [authed, setAuthed] = React.useState(() => sessionStorage.getItem('ruah-club-auth') === '1');
-  const memberName = (sessionStorage.getItem('ruah-club-name') || '').split(' ')[0].toUpperCase();
-  const [pwd, setPwd] = React.useState('');
-  const [email, setEmail] = React.useState('');
-  const [err, setErr] = React.useState('');
-  const [composer, setComposer] = React.useState('');
-  React.useEffect(() => {
+  var [authed, setAuthed] = React.useState(function () {
+    return sessionStorage.getItem('ruah-club-auth') === '1';
+  });
+  var memberName = (sessionStorage.getItem('ruah-club-name') || '').split(' ')[0].toUpperCase();
+  var memberEmail = (sessionStorage.getItem('ruah-club-email') || '').trim().toLowerCase();
+  var [pwd, setPwd] = React.useState('');
+  var [email, setEmail] = React.useState('');
+  var [err, setErr] = React.useState('');
+  var [composer, setComposer] = React.useState('');
+  var [posting, setPosting] = React.useState(false);
+  var [liveMessages, setLiveMessages] = React.useState(null);
+  var [activeTab, setActiveTab] = React.useState('photos');
+  var [photoModal, setPhotoModal] = React.useState({
+    itemId: null,
+    albumId: null
+  });
+  React.useEffect(function () {
     document.body.style.overflow = open ? 'hidden' : '';
   }, [open]);
-  React.useEffect(() => {
+  React.useEffect(function () {
     if (!open) {
       setErr('');
       return;
     }
-    // Re-check auth each time the Club opens — the secret-portal login may
-    // have authenticated us already (no second login screen).
     if (sessionStorage.getItem('ruah-club-auth') === '1') setAuthed(true);
   }, [open]);
+
+  // Fetch and poll live messages from DB
+  React.useEffect(function () {
+    if (!authed) return;
+    var cancelled = false;
+    function loadMessages() {
+      fetch((window.RUAH_API || '') + '/api/club/messages?limit=50').then(function (r) {
+        return r.json();
+      }).then(function (data) {
+        if (!cancelled && Array.isArray(data)) setLiveMessages(data);
+      }).catch(function () {});
+    }
+    loadMessages();
+    var interval = setInterval(loadMessages, 15000);
+    return function () {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [authed]);
   async function enter(e) {
     e && e.preventDefault();
-    var api = (window.RUAH_API || '') + '/api/club/verify-password';
-    var ok = false;
+    var trimEmail = email.trim().toLowerCase();
     try {
-      var r = await fetch(api, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          password: pwd
-        })
-      });
-      var data = await r.json();
-      ok = !!data.ok;
+      var r, data;
+      if (trimEmail) {
+        // Per-user login with email + password
+        r = await fetch((window.RUAH_API || '') + '/api/club/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: trimEmail,
+            password: pwd
+          })
+        });
+        data = await r.json();
+        if (data.ok) {
+          sessionStorage.setItem('ruah-club-email', data.email || trimEmail);
+          sessionStorage.setItem('ruah-club-name', data.name || '');
+        }
+      } else {
+        // Legacy global password
+        r = await fetch((window.RUAH_API || '') + '/api/club/verify-password', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            password: pwd
+          })
+        });
+        data = await r.json();
+      }
+      if (data.ok) {
+        setAuthed(true);
+        sessionStorage.setItem('ruah-club-auth', '1');
+        setErr('');
+      } else {
+        setErr('CREDENCIALES INCORRECTAS — REVISA EL CORREO QUE LLEGÓ CON TU COMPRA.');
+      }
     } catch (_) {
-      // Sin fallback local: la verificación es solo server-side (bcrypt).
-      // Comparar contra un hash público sería falsificable/craqueable offline.
       setErr('NO SE PUDO CONECTAR CON EL SERVIDOR. INTENTA DE NUEVO.');
-      return;
-    }
-    if (ok) {
-      setAuthed(true);
-      sessionStorage.setItem('ruah-club-auth', '1');
-      setErr('');
-    } else {
-      setErr('CONTRASEÑA INCORRECTA — REVISA EL CORREO QUE LLEGÓ CON TU COMPRA.');
     }
   }
   function toggleJoin(routeId) {
@@ -5454,9 +5763,7 @@ function Club({
     });
     if (!route) return;
     var joining = !route.joined;
-    var email = sessionStorage.getItem('ruah-club-email') || '';
-
-    // Actualizar UI inmediatamente
+    var em = sessionStorage.getItem('ruah-club-email') || '';
     store.updateList('club.routes', function (list) {
       return list.map(function (r) {
         return r.id === routeId ? Object.assign({}, r, {
@@ -5464,9 +5771,7 @@ function Club({
         }) : r;
       });
     });
-
-    // Persistir en Supabase
-    if (email) {
+    if (em) {
       if (joining) {
         fetch('' + window.RUAH_API + '/api/club/signup', {
           method: 'POST',
@@ -5474,7 +5779,7 @@ function Club({
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            email: email,
+            email: em,
             route_id: routeId,
             route_name: route.name
           })
@@ -5486,25 +5791,132 @@ function Club({
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            email: email,
+            email: em,
             route_id: routeId
           })
         }).catch(function () {});
       }
     }
   }
-  function postMessage() {
-    if (!composer.trim()) return;
-    store.updateList('club.feed', list => [{
-      id: 'f' + Date.now(),
-      when: 'AHORA · TÚ',
-      what: composer.trim()
-    }, ...list]);
-    setComposer('');
+  async function postMessage() {
+    var text = composer.trim();
+    if (!text || posting) return;
+    setPosting(true);
+    try {
+      var r = await fetch((window.RUAH_API || '') + '/api/club/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: memberEmail,
+          name: sessionStorage.getItem('ruah-club-name') || '',
+          body: text
+        })
+      });
+      var data = await r.json();
+      if (data.ok && data.message) {
+        setLiveMessages(function (prev) {
+          return [data.message].concat(prev || []);
+        });
+      }
+      setComposer('');
+    } catch (e) {
+      // Keep message in composer if it failed
+    } finally {
+      setPosting(false);
+    }
   }
-  const c = content.club;
-  const [activeTab, setActiveTab] = React.useState('routes'); // 'routes', 'meetings', 'feed', 'photos'
+  var c = content.club;
 
+  // Photo modal content
+  var photoModalEl = null;
+  if (photoModal.itemId) {
+    var pItem = (c.photoItems || []).find(function (x) {
+      return x.id === photoModal.itemId;
+    });
+    if (pItem) {
+      if (!photoModal.albumId) {
+        // Album list view
+        photoModalEl = /*#__PURE__*/React.createElement("div", {
+          className: "club__photo-modal"
+        }, /*#__PURE__*/React.createElement("div", {
+          className: "club__pm-head"
+        }, /*#__PURE__*/React.createElement("button", {
+          className: "club__pm-back",
+          onClick: function () {
+            setPhotoModal({
+              itemId: null,
+              albumId: null
+            });
+          }
+        }, "\u2190 Volver"), /*#__PURE__*/React.createElement("h3", null, pItem.name)), /*#__PURE__*/React.createElement("div", {
+          className: "club__albums"
+        }, (pItem.albums || []).length === 0 && /*#__PURE__*/React.createElement("p", {
+          className: "club__pm-empty"
+        }, "No hay \xE1lbumes todav\xEDa."), (pItem.albums || []).map(function (alb) {
+          return /*#__PURE__*/React.createElement("div", {
+            key: alb.id,
+            className: "club__album",
+            onClick: function () {
+              setPhotoModal({
+                itemId: pItem.id,
+                albumId: alb.id
+              });
+            }
+          }, /*#__PURE__*/React.createElement("div", {
+            className: "club__album-thumb"
+          }, alb.photos && alb.photos[0] ? /*#__PURE__*/React.createElement("img", {
+            src: alb.photos[0],
+            alt: ""
+          }) : /*#__PURE__*/React.createElement("div", {
+            className: "club__album-ph"
+          }, "+")), /*#__PURE__*/React.createElement("div", {
+            className: "club__album-info"
+          }, /*#__PURE__*/React.createElement("div", {
+            className: "name"
+          }, alb.name), /*#__PURE__*/React.createElement("div", {
+            className: "date"
+          }, alb.date), /*#__PURE__*/React.createElement("div", {
+            className: "count"
+          }, (alb.photos || []).length, " foto", (alb.photos || []).length !== 1 ? 's' : '')));
+        })));
+      } else {
+        var pAlb = (pItem.albums || []).find(function (a) {
+          return a.id === photoModal.albumId;
+        });
+        if (pAlb) {
+          photoModalEl = /*#__PURE__*/React.createElement("div", {
+            className: "club__photo-modal"
+          }, /*#__PURE__*/React.createElement("div", {
+            className: "club__pm-head"
+          }, /*#__PURE__*/React.createElement("button", {
+            className: "club__pm-back",
+            onClick: function () {
+              setPhotoModal({
+                itemId: pItem.id,
+                albumId: null
+              });
+            }
+          }, "\u2190 ", pItem.name), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", null, pAlb.name), pAlb.date && /*#__PURE__*/React.createElement("div", {
+            className: "club__pm-date"
+          }, pAlb.date))), /*#__PURE__*/React.createElement("div", {
+            className: "club__pm-grid"
+          }, (pAlb.photos || []).length === 0 && /*#__PURE__*/React.createElement("p", {
+            className: "club__pm-empty"
+          }, "No hay fotos en este \xE1lbum todav\xEDa."), (pAlb.photos || []).map(function (ph, i) {
+            return /*#__PURE__*/React.createElement("div", {
+              key: i,
+              className: "club__pm-photo"
+            }, /*#__PURE__*/React.createElement("img", {
+              src: ph,
+              alt: ""
+            }));
+          })));
+        }
+      }
+    }
+  }
   return /*#__PURE__*/React.createElement("div", {
     className: 'club-overlay' + (open ? ' open' : ''),
     "aria-hidden": !open
@@ -5540,7 +5952,9 @@ function Club({
     id: "club-email",
     type: "email",
     value: email,
-    onChange: e => setEmail(e.target.value),
+    onChange: function (e) {
+      setEmail(e.target.value);
+    },
     placeholder: "tu@correo.com",
     autoComplete: "email"
   }), /*#__PURE__*/React.createElement("label", {
@@ -5549,7 +5963,9 @@ function Club({
     id: "club-pwd",
     type: "password",
     value: pwd,
-    onChange: e => setPwd(e.target.value),
+    onChange: function (e) {
+      setPwd(e.target.value);
+    },
     placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022",
     autoComplete: "current-password"
   }), /*#__PURE__*/React.createElement("div", {
@@ -5565,118 +5981,210 @@ function Club({
     className: "club__bienvenido"
   }, "BIENVENIDO, ", memberName, "."), /*#__PURE__*/React.createElement("h1", null, c.title, /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("em", null, c.titleEm)), /*#__PURE__*/React.createElement("p", {
     className: "frase"
-  }, c.frase)), /*#__PURE__*/React.createElement("div", {
-    className: "club__panels"
-  }, c.panels.map(p => /*#__PURE__*/React.createElement("div", {
-    key: p.id,
-    className: "club__panel"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ttl"
-  }, p.ttl), /*#__PURE__*/React.createElement("div", {
-    className: "big"
-  }, p.big), /*#__PURE__*/React.createElement("div", {
-    className: "desc"
-  }, p.desc)))), /*#__PURE__*/React.createElement("div", {
-    className: "club__tabs"
-  }, /*#__PURE__*/React.createElement("button", {
-    className: 'club__tab-btn' + (activeTab === 'routes' ? ' active' : ''),
-    onClick: () => setActiveTab('routes')
-  }, "A / RUTAS"), /*#__PURE__*/React.createElement("button", {
-    className: 'club__tab-btn' + (activeTab === 'meetings' ? ' active' : ''),
-    onClick: () => setActiveTab('meetings')
-  }, "B / REUNIONES"), /*#__PURE__*/React.createElement("button", {
-    className: 'club__tab-btn' + (activeTab === 'feed' ? ' active' : ''),
-    onClick: () => setActiveTab('feed')
-  }, "C / CANAL PRIVADO"), /*#__PURE__*/React.createElement("button", {
-    className: 'club__tab-btn' + (activeTab === 'photos' ? ' active' : ''),
-    onClick: () => setActiveTab('photos')
-  }, "D / REGISTRO FOTOGR\xC1FICO")), activeTab === 'routes' && /*#__PURE__*/React.createElement("div", {
+  }, c.frase)), /*#__PURE__*/React.createElement(ClubImageBanner, {
+    images: c.bannerImages
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "club__quick-access"
+  }, [{
+    id: 'photos',
+    label: 'Registro Fotográfico',
+    num: '01'
+  }, {
+    id: 'meetings',
+    label: 'Reuniones',
+    num: '02'
+  }, {
+    id: 'routes',
+    label: 'Rutas',
+    num: '03'
+  }, {
+    id: 'feed',
+    label: 'NOS CUIDAMOS',
+    num: '04'
+  }, {
+    id: 'meanings',
+    label: 'Significado de Prendas',
+    num: '05'
+  }].map(function (btn) {
+    return /*#__PURE__*/React.createElement("button", {
+      key: btn.id,
+      className: 'club__qa-btn' + (activeTab === btn.id ? ' active' : ''),
+      onClick: function () {
+        setActiveTab(btn.id);
+        document.querySelector('.club__section-wrap') && document.querySelector('.club__section-wrap').scrollIntoView({
+          behavior: 'smooth'
+        });
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "club__qa-num"
+    }, btn.num), /*#__PURE__*/React.createElement("span", {
+      className: "club__qa-label"
+    }, btn.label), /*#__PURE__*/React.createElement("span", {
+      className: "club__qa-arrow"
+    }, "\u2192"));
+  })), /*#__PURE__*/React.createElement(ClubPanelsBanner, {
+    panels: c.panels
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "club__section-wrap"
+  }, activeTab === 'photos' && /*#__PURE__*/React.createElement("div", {
     className: "club__section"
   }, /*#__PURE__*/React.createElement("div", {
     className: "num"
-  }, "[ A ] PROXIMAS RUTAS"), /*#__PURE__*/React.createElement("h3", null, "SALIMOS A ", /*#__PURE__*/React.createElement("em", null, "la calle.")), /*#__PURE__*/React.createElement("div", {
-    className: "routes"
-  }, c.routes.map(r => /*#__PURE__*/React.createElement("div", {
-    key: r.id,
-    className: "route"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "route__row"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "amb"
-  }, r.date), /*#__PURE__*/React.createElement("span", null, r.joined ? '✓ ANOTADO' : '+ ANOTARSE')), /*#__PURE__*/React.createElement("div", {
-    className: "route__name"
-  }, r.name), /*#__PURE__*/React.createElement("div", {
-    className: "route__meta"
-  }, r.meta), /*#__PURE__*/React.createElement("div", {
-    className: "route__signup"
-  }, /*#__PURE__*/React.createElement("span", null, "Cupo abierto"), /*#__PURE__*/React.createElement("button", {
-    className: r.joined ? 'joined' : '',
-    onClick: () => toggleJoin(r.id)
-  }, r.joined ? '✓ Estoy adentro' : 'Anotarme')))))), activeTab === 'meetings' && /*#__PURE__*/React.createElement("div", {
+  }, "[ 01 ] REGISTRO FOTOGR\xC1FICO"), /*#__PURE__*/React.createElement("h3", null, "NUESTRA ", /*#__PURE__*/React.createElement("em", null, "historia.")), /*#__PURE__*/React.createElement("div", {
+    className: "club__photo-items"
+  }, (c.photoItems || []).map(function (item) {
+    return /*#__PURE__*/React.createElement("div", {
+      key: item.id,
+      className: "club__photo-item",
+      onClick: function () {
+        setPhotoModal({
+          itemId: item.id,
+          albumId: null
+        });
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "club__photo-item-cover"
+    }, item.coverImg ? /*#__PURE__*/React.createElement("img", {
+      src: item.coverImg,
+      alt: item.name
+    }) : /*#__PURE__*/React.createElement("div", {
+      className: "club__photo-item-ph"
+    }, "\u25C9")), /*#__PURE__*/React.createElement("div", {
+      className: "club__photo-item-name"
+    }, item.name), /*#__PURE__*/React.createElement("div", {
+      className: "club__photo-item-count"
+    }, (item.albums || []).length, " \xE1lbum", (item.albums || []).length !== 1 ? 'es' : ''), /*#__PURE__*/React.createElement("div", {
+      className: "club__photo-item-cta"
+    }, "Ver fotos \u2192"));
+  }))), activeTab === 'meetings' && /*#__PURE__*/React.createElement("div", {
     className: "club__section"
   }, /*#__PURE__*/React.createElement("div", {
     className: "num"
-  }, "[ B ] REUNIONES SECRETAS"), /*#__PURE__*/React.createElement("h3", null, "HACEMOS ", /*#__PURE__*/React.createElement("em", null, "iglesia.")), /*#__PURE__*/React.createElement("div", {
+  }, "[ 02 ] REUNIONES SECRETAS"), /*#__PURE__*/React.createElement("h3", null, "HACEMOS ", /*#__PURE__*/React.createElement("em", null, "iglesia.")), /*#__PURE__*/React.createElement("div", {
     className: "meetings"
-  }, c.meetings.map(m => /*#__PURE__*/React.createElement("div", {
-    key: m.id,
-    className: "meet"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "meet__date"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "d"
-  }, m.day), /*#__PURE__*/React.createElement("div", {
-    className: "m"
-  }, m.mon)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "meet__name"
-  }, m.name), /*#__PURE__*/React.createElement("div", {
-    className: "meet__det"
-  }, m.det)))))), activeTab === 'feed' && /*#__PURE__*/React.createElement("div", {
+  }, c.meetings.map(function (m) {
+    return /*#__PURE__*/React.createElement("div", {
+      key: m.id,
+      className: "meet"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "meet__date"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "d"
+    }, m.day), /*#__PURE__*/React.createElement("div", {
+      className: "m"
+    }, m.mon)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      className: "meet__name"
+    }, m.name), /*#__PURE__*/React.createElement("div", {
+      className: "meet__det"
+    }, m.det)));
+  }))), activeTab === 'routes' && /*#__PURE__*/React.createElement("div", {
     className: "club__section"
   }, /*#__PURE__*/React.createElement("div", {
     className: "num"
-  }, "[ C ] CANAL PRIVADO"), /*#__PURE__*/React.createElement("h3", null, "NOS ", /*#__PURE__*/React.createElement("em", null, "cuidamos.")), /*#__PURE__*/React.createElement("div", {
-    className: "feed"
-  }, c.feed.map(f => /*#__PURE__*/React.createElement("div", {
-    key: f.id,
-    className: "feed__item"
+  }, "[ 03 ] PR\xD3XIMAS RUTAS"), /*#__PURE__*/React.createElement("h3", null, "SALIMOS A ", /*#__PURE__*/React.createElement("em", null, "la calle.")), /*#__PURE__*/React.createElement("div", {
+    className: "routes"
+  }, c.routes.map(function (r) {
+    return /*#__PURE__*/React.createElement("div", {
+      key: r.id,
+      className: "route"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "route__row"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "amb"
+    }, r.date), /*#__PURE__*/React.createElement("span", null, r.joined ? '✓ ANOTADO' : '+ ANOTARSE')), /*#__PURE__*/React.createElement("div", {
+      className: "route__name"
+    }, r.name), /*#__PURE__*/React.createElement("div", {
+      className: "route__meta"
+    }, r.meta), (r.mapEmbed || r.mapName) && /*#__PURE__*/React.createElement("div", {
+      className: "route__map"
+    }, r.mapName && /*#__PURE__*/React.createElement("div", {
+      className: "route__map-name"
+    }, "\uD83D\uDCCD ", r.mapName), r.mapEmbed && /*#__PURE__*/React.createElement("iframe", {
+      src: r.mapEmbed,
+      width: "100%",
+      height: "220",
+      style: {
+        border: 0,
+        display: 'block',
+        marginTop: 10,
+        borderRadius: 4
+      },
+      loading: "lazy",
+      allowFullScreen: true,
+      title: 'Mapa ' + r.name
+    }), r.mapEmbed && /*#__PURE__*/React.createElement("a", {
+      href: 'https://www.google.com/maps/search/' + encodeURIComponent(r.mapName || r.name),
+      target: "_blank",
+      rel: "noopener noreferrer",
+      className: "route__map-link"
+    }, "Ver c\xF3mo llegar \u2192")), /*#__PURE__*/React.createElement("div", {
+      className: "route__signup"
+    }, /*#__PURE__*/React.createElement("span", null, "Cupo abierto"), /*#__PURE__*/React.createElement("button", {
+      className: r.joined ? 'joined' : '',
+      onClick: function () {
+        toggleJoin(r.id);
+      }
+    }, r.joined ? '✓ Estoy adentro' : 'Anotarme')));
+  }))), activeTab === 'feed' && /*#__PURE__*/React.createElement("div", {
+    className: "club__section"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "when"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "who"
-  }, f.when)), /*#__PURE__*/React.createElement("div", {
-    className: "what"
-  }, f.what)))), /*#__PURE__*/React.createElement("div", {
+    className: "num"
+  }, "[ 04 ] NOS CUIDAMOS"), /*#__PURE__*/React.createElement("h3", null, "CANAL ", /*#__PURE__*/React.createElement("em", null, "privado.")), /*#__PURE__*/React.createElement("div", {
+    className: "feed"
+  }, liveMessages === null && /*#__PURE__*/React.createElement("div", {
+    className: "feed__loading"
+  }, "Cargando mensajes\u2026"), liveMessages !== null && liveMessages.length === 0 && /*#__PURE__*/React.createElement("div", {
+    className: "feed__empty"
+  }, "S\xE9 el primero en escribir algo."), (liveMessages || []).map(function (f) {
+    var ts = f.created_at ? new Date(f.created_at) : null;
+    var when = ts ? ts.toLocaleDateString('es-CL', {
+      day: 'numeric',
+      month: 'short'
+    }) + ' · ' + ts.toLocaleTimeString('es-CL', {
+      hour: '2-digit',
+      minute: '2-digit'
+    }) : '';
+    return /*#__PURE__*/React.createElement("div", {
+      key: f.id,
+      className: "feed__item"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "when"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "who"
+    }, (f.name || 'Anónimo').split(' ')[0].toUpperCase()), when && /*#__PURE__*/React.createElement("span", {
+      className: "feed__ts"
+    }, " \xB7 ", when)), /*#__PURE__*/React.createElement("div", {
+      className: "what"
+    }, f.body));
+  })), /*#__PURE__*/React.createElement("div", {
     className: "compose"
   }, /*#__PURE__*/React.createElement("textarea", {
     placeholder: "Escribe algo para el grupo. Una petici\xF3n de oraci\xF3n, un aviso, una buena noticia\u2026",
     value: composer,
-    onChange: e => setComposer(e.target.value)
+    onChange: function (e) {
+      setComposer(e.target.value);
+    },
+    maxLength: 500
   }), /*#__PURE__*/React.createElement("div", {
     className: "compose__row"
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: postMessage
-  }, "Publicar \u2192")))), activeTab === 'photos' && /*#__PURE__*/React.createElement("div", {
-    className: "club__section club__photos-section"
+    onClick: postMessage,
+    disabled: posting || !composer.trim()
+  }, posting ? 'Publicando…' : 'Publicar →')))), activeTab === 'meanings' && /*#__PURE__*/React.createElement("div", {
+    className: "club__section"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "num"
-  }, "[ D ] REGISTRO FOTOGR\xC1FICO"), /*#__PURE__*/React.createElement("h3", null, c.photoRegistryTitle), /*#__PURE__*/React.createElement("p", {
-    className: "club__photos-subtitle"
-  }, c.photoRegistrySubtitle), /*#__PURE__*/React.createElement("div", {
-    className: "club__photos-grid"
-  }, (c.photos || []).map(p => /*#__PURE__*/React.createElement("div", {
-    key: p.id,
-    className: "club__photo"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "club__photo-img"
-  }, p.img ? /*#__PURE__*/React.createElement("img", {
-    src: p.img,
-    alt: p.caption
-  }) : /*#__PURE__*/React.createElement("div", {
-    className: "club__photo-placeholder"
-  }, "+")), /*#__PURE__*/React.createElement("div", {
-    className: "club__photo-caption"
-  }, p.caption))))))));
+    className: "sm__section-label"
+  }, "SIGNIFICADO DE PRENDAS"), /*#__PURE__*/React.createElement("h3", null, "LO QUE ", /*#__PURE__*/React.createElement("em", null, "llevas puesto.")), /*#__PURE__*/React.createElement(ShirtMeaningsSection, {
+    collections: c.shirtMeanings && c.shirtMeanings.collections || []
+  }))), photoModalEl && /*#__PURE__*/React.createElement("div", {
+    className: "club__pm-overlay",
+    onClick: function (e) {
+      if (e.target === e.currentTarget) setPhotoModal({
+        itemId: null,
+        albumId: null
+      });
+    }
+  }, photoModalEl))));
 }
 Object.assign(window, {
   Club
@@ -6092,7 +6600,7 @@ function Checkout({
   }, /*#__PURE__*/React.createElement("div", {
     className: "ck2-header__inner"
   }, /*#__PURE__*/React.createElement("img", {
-    src: "https://res.cloudinary.com/dh05zwrbp/image/upload/v1781323723/ruahlabs/s6aaamzrfbcwd46icjxu.png",
+    src: "https://res.cloudinary.com/dschjfuwz/image/upload/v1783626384/ruahlabs/i8jodcvawcovjxsc3gwy.png",
     alt: "RUAH LABS",
     className: "ck2-header__logo"
   }), /*#__PURE__*/React.createElement("button", {
@@ -6960,7 +7468,7 @@ function SecretPortal() {
   }, /*#__PURE__*/React.createElement("video", {
     ref: videoRef,
     className: "sp3-video",
-    src: "https://res.cloudinary.com/dh05zwrbp/video/upload/v1781323740/ruahlabs/cpisuznmsbjdlhlh5u7g.mp4",
+    src: "https://res.cloudinary.com/dschjfuwz/video/upload/v1783627213/ruahlabs/tr0kkpj9wbpsfndyez4j.mp4",
     playsInline: true,
     preload: "auto",
     onTimeUpdate: onVideoTimeUpdate,
@@ -7093,6 +7601,253 @@ Object.assign(window, {
   SecretPortal
 });
 
+/* blog */
+/* global React, DOMPurify */
+// ============================================================
+// RUAH LABS — Blog / Medio Editorial (público)
+// ============================================================
+
+function BlogPage() {
+  var API = (window.RUAH_API || '') + '/api/blog';
+  var [view, setView] = React.useState('list'); // 'list' | 'post'
+  var [posts, setPosts] = React.useState([]);
+  var [cats, setCats] = React.useState([]);
+  var [activeCat, setActiveCat] = React.useState('todo');
+  var [post, setPost] = React.useState(null);
+  var [loading, setLoading] = React.useState(true);
+  var [lightbox, setLightbox] = React.useState(null);
+  var [error, setError] = React.useState(null);
+
+  // ── Cargar categorías y posts ──────────────────────────────
+  React.useEffect(function () {
+    Promise.all([fetch(API + '/categories').then(function (r) {
+      return r.json();
+    }), fetch(API + '/posts').then(function (r) {
+      return r.json();
+    })]).then(function (results) {
+      setCats(results[0] || []);
+      setPosts(results[1] || []);
+      setLoading(false);
+    }).catch(function (e) {
+      console.error('[Blog]', e);
+      setError('No se pudieron cargar los artículos.');
+      setLoading(false);
+    });
+  }, []);
+
+  // ── Abrir post individual ──────────────────────────────────
+  function openPost(slug) {
+    setLoading(true);
+    fetch(API + '/posts/' + slug).then(function (r) {
+      return r.json();
+    }).then(function (data) {
+      setPost(data);
+      setView('post');
+      setLoading(false);
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }).catch(function (e) {
+      console.error('[Blog]', e);
+      setError('No se pudo cargar el artículo.');
+      setLoading(false);
+    });
+  }
+  function backToList() {
+    setView('list');
+    setPost(null);
+    setError(null);
+  }
+
+  // ── Filtro de categoría ────────────────────────────────────
+  var filtered = activeCat === 'todo' ? posts : posts.filter(function (p) {
+    return p.category_id && cats.find(function (c) {
+      return c.id === p.category_id && c.slug === activeCat;
+    });
+  });
+
+  // ── Helpers ───────────────────────────────────────────────
+  function fmtDate(d) {
+    if (!d) return '';
+    var dt = new Date(d);
+    return dt.toLocaleDateString('es-CL', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+  }
+  function catName(id) {
+    var c = cats.find(function (x) {
+      return x.id === id;
+    });
+    return c ? c.name.toUpperCase() : '';
+  }
+  function shareUrl() {
+    return window.location.origin + '/blog/' + (post && post.slug);
+  }
+  function shareWA() {
+    window.open('https://wa.me/?text=' + encodeURIComponent((post && post.title) + ' — ' + shareUrl()), '_blank');
+  }
+  function shareIG() {
+    navigator.clipboard && navigator.clipboard.writeText(shareUrl());
+    alert('Enlace copiado. Pégalo en Instagram Stories.');
+  }
+  function shareCopy() {
+    navigator.clipboard && navigator.clipboard.writeText(shareUrl()).then(function () {
+      alert('Enlace copiado al portapapeles.');
+    }).catch(function () {
+      prompt('Copia este enlace:', shareUrl());
+    });
+  }
+
+  // ── Render post individual ─────────────────────────────────
+  if (view === 'post') {
+    if (loading) return React.createElement('div', {
+      className: 'blog__loading'
+    }, 'CARGANDO...');
+    if (error) return React.createElement('div', {
+      className: 'blog__empty'
+    }, error);
+    if (!post) return null;
+    var bodyHtml = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(post.content || '') : (post.content || '').replace(/</g, '&lt;');
+    return React.createElement('div', {
+      className: 'blog__page'
+    }, React.createElement('div', {
+      className: 'blog__post'
+    }, React.createElement('button', {
+      className: 'blog__post-back',
+      onClick: backToList
+    }, '← VOLVER AL MEDIO EDITORIAL'), post.category_id && React.createElement('div', {
+      className: 'blog__post-cat'
+    }, catName(post.category_id)), React.createElement('h1', {
+      className: 'blog__post-h1'
+    }, post.title), post.subtitle && React.createElement('p', {
+      className: 'blog__post-sub'
+    }, post.subtitle), React.createElement('div', {
+      className: 'blog__post-meta'
+    }, React.createElement('span', null, post.author || 'RUAH LABS'), post.published_at && React.createElement('span', null, fmtDate(post.published_at))), post.featured_image && React.createElement('img', {
+      src: post.featured_image,
+      alt: post.title,
+      className: 'blog__post-featured'
+    }), React.createElement('div', {
+      className: 'blog__post-body',
+      dangerouslySetInnerHTML: {
+        __html: bodyHtml
+      }
+    }),
+    // Galería de imágenes adicionales
+    post.images && post.images.length > 0 && React.createElement('div', {
+      className: 'blog__post-gallery'
+    }, post.images.map(function (img) {
+      return React.createElement('img', {
+        key: img.id,
+        src: img.url,
+        alt: img.alt || post.title,
+        onClick: function () {
+          setLightbox(img.url);
+        }
+      });
+    })),
+    // Compartir
+    React.createElement('div', {
+      className: 'blog__share'
+    }, React.createElement('span', {
+      className: 'blog__share-label'
+    }, 'COMPARTIR:'), React.createElement('button', {
+      className: 'blog__share-btn',
+      onClick: shareWA
+    }, 'WhatsApp'), React.createElement('button', {
+      className: 'blog__share-btn',
+      onClick: shareIG
+    }, 'Instagram'), React.createElement('button', {
+      className: 'blog__share-btn',
+      onClick: shareCopy
+    }, 'Copiar enlace'))),
+    // Lightbox
+    lightbox && React.createElement('div', {
+      className: 'blog__lightbox',
+      onClick: function (e) {
+        if (e.target === e.currentTarget) setLightbox(null);
+      }
+    }, React.createElement('button', {
+      className: 'blog__lightbox-close',
+      onClick: function () {
+        setLightbox(null);
+      }
+    }, 'CERRAR ✕'), React.createElement('img', {
+      src: lightbox,
+      alt: ''
+    })));
+  }
+
+  // ── Render listado ─────────────────────────────────────────
+  return React.createElement('div', {
+    className: 'blog__page'
+  }, React.createElement('div', {
+    className: 'blog__header'
+  }, React.createElement('div', {
+    className: 'blog__eyebrow'
+  }, 'RUAH LABS · SANTIAGO · CHILE'), React.createElement('h1', {
+    className: 'blog__title'
+  }, 'MEDIO EDITORIAL'), React.createElement('p', {
+    className: 'blog__subtitle'
+  }, 'Música, cultura, artistas y fe. Historias que visten una causa.')),
+  // Filtros
+  React.createElement('div', {
+    className: 'blog__cats'
+  }, React.createElement('button', {
+    className: 'blog__cat-btn' + (activeCat === 'todo' ? ' active' : ''),
+    onClick: function () {
+      setActiveCat('todo');
+    }
+  }, 'TODOS'), cats.map(function (c) {
+    return React.createElement('button', {
+      key: c.id,
+      className: 'blog__cat-btn' + (activeCat === c.slug ? ' active' : ''),
+      onClick: function () {
+        setActiveCat(c.slug);
+      }
+    }, c.name.toUpperCase());
+  })),
+  // Contenido
+  loading ? React.createElement('div', {
+    className: 'blog__loading'
+  }, 'CARGANDO ARTÍCULOS...') : error ? React.createElement('div', {
+    className: 'blog__empty'
+  }, error) : filtered.length === 0 ? React.createElement('div', {
+    className: 'blog__empty'
+  }, 'NO HAY ARTÍCULOS AÚN') : React.createElement('div', {
+    className: 'blog__grid'
+  }, filtered.map(function (p) {
+    return React.createElement('article', {
+      key: p.id,
+      className: 'blog__card',
+      onClick: function () {
+        openPost(p.slug);
+      }
+    }, p.featured_image ? React.createElement('img', {
+      src: p.featured_image,
+      alt: p.title,
+      className: 'blog__card-img'
+    }) : React.createElement('div', {
+      className: 'blog__card-img-placeholder'
+    }, 'RUAH'), React.createElement('div', {
+      className: 'blog__card-body'
+    }, p.category_id && React.createElement('span', {
+      className: 'blog__card-tag'
+    }, catName(p.category_id)), React.createElement('h2', {
+      className: 'blog__card-title'
+    }, p.title), p.subtitle && React.createElement('p', {
+      className: 'blog__card-subtitle'
+    }, p.subtitle), React.createElement('div', {
+      className: 'blog__card-meta'
+    }, React.createElement('span', null, p.author || 'RUAH LABS'), p.published_at && React.createElement('span', null, fmtDate(p.published_at)), React.createElement('span', {
+      className: 'blog__card-read'
+    }, 'LEER →'))));
+  })));
+}
+
 /* app */
 /* global React, ReactDOM */
 // ============================================================
@@ -7133,10 +7888,15 @@ function App() {
   const [toast, setToast] = React.useState(null);
   // Page navigation: null = home, or section key ('nosotros','servicios','productos','cuadros','iglesias','evento','protocolo','comunidad')
   const [activePage, setActivePage] = React.useState(() => {
+    const path = window.location.pathname;
+    if (path === '/' || path === '' || /^\/producto\//.test(path)) return null;
+    const VALID = ['productos', 'evento', 'protocolo', 'comunidad', 'design', 'cuadros', 'nosotros', 'servicios', 'envios', 'blog'];
+    const m = path.match(/^\/([^/?#]+)/);
+    if (m && VALID.includes(m[1])) return m[1];
     try {
-      return sessionStorage.getItem('ruah-page') || 'productos';
+      return sessionStorage.getItem('ruah-page') || null;
     } catch (_) {
-      return 'productos';
+      return null;
     }
   });
   const [pageCategory, setPageCategory] = React.useState('todo');
@@ -7361,11 +8121,11 @@ function App() {
     servicios: 'SERVICIOS',
     productos: 'PRODUCTOS',
     cuadros: 'CUADROS',
-    iglesias: 'IGLESIAS',
     evento: 'EVENTO',
     protocolo: 'PROTOCOLO',
     comunidad: 'COMUNIDAD',
-    envios: 'ENVÍOS Y DEVOLUCIONES'
+    envios: 'ENVÍOS Y DEVOLUCIONES',
+    blog: 'MEDIO EDITORIAL'
   };
   React.useEffect(() => {
     try {
@@ -7378,7 +8138,7 @@ function App() {
     window.history.pushState({
       ruahPage: page,
       ruahCat: cat || null
-    }, '', window.location.pathname);
+    }, '', '/' + page);
     window.scrollTo({
       top: 0,
       behavior: 'smooth'
@@ -7398,14 +8158,21 @@ function App() {
   // Back-button support for section pages
   React.useEffect(() => {
     function onPop(e) {
-      if (/^\/producto\//.test(window.location.pathname)) return; // handled by product effect
-      const state = e.state;
-      if (state && state.ruahPage) {
-        setActivePage(state.ruahPage);
-        if (state.ruahCat) setPageCategory(state.ruahCat);
-      } else {
+      const path = window.location.pathname;
+      if (/^\/producto\//.test(path)) return; // handled by product effect
+      if (path === '/' || path === '') {
         setActivePage(null);
+        return;
       }
+      const VALID = ['productos', 'evento', 'protocolo', 'comunidad', 'design', 'cuadros', 'nosotros', 'servicios', 'envios', 'blog'];
+      const m = path.match(/^\/([^/?#]+)/);
+      if (m && VALID.includes(m[1])) {
+        setActivePage(m[1]);
+        const state = e.state;
+        if (state && state.ruahCat) setPageCategory(state.ruahCat);
+        return;
+      }
+      setActivePage(null);
     }
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
@@ -7446,13 +8213,6 @@ function App() {
           onBuyNow: buyNow,
           onOpenCuadro: id => setCuadroId(id)
         }));
-      case 'iglesias':
-        return /*#__PURE__*/React.createElement(PageView, {
-          title: "IGLESIAS",
-          onBack: goHome
-        }, /*#__PURE__*/React.createElement(Iglesias, {
-          content: content
-        }));
       case 'evento':
         return /*#__PURE__*/React.createElement(PageView, {
           title: "EVENTO",
@@ -7490,6 +8250,11 @@ function App() {
         }, /*#__PURE__*/React.createElement(DesignGallery, {
           content: content
         }));
+      case 'blog':
+        return /*#__PURE__*/React.createElement(PageView, {
+          title: "MEDIO EDITORIAL",
+          onBack: goHome
+        }, /*#__PURE__*/React.createElement(BlogPage, null));
       default:
         return null;
     }

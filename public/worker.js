@@ -45,8 +45,8 @@ export default {
       if (request.method === 'POST') {
         const body   = await request.text();
         const params = new URLSearchParams(body);
-        const token  = params.get('token') || '';
-        const secret = env.ADMIN_TOKEN || '';
+        const token  = (params.get('token') || '').trim();
+        const secret = (env.ADMIN_TOKEN || '').trim();
         if (secret && token === secret) {
           const cookie = 'rl_adm=' + encodeURIComponent(token)
             + '; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=86400';
