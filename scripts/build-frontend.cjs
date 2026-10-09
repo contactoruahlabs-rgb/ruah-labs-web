@@ -24,7 +24,7 @@ const BUILD_VERSION = Date.now().toString(36);
 const BUNDLE_FILE   = 'bundle.' + BUILD_VERSION + '.js';
 
 // Archivos que van al bundle principal (orden de carga importa)
-const BUNDLE_ORDER = ['supabase-rest', 'data', 'sections', 'extras', 'eventos', 'club', 'checkout', 'secret', 'app'];
+const BUNDLE_ORDER = ['supabase-rest', 'data', 'sections', 'extras', 'eventos', 'club', 'checkout', 'secret', 'blog', 'app'];
 const BUNDLE_SET   = new Set(BUNDLE_ORDER);
 const bundleChunks = {};
 
@@ -72,16 +72,17 @@ function processDir(srcDir, outDir) {
       html = html.replace(/type="text\/babel"\s+src="admin\.jsx"/g, 'src="admin.js"');
       html = html.replace(/type="text\/babel"\s*/g, '');
 
-      // Cache-busting en assets locales
+      // Cache-busting en assets locales + prefijo / para que funcione en rutas anidadas
+      // (/producto/cubreme necesita /styles.css, no styles.css relativo)
       html = html.replace(
         /(src|href)="(?!https?:|\/\/)([^"]+\.(?:js|css))"/g,
-        '$1="$2?v=' + BUILD_VERSION + '"'
+        '$1="/$2?v=' + BUILD_VERSION + '"'
       );
 
-      // Inyectar bundle con hash en el nombre (Cloudflare edge cache por URL path)
+      // Inyectar bundle con hash en el nombre (ruta absoluta para SPA)
       html = html.replace(
-        /(<script src="admin\.js\?v=[^"]*"><\/script>)/,
-        '$1\n  <script src="' + BUNDLE_FILE + '"></script>'
+        /(<script src="\/admin\.js\?v=[^"]*"><\/script>)/,
+        '$1\n  <script src="/' + BUNDLE_FILE + '"></script>'
       );
 
       fs.writeFileSync(outPath, html);
@@ -97,7 +98,12 @@ function processDir(srcDir, outDir) {
       if (fileSizeMB > 25) {
         console.warn('  ⚠️  Omitido (' + fileSizeMB.toFixed(1) + ' MB > 25 MB): ' + entry.name);
       } else {
-        fs.copyFileSync(srcPath, outPath);
+        if (entry.name === 'sw.js') {
+          const swCode = fs.readFileSync(srcPath, 'utf8').replace(/__BUILD_VERSION__/g, BUILD_VERSION);
+          fs.writeFileSync(outPath, swCode);
+        } else {
+          fs.copyFileSync(srcPath, outPath);
+        }
         copied++;
       }
     }

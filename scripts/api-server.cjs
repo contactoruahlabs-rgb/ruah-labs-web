@@ -83,7 +83,7 @@ async function isAdmin(token) {
 }
 
 // Cloudinary — CLOUDINARY_URL siempre tiene prioridad sobre vars separadas
-var CLD_CLOUD  = process.env.CLOUDINARY_CLOUD_NAME  || 'dh05zwrbp';
+var CLD_CLOUD  = process.env.CLOUDINARY_CLOUD_NAME  || 'dschjfuwz';
 var CLD_KEY    = process.env.CLOUDINARY_API_KEY      || '';
 var CLD_SECRET = process.env.CLOUDINARY_API_SECRET   || '';
 if (process.env.CLOUDINARY_URL) {
@@ -195,7 +195,8 @@ var app = express();
 // Railway pone exactamente 1 proxy delante. Con esto req.ip es la IP real del
 // cliente (el último hop de confianza) y NO un X-Forwarded-For falsificable.
 app.set('trust proxy', 1);
-app.use('/api/content', express.json({ limit: '4mb' })); // solo admin-content necesita 4MB
+app.use('/api/content',      express.json({ limit: '4mb' }));
+app.use('/api/pdfs/upload',  express.json({ limit: '25mb' })); // PDF base64 puede pesar bastante
 app.use(express.json({ limit: '256kb' }));
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
@@ -1304,6 +1305,43 @@ app.post('/api/content', async function(req, res) {
   }).catch(function(err) { srvErr(res, err); });
 });
 
+// ─── POST /api/pdfs/upload — Sube PDF a Supabase Storage (bucket público) ────
+app.post('/api/pdfs/upload', rateLimit('pdf-up', 10, 60 * 1000), async function(req, res) {
+  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
+  var base64 = req.body && req.body.data;
+  var name   = (req.body && req.body.name) || 'doc.pdf';
+  if (!base64) return res.status(400).json({ error: 'Sin datos' });
+
+  var buf      = Buffer.from(base64, 'base64');
+  var safeName = Date.now() + '_' + name.replace(/[^a-zA-Z0-9._-]/g, '_');
+
+  // Crear bucket si no existe (error 409 = ya existe, lo ignoramos)
+  await fetch(SB_URL + '/storage/v1/bucket', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + SB_SVC, 'Content-Type': 'application/json', 'apikey': SB_SVC },
+    body: JSON.stringify({ id: 'pdfs', name: 'pdfs', public: true }),
+  }).catch(function() {});
+
+  var upRes = await fetch(SB_URL + '/storage/v1/object/pdfs/' + safeName, {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + SB_SVC,
+      'apikey': SB_SVC,
+      'Content-Type': 'application/pdf',
+      'Cache-Control': 'public, max-age=31536000',
+    },
+    body: buf,
+  });
+
+  if (!upRes.ok) {
+    var errText = await upRes.text().catch(function() { return upRes.status; });
+    return res.status(500).json({ error: 'Supabase Storage: ' + errText });
+  }
+
+  var publicUrl = SB_URL + '/storage/v1/object/public/pdfs/' + safeName;
+  res.json({ url: publicUrl });
+});
+
 // ─── POST /api/images/sign — Firma para upload seguro a Cloudinary ───────────
 app.post('/api/images/sign', rateLimit('cld-sign', 30, 60 * 1000), async function(req, res) {
   if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
@@ -1317,6 +1355,45 @@ app.post('/api/images/sign', rateLimit('cld-sign', 30, 60 * 1000), async functio
   res.json({ cloudName: CLD_CLOUD, apiKey: CLD_KEY, timestamp: timestamp, signature: signature, folder: folder });
 });
 
+// ─── GET /api/club/messages — Canal NOS CUIDAMOS (paginado) ─────────────────
+app.get('/api/club/messages', function(req, res) {
+  var limit = Math.min(parseInt(req.query.limit) || 50, 100);
+  sbFetch('GET', 'club_messages', {
+    query: 'select=id,name,body,created_at&order=created_at.desc&limit=' + limit,
+  }).then(function(r) {
+    res.json(Array.isArray(r.data) ? r.data : []);
+  }).catch(function(err) { srvErr(res, err); });
+});
+
+// ─── POST /api/club/messages — Publicar en NOS CUIDAMOS ─────────────────────
+app.post('/api/club/messages', rateLimit('club-msg', 10, 60 * 1000), function(req, res) {
+  var email = (req.body.email || '').trim().toLowerCase();
+  var name  = (req.body.name  || '').trim();
+  var body  = (req.body.body  || '').trim();
+
+  if (!email || !body) return res.status(400).json({ error: 'Faltan campos' });
+  if (!isValidEmail(email)) return res.status(400).json({ error: 'Email inválido' });
+  if (body.length > 500) return res.status(400).json({ error: 'Mensaje demasiado largo (máx 500 caracteres)' });
+
+  // Verificar que el email sea un miembro activo del club
+  sbFetch('GET', 'club_credentials', {
+    query: 'email=eq.' + encodeURIComponent(email) + '&select=name,is_active&limit=1',
+  }).then(function(r) {
+    var member = Array.isArray(r.data) ? r.data[0] : null;
+    if (!member || !member.is_active) return res.status(403).json({ error: 'Acceso denegado' });
+
+    var displayName = name || member.name || 'Anónimo';
+    return sbFetch('POST', 'club_messages', {
+      body: { email: email, name: displayName, body: body },
+      prefer: 'return=representation',
+    }).then(function(r2) {
+      if (r2.status >= 400) return res.status(502).json({ error: 'No se pudo guardar el mensaje' });
+      var msg = Array.isArray(r2.data) ? r2.data[0] : r2.data;
+      res.json({ ok: true, message: msg });
+    });
+  }).catch(function(err) { srvErr(res, err); });
+});
+
 // ─── POST /api/club/verify-password — Verifica contraseña global del Club ───
 app.post('/api/club/verify-password', rateLimit('club-verify', 8, 15 * 60 * 1000), function(req, res) {
   var pwd = req.body.password || '';
@@ -1328,6 +1405,181 @@ app.post('/api/club/verify-password', rateLimit('club-verify', 8, 15 * 60 * 1000
 });
 
 // ─── Health ──────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// BLOG — endpoints públicos y admin
+// ═══════════════════════════════════════════════════════════════════════════
+
+// slugify simple (sin dependencias)
+function blogSlug(str) {
+  return String(str || '').toLowerCase()
+    .replace(/[áàä]/g,'a').replace(/[éèë]/g,'e').replace(/[íìï]/g,'i')
+    .replace(/[óòö]/g,'o').replace(/[úùü]/g,'u').replace(/ñ/g,'n')
+    .replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+}
+
+// ─── GET /api/blog/categories — lista pública ────────────────────────────
+app.get('/api/blog/categories', function(_req, res) {
+  sbFetch('GET', 'blog_categories', { query: 'select=id,name,slug&order=name.asc' })
+    .then(function(r) { res.json(Array.isArray(r.data) ? r.data : []); })
+    .catch(function(err) { srvErr(res, err); });
+});
+
+// ─── GET /api/blog/posts — lista pública (solo publicados) ───────────────
+app.get('/api/blog/posts', function(req, res) {
+  var cat  = req.query.category || '';
+  var q    = 'select=id,title,subtitle,slug,featured_image,category_id,author,published_at,blog_categories(name,slug)&status=eq.published&order=published_at.desc&limit=50';
+  if (cat) q += '&category_id=eq.' + encodeURIComponent(cat);
+  sbFetch('GET', 'blog_posts', { query: q })
+    .then(function(r) { res.json(Array.isArray(r.data) ? r.data : []); })
+    .catch(function(err) { srvErr(res, err); });
+});
+
+// ─── GET /api/blog/posts/:slug — artículo público ────────────────────────
+app.get('/api/blog/posts/:slug', function(req, res) {
+  var slug = req.params.slug;
+  sbFetch('GET', 'blog_posts', { query: 'select=*,blog_categories(name,slug),blog_post_images(id,url,alt,sort_order)&slug=eq.' + encodeURIComponent(slug) + '&status=eq.published&limit=1' })
+    .then(function(r) {
+      var post = Array.isArray(r.data) ? r.data[0] : null;
+      if (!post) return res.status(404).json({ error: 'Artículo no encontrado' });
+      res.json(post);
+    }).catch(function(err) { srvErr(res, err); });
+});
+
+// ─── ADMIN: GET /api/admin/blog/posts ────────────────────────────────────
+app.get('/api/admin/blog/posts', async function(req, res) {
+  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
+  sbFetch('GET', 'blog_posts', { query: 'select=id,title,slug,status,category_id,author,published_at,created_at,blog_categories(name)&order=created_at.desc&limit=100' })
+    .then(function(r) { res.json(Array.isArray(r.data) ? r.data : []); })
+    .catch(function(err) { srvErr(res, err); });
+});
+
+// ─── ADMIN: GET /api/admin/blog/posts/:id ────────────────────────────────
+app.get('/api/admin/blog/posts/:id', async function(req, res) {
+  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
+  sbFetch('GET', 'blog_posts', { query: 'select=*,blog_post_images(id,url,alt,sort_order)&id=eq.' + encodeURIComponent(req.params.id) + '&limit=1' })
+    .then(function(r) {
+      var post = Array.isArray(r.data) ? r.data[0] : null;
+      if (!post) return res.status(404).json({ error: 'No encontrado' });
+      res.json(post);
+    }).catch(function(err) { srvErr(res, err); });
+});
+
+// ─── ADMIN: POST /api/admin/blog/posts ───────────────────────────────────
+app.post('/api/admin/blog/posts', async function(req, res) {
+  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
+  var b = req.body || {};
+  var title = (b.title || '').trim();
+  if (!title) return res.status(400).json({ error: 'El título es obligatorio' });
+  var slug = b.slug ? blogSlug(b.slug) : blogSlug(title);
+  var post = {
+    title:          title,
+    subtitle:       (b.subtitle || '').trim() || null,
+    slug:           slug,
+    featured_image: b.featured_image || null,
+    content:        b.content || '',
+    category_id:    b.category_id || null,
+    author:         (b.author || 'RUAH LABS').trim(),
+    status:         ['draft','published','archived'].includes(b.status) ? b.status : 'draft',
+    published_at:   b.status === 'published' ? (b.published_at || new Date().toISOString()) : null,
+    seo_title:      (b.seo_title || '').trim() || null,
+    seo_desc:       (b.seo_desc  || '').trim() || null,
+  };
+  sbFetch('POST', 'blog_posts', { body: post, prefer: 'return=representation' })
+    .then(function(r) {
+      if (r.status >= 400) return res.status(502).json({ error: 'Error al crear post' });
+      var created = Array.isArray(r.data) ? r.data[0] : r.data;
+      // Guardar imágenes de galería si vienen
+      var images = Array.isArray(b.images) ? b.images : [];
+      if (!images.length || !created || !created.id) return res.json(created);
+      var imgRows = images.map(function(img, i) { return { post_id: created.id, url: img.url, alt: img.alt || '', sort_order: i }; });
+      sbFetch('POST', 'blog_post_images', { body: imgRows, prefer: 'return=minimal' })
+        .then(function() { res.json(created); })
+        .catch(function() { res.json(created); });
+    }).catch(function(err) { srvErr(res, err); });
+});
+
+// ─── ADMIN: PUT /api/admin/blog/posts/:id ────────────────────────────────
+app.put('/api/admin/blog/posts/:id', async function(req, res) {
+  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
+  var b = req.body || {};
+  var id = req.params.id;
+  var update = {};
+  if (b.title     !== undefined) update.title          = (b.title || '').trim();
+  if (b.subtitle  !== undefined) update.subtitle       = (b.subtitle || '').trim() || null;
+  if (b.slug      !== undefined) update.slug           = blogSlug(b.slug) || blogSlug(b.title || '');
+  if (b.featured_image !== undefined) update.featured_image = b.featured_image || null;
+  if (b.content   !== undefined) update.content        = b.content;
+  if (b.category_id !== undefined) update.category_id = b.category_id || null;
+  if (b.author    !== undefined) update.author         = (b.author || 'RUAH LABS').trim();
+  if (b.status    !== undefined) {
+    update.status       = ['draft','published','archived'].includes(b.status) ? b.status : 'draft';
+    update.published_at = update.status === 'published' ? (b.published_at || new Date().toISOString()) : null;
+  }
+  if (b.seo_title !== undefined) update.seo_title = (b.seo_title || '').trim() || null;
+  if (b.seo_desc  !== undefined) update.seo_desc  = (b.seo_desc  || '').trim() || null;
+  update.updated_at = new Date().toISOString();
+
+  sbFetch('PATCH', 'blog_posts', { body: update, query: 'id=eq.' + encodeURIComponent(id), prefer: 'return=representation' })
+    .then(function(r) {
+      if (r.status >= 400) return res.status(502).json({ error: 'Error al actualizar post' });
+      // Actualizar imágenes si vienen
+      var images = b.images;
+      if (!Array.isArray(images)) return res.json(Array.isArray(r.data) ? r.data[0] : r.data);
+      sbFetch('DELETE', 'blog_post_images', { query: 'post_id=eq.' + encodeURIComponent(id) })
+        .then(function() {
+          if (!images.length) return res.json(Array.isArray(r.data) ? r.data[0] : r.data);
+          var imgRows = images.map(function(img, i) { return { post_id: id, url: img.url, alt: img.alt || '', sort_order: i }; });
+          sbFetch('POST', 'blog_post_images', { body: imgRows, prefer: 'return=minimal' })
+            .then(function() { res.json(Array.isArray(r.data) ? r.data[0] : r.data); })
+            .catch(function() { res.json(Array.isArray(r.data) ? r.data[0] : r.data); });
+        }).catch(function() { res.json(Array.isArray(r.data) ? r.data[0] : r.data); });
+    }).catch(function(err) { srvErr(res, err); });
+});
+
+// ─── ADMIN: DELETE /api/admin/blog/posts/:id ─────────────────────────────
+app.delete('/api/admin/blog/posts/:id', async function(req, res) {
+  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
+  var id = req.params.id;
+  sbFetch('DELETE', 'blog_post_images', { query: 'post_id=eq.' + encodeURIComponent(id) })
+    .then(function() {
+      return sbFetch('DELETE', 'blog_posts', { query: 'id=eq.' + encodeURIComponent(id) });
+    }).then(function() { res.json({ ok: true }); })
+    .catch(function(err) { srvErr(res, err); });
+});
+
+// ─── ADMIN: GET/POST/DELETE /api/admin/blog/categories ───────────────────
+app.get('/api/admin/blog/categories', async function(_req, res) {
+  sbFetch('GET', 'blog_categories', { query: 'select=id,name,slug&order=name.asc' })
+    .then(function(r) { res.json(Array.isArray(r.data) ? r.data : []); })
+    .catch(function(err) { srvErr(res, err); });
+});
+app.post('/api/admin/blog/categories', async function(req, res) {
+  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
+  var name = (req.body.name || '').trim();
+  if (!name) return res.status(400).json({ error: 'Nombre requerido' });
+  sbFetch('POST', 'blog_categories', { body: { name: name, slug: blogSlug(name) }, prefer: 'return=representation' })
+    .then(function(r) { res.json(Array.isArray(r.data) ? r.data[0] : r.data); })
+    .catch(function(err) { srvErr(res, err); });
+});
+app.delete('/api/admin/blog/categories/:id', async function(req, res) {
+  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
+  sbFetch('DELETE', 'blog_categories', { query: 'id=eq.' + encodeURIComponent(req.params.id) })
+    .then(function() { res.json({ ok: true }); })
+    .catch(function(err) { srvErr(res, err); });
+});
+
+// ─── ADMIN: POST /api/admin/blog/images — subir imagen de post ───────────
+app.post('/api/admin/blog/images', async function(req, res) {
+  if (!await isAdmin(req.headers['x-admin-key'])) return res.status(403).json({ error: 'No autorizado' });
+  // Reutilizamos Cloudinary para imágenes del blog
+  if (!CLD_KEY || !CLD_SECRET) return res.status(500).json({ error: 'Cloudinary no configurado' });
+  var timestamp = Math.round(Date.now() / 1000);
+  var folder    = 'ruahlabs/blog';
+  var toSign    = 'folder=' + folder + '&timestamp=' + timestamp + CLD_SECRET;
+  var signature = require('crypto').createHash('sha256').update(toSign).digest('hex');
+  res.json({ cloudName: CLD_CLOUD, apiKey: CLD_KEY, timestamp, signature, folder });
+});
+
 app.get('/api/health', function(_req, res) {
   res.json({ ok: true, mp_configured: !!(MP_TOKEN && MP_TOKEN !== 'YOUR_MERCADOPAGO_ACCESS_TOKEN'), sandbox: IS_DEV });
 });

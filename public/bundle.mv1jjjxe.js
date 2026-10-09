@@ -173,10 +173,6 @@ const DEFAULT_CONTENT = {
       href: '#productos',
       dropdown: true
     }, {
-      id: 'l7',
-      label: 'Eventos',
-      href: '#evento'
-    }, {
       id: 'l8',
       label: 'Personalizados',
       href: '#design'
@@ -2323,11 +2319,16 @@ function Nav({
   }, /*#__PURE__*/React.createElement("div", {
     className: "mobile-menu__inner"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "mobile-menu__head",
-    style: {
-      justifyContent: 'flex-end'
-    }
-  }, /*#__PURE__*/React.createElement("button", {
+    className: "mobile-menu__head"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mobile-menu__head-spacer"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "mobile-menu__brand"
+  }, /*#__PURE__*/React.createElement("img", {
+    src: window.__resources && window.__resources.logoWordmark || 'https://res.cloudinary.com/dschjfuwz/image/upload/v1783626385/ruahlabs/rehdonkp0hmenayjmomx.png',
+    alt: "RUAH LABS",
+    className: "mobile-menu__brand-img"
+  })), /*#__PURE__*/React.createElement("button", {
     className: "mobile-menu__x",
     onClick: () => setMobileOpen(false),
     "aria-label": "Cerrar men\xFA"
@@ -2338,7 +2339,7 @@ function Nav({
     (nav.links || []).forEach(function (l) {
       linkMap[l.id] = l;
     });
-    var mobileOrder = ['l2', 'l6', 'l7', 'l8', 'l9'];
+    var mobileOrder = ['l2', 'l8', 'l9', 'l10'];
     return mobileOrder.map(function (id) {
       var l = linkMap[id];
       if (!l) return null;
@@ -2385,101 +2386,23 @@ function Nav({
 
 // --- Hero ---
 function Hero({
-  content,
   isHome
 }) {
-  const {
-    hero
-  } = content;
-  const FALLBACK_VIDEO_DESKTOP = 'https://res.cloudinary.com/dschjfuwz/video/upload/v1783626383/ruahlabs/idpoxkmoqkj8cn7pbtoe.mp4';
-  const FALLBACK_VIDEO_MOBILE = 'https://res.cloudinary.com/dschjfuwz/video/upload/v1783627118/ruahlabs/rblhrehk6s7udupugviu.mp4';
-  const bgType = hero.bgType || 'video';
-  const srcDesktop = bgType === 'image' ? hero.imageBgDesktop || '' : hero.videoBgDesktop || FALLBACK_VIDEO_DESKTOP;
-  const srcMobile = bgType === 'image' ? hero.imageBgMobile || '' : hero.videoBgMobile || FALLBACK_VIDEO_MOBILE;
-  const AUDIENCE = [{
-    label: 'Soy individuo',
-    page: 'productos'
-  }, {
-    label: 'Soy iglesia',
-    page: 'iglesias'
-  }, {
-    label: 'Soy empresa',
-    page: 'evento'
-  }];
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("section", {
-    className: 'hero' + (bgType === 'image' ? ' hero--image' : ''),
+    className: "hero hero--color",
     id: "top"
-  }, bgType === 'image' ? /*#__PURE__*/React.createElement(React.Fragment, null, srcDesktop && /*#__PURE__*/React.createElement("img", {
-    className: "hero__video-bg hero__video-bg--desktop",
-    src: srcDesktop,
-    alt: "",
-    "aria-hidden": "true",
-    style: {
-      objectFit: 'cover'
-    }
-  }), srcMobile && /*#__PURE__*/React.createElement("img", {
-    className: "hero__video-bg hero__video-bg--mobile",
-    src: srcMobile,
-    alt: "",
-    "aria-hidden": "true",
-    style: {
-      objectFit: 'cover'
-    }
-  }), !srcDesktop && !srcMobile && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("video", {
-    className: "hero__video-bg hero__video-bg--desktop",
-    src: FALLBACK_VIDEO_DESKTOP,
-    autoPlay: true,
-    muted: true,
-    loop: true,
-    playsInline: true,
-    preload: "metadata",
-    "aria-hidden": "true"
-  }), /*#__PURE__*/React.createElement("video", {
-    className: "hero__video-bg hero__video-bg--mobile",
-    src: FALLBACK_VIDEO_MOBILE,
-    autoPlay: true,
-    muted: true,
-    loop: true,
-    playsInline: true,
-    preload: "metadata",
-    "aria-hidden": "true"
-  }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("video", {
-    className: "hero__video-bg hero__video-bg--desktop",
-    src: srcDesktop,
-    autoPlay: true,
-    muted: true,
-    loop: true,
-    playsInline: true,
-    preload: "metadata",
-    "aria-hidden": "true"
-  }), /*#__PURE__*/React.createElement("video", {
-    className: "hero__video-bg hero__video-bg--mobile",
-    src: srcMobile,
-    autoPlay: true,
-    muted: true,
-    loop: true,
-    playsInline: true,
-    preload: "metadata",
-    "aria-hidden": "true"
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "hero__texture",
-    "aria-hidden": "true"
-  }), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
     className: "shell"
   }, /*#__PURE__*/React.createElement("div", {
-    className: 'hero__bottom' + (!hero.heroPrice ? ' hero__bottom--ctas-only' : '')
-  }, hero.heroPrice && /*#__PURE__*/React.createElement(Reveal, {
-    delay: 500,
-    className: "hero__lede"
-  }, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "hero__price",
-    style: {
-      border: 'none',
-      cursor: 'pointer',
-      fontFamily: 'inherit'
-    },
-    onClick: () => {
+    className: "hero__bottom hero__bottom--ctas-only"
+  }, /*#__PURE__*/React.createElement(Reveal, {
+    delay: 200,
+    className: "hero__ctas"
+  }, /*#__PURE__*/React.createElement("a", {
+    className: "btn btn--hero-p",
+    href: "#productos",
+    onClick: e => {
+      e.preventDefault();
       if (isHome) {
         var hel = document.getElementById('home-productos');
         if (hel) hel.scrollIntoView({
@@ -2491,32 +2414,10 @@ function Hero({
         }
       }));
     }
-  }, hero.heroPrice)), /*#__PURE__*/React.createElement(Reveal, {
-    delay: 650,
-    className: "hero__ctas"
-  }, hero.primaryCta.show !== false && /*#__PURE__*/React.createElement("a", {
-    className: "btn btn--hero-p",
-    href: hero.primaryCta.href,
-    onClick: e => {
-      const href = hero.primaryCta.href || '';
-      if (href.startsWith('#')) {
-        e.preventDefault();
-        if (isHome) {
-          var hel = document.getElementById('home-productos');
-          if (hel) hel.scrollIntoView({
-            behavior: 'smooth'
-          });
-        } else window.dispatchEvent(new CustomEvent('ruah:navigateTo', {
-          detail: {
-            page: href.slice(1)
-          }
-        }));
-      }
-    }
-  }, hero.primaryCta.label), hero.secondaryCta.show !== false && /*#__PURE__*/React.createElement("a", {
+  }, "IR A TIENDA"), /*#__PURE__*/React.createElement("a", {
     className: "btn btn--hero-s",
-    href: hero.secondaryCta.href
-  }, hero.secondaryCta.label))))));
+    href: "/blog"
+  }, "BLOG"))))));
 }
 
 // --- Home Intro (post-hero info strip) ---
@@ -6599,11 +6500,13 @@ function Checkout({
     className: "ck2-header"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ck2-header__inner"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ck2-header__logo-wrap"
   }, /*#__PURE__*/React.createElement("img", {
-    src: "https://res.cloudinary.com/dschjfuwz/image/upload/v1783626384/ruahlabs/i8jodcvawcovjxsc3gwy.png",
+    src: window.__resources && window.__resources.logoWordmark || 'https://res.cloudinary.com/dschjfuwz/image/upload/v1783626385/ruahlabs/rehdonkp0hmenayjmomx.png',
     alt: "RUAH LABS",
     className: "ck2-header__logo"
-  }), /*#__PURE__*/React.createElement("button", {
+  })), /*#__PURE__*/React.createElement("button", {
     className: "ck2-close",
     onClick: onClose,
     "aria-label": "Cerrar"

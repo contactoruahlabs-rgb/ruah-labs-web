@@ -340,7 +340,7 @@ function SecretPortal() {
           <video
             ref={videoRef}
             className="sp3-video"
-            src="https://res.cloudinary.com/dh05zwrbp/video/upload/v1781323740/ruahlabs/cpisuznmsbjdlhlh5u7g.mp4"
+            src="https://res.cloudinary.com/dschjfuwz/video/upload/v1783627213/ruahlabs/tr0kkpj9wbpsfndyez4j.mp4"
             playsInline
             preload="auto"
             onTimeUpdate={onVideoTimeUpdate}

@@ -25,7 +25,12 @@ function App() {
   const [toast,        setToast]        = React.useState(null);
   // Page navigation: null = home, or section key ('nosotros','servicios','productos','cuadros','iglesias','evento','protocolo','comunidad')
   const [activePage,   setActivePage]   = React.useState(() => {
-    try { return sessionStorage.getItem('ruah-page') || 'productos'; } catch(_) { return 'productos'; }
+    const path = window.location.pathname;
+    if (path === '/' || path === '' || /^\/producto\//.test(path)) return null;
+    const VALID = ['productos','evento','protocolo','comunidad','design','cuadros','nosotros','servicios','envios','blog'];
+    const m = path.match(/^\/([^/?#]+)/);
+    if (m && VALID.includes(m[1])) return m[1];
+    try { return sessionStorage.getItem('ruah-page') || null; } catch(_) { return null; }
   });
   const [pageCategory, setPageCategory] = React.useState('todo');
 
@@ -220,11 +225,11 @@ function App() {
     servicios: 'SERVICIOS',
     productos: 'PRODUCTOS',
     cuadros:   'CUADROS',
-    iglesias:  'IGLESIAS',
     evento:    'EVENTO',
     protocolo: 'PROTOCOLO',
     comunidad: 'COMUNIDAD',
     envios:    'ENVÍOS Y DEVOLUCIONES',
+    blog:      'MEDIO EDITORIAL',
   };
 
   React.useEffect(() => {
@@ -237,7 +242,7 @@ function App() {
   function openPage(page, cat) {
     setActivePage(page);
     if (cat) setPageCategory(cat);
-    window.history.pushState({ ruahPage: page, ruahCat: cat || null }, '', window.location.pathname);
+    window.history.pushState({ ruahPage: page, ruahCat: cat || null }, '', '/' + page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -250,14 +255,18 @@ function App() {
   // Back-button support for section pages
   React.useEffect(() => {
     function onPop(e) {
-      if (/^\/producto\//.test(window.location.pathname)) return; // handled by product effect
-      const state = e.state;
-      if (state && state.ruahPage) {
-        setActivePage(state.ruahPage);
-        if (state.ruahCat) setPageCategory(state.ruahCat);
-      } else {
-        setActivePage(null);
+      const path = window.location.pathname;
+      if (/^\/producto\//.test(path)) return; // handled by product effect
+      if (path === '/' || path === '') { setActivePage(null); return; }
+      const VALID = ['productos','evento','protocolo','comunidad','design','cuadros','nosotros','servicios','envios','blog'];
+      const m = path.match(/^\/([^/?#]+)/);
+      if (m && VALID.includes(m[1])) {
+        setActivePage(m[1]);
+        const state = e.state;
+        if (state && state.ruahCat) setPageCategory(state.ruahCat);
+        return;
       }
+      setActivePage(null);
     }
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
@@ -277,8 +286,6 @@ function App() {
         );
       case 'cuadros':
         return <PageView title="CUADROS" onBack={goHome}><Cuadros content={content} onAddToCart={addToCart} onBuyNow={buyNow} onOpenCuadro={(id) => setCuadroId(id)} /></PageView>;
-      case 'iglesias':
-        return <PageView title="IGLESIAS" onBack={goHome}><Iglesias content={content} /></PageView>;
       case 'evento':
         return <PageView title="EVENTO" onBack={goHome}><Eventos content={content} /></PageView>;
       case 'protocolo':
@@ -289,6 +296,8 @@ function App() {
         return <PageView title="ENVÍOS Y DEVOLUCIONES" onBack={goHome}><Envios content={content} /></PageView>;
       case 'design':
         return <PageView title="PERSONALIZADO" onBack={goHome}><DesignGallery content={content} /></PageView>;
+      case 'blog':
+        return <PageView title="MEDIO EDITORIAL" onBack={goHome}><BlogPage /></PageView>;
       default:
         return null;
     }
