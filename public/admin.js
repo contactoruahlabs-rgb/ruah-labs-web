@@ -286,7 +286,7 @@ async function uploadPdf(file) {
 // resourceType: 'image' | 'video'
 async function uploadToCloudinary(file, resourceType) {
   var rt = resourceType || (file.type.startsWith('video/') ? 'video' : 'image');
-  var api = (window.RUAH_API || '') + '/api/images/sign';
+  var api = '/api/images/sign';
   var adminKey = typeof getAdminToken === 'function' ? await getAdminToken() : sessionStorage.getItem('ruah-admin-session') || '';
   var signRes = await fetch(api, {
     method: 'POST',

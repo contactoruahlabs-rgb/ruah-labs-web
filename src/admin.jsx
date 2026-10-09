@@ -183,11 +183,31 @@ function Toggle({ label, value, onChange }) {
   );
 }
 
+// Subir PDF a Supabase Storage vía backend (no usa Cloudinary)
+async function uploadPdf(file) {
+  var api = (window.RUAH_API || '') + '/api/pdfs/upload';
+  var adminKey = (typeof getAdminToken === 'function') ? await getAdminToken() : (sessionStorage.getItem('ruah-admin-session') || '');
+  var base64 = await new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function(e) { resolve(e.target.result.split(',')[1]); };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+  var res = await fetch(api, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+    body: JSON.stringify({ name: file.name, data: base64 }),
+  });
+  var data = await res.json();
+  if (!data.url) throw new Error(data.error || 'Upload PDF fallido');
+  return data.url;
+}
+
 // Subir archivo a Cloudinary con firma del servidor (signed upload)
 // resourceType: 'image' | 'video'
 async function uploadToCloudinary(file, resourceType) {
   var rt = resourceType || (file.type.startsWith('video/') ? 'video' : 'image');
-  var api = (window.RUAH_API || '') + '/api/images/sign';
+  var api = '/api/images/sign';
   var adminKey = (typeof getAdminToken === 'function') ? await getAdminToken() : (sessionStorage.getItem('ruah-admin-session') || '');
 
   var signRes = await fetch(api, {
@@ -1648,7 +1668,7 @@ function ViewClub({ content, store }) {
       <div className="card">
         <div className="card__head">
           <h3>Rutas — {c.routes.length}</h3>
-          <button className="abtn amber sm" onClick={() => updateList('club.routes', l => [...l, { id: 'r' + Date.now(), name: 'Nueva ruta', date: '00 MES · 00:00', meta: '', joined: false }])}>+ Ruta</button>
+          <button className="abtn amber sm" onClick={() => updateList('club.routes', l => [...l, { id: 'r' + Date.now(), name: 'Nueva ruta', date: '00 MES · 00:00', meta: '', mapEmbed: '', mapName: '', joined: false }])}>+ Ruta</button>
         </div>
         {c.routes.map(r => (
           <div className="prod-edit" key={r.id} style={{ gridTemplateColumns: '1fr auto' }}>
@@ -1658,6 +1678,8 @@ function ViewClub({ content, store }) {
                 <Text label="Fecha · Hora" value={r.date} onChange={v => updateList('club.routes', l => l.map(x => x.id === r.id ? { ...x, date: v } : x))} />
               </div>
               <Text label="Detalle (punto, cupos, prendas)" value={r.meta} onChange={v => updateList('club.routes', l => l.map(x => x.id === r.id ? { ...x, meta: v } : x))} multiline rows={2} />
+              <Text label="Nombre del punto (ej: Patronato Norte, Santiago)" value={r.mapName || ''} onChange={v => updateList('club.routes', l => l.map(x => x.id === r.id ? { ...x, mapName: v } : x))} />
+              <Text label="URL embed de Google Maps" hint="Google Maps → Compartir → Insertar mapa → copia el src del iframe" value={r.mapEmbed || ''} onChange={v => updateList('club.routes', l => l.map(x => x.id === r.id ? { ...x, mapEmbed: v } : x))} />
             </div>
             <div className="prod-edit__actions">
               <button className="abtn danger sm" onClick={() => updateList('club.routes', l => l.filter(x => x.id !== r.id))}>×</button>
@@ -1693,6 +1715,9 @@ function ViewClub({ content, store }) {
           <h3>Feed inicial — {c.feed.length}</h3>
           <button className="abtn sm" onClick={() => updateList('club.feed', l => [...l, { id: 'f' + Date.now(), when: 'HOY · ANÓNIMO', what: '' }])}>+ Mensaje</button>
         </div>
+        <p style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--gray)', marginBottom: 12, lineHeight: 1.5 }}>
+          Los mensajes reales los envían los miembros desde la sección NOS CUIDAMOS y se guardan en la base de datos. Estos son mensajes fijos de ejemplo que se muestran si la base de datos está vacía.
+        </p>
         {c.feed.map(f => (
           <div className="prod-edit" key={f.id} style={{ gridTemplateColumns: '1fr auto' }}>
             <div className="prod-edit__fields">
@@ -1706,43 +1731,184 @@ function ViewClub({ content, store }) {
         ))}
       </div>
 
+      {/* ── Significado de las poleras ──────────────────────────────────── */}
       <div className="card">
         <div className="card__head">
-          <h3>Registro Fotográfico — {(c.photos || []).length} fotos</h3>
-          <button className="abtn amber sm" onClick={() => updateList('club.photos', l => [...(l || []), { id: 'ph' + Date.now(), img: '', caption: 'Nueva foto' }])}>+ Foto</button>
+          <h3>Significado de las Poleras</h3>
+          <button className="abtn amber sm" onClick={() => updateList('club.shirtMeanings.collections', l => [...(l||[]), { id: 'smc' + Date.now(), name: 'Nueva colección', type: 'coleccion', coverImg: '', items: [] }])}>+ Colección</button>
         </div>
         <p style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--gray)', marginBottom: 16, lineHeight: 1.55 }}>
-          Estas fotos aparecen en la pestaña D / REGISTRO FOTOGRÁFICO del Club, con fondo negro y letras en ámbar. Sólo ven los miembros autenticados.
+          Cada colección agrupa poleras. Dentro de cada polera puedes agregar secciones de reflexión que los miembros del club pueden leer.
         </p>
-        <div className="row">
-          <Text label="Título de sección" value={c.photoRegistryTitle || ''} onChange={v => update('club.photoRegistryTitle', v)} />
-          <Text label="Subtítulo" value={c.photoRegistrySubtitle || ''} onChange={v => update('club.photoRegistrySubtitle', v)} />
+        {((c.shirtMeanings && c.shirtMeanings.collections) || []).map((col, ci) => {
+          const colPath = 'club.shirtMeanings.collections';
+          function updateCol(key, val) { updateList(colPath, l => l.map(x => x.id === col.id ? { ...x, [key]: val } : x)); }
+          return (
+            <div key={col.id} className="card" style={{ margin: '12px 0', padding: '18px', background: 'rgba(245,241,232,0.02)', border: '1px solid rgba(245,241,232,0.1)' }}>
+              <div className="card__head" style={{ marginBottom: 14 }}>
+                <h4 style={{ margin: 0, fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{col.name}</h4>
+                <button className="abtn danger sm" onClick={() => { if (confirm('¿Eliminar esta colección y todas sus poleras?')) updateList(colPath, l => l.filter(x => x.id !== col.id)); }}>× Eliminar</button>
+              </div>
+
+              <div className="row">
+                <Text label="Nombre de la colección" value={col.name} onChange={v => updateCol('name', v)} />
+                <Field label="Tipo">
+                  <select className="select" value={col.type || 'coleccion'} onChange={e => updateCol('type', e.target.value)}>
+                    <option value="coleccion">Colección</option>
+                    <option value="personalizada">Personalizada</option>
+                    <option value="singulares">Singulares</option>
+                  </select>
+                </Field>
+              </div>
+              <ImgPicker label="Foto de portada (4:3)" ratio="4 / 3" value={col.coverImg || ''} onChange={v => updateCol('coverImg', v)} />
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '16px 0 10px' }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--gray-soft)' }}>
+                  Poleras — {(col.items || []).length}
+                </span>
+                <button className="abtn sm amber" onClick={() => updateCol('items', [...(col.items || []), { id: 'smi' + Date.now(), name: 'Nueva polera', img: '', verse: '', sections: [] }])}>+ Polera</button>
+              </div>
+
+              {(col.items || []).map((item, ii) => (
+                <div key={item.id} style={{ border: '1px solid rgba(245,241,232,0.1)', padding: '14px', marginBottom: 10, borderRadius: 4, background: 'rgba(0,0,0,0.2)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <span style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--amber)' }}>POLERA {ii + 1}</span>
+                    <button className="abtn danger sm" onClick={() => updateCol('items', (col.items || []).filter(x => x.id !== item.id))}>× Eliminar</button>
+                  </div>
+
+                  <div className="row">
+                    <Text label="Nombre" value={item.name} onChange={v => updateCol('items', (col.items||[]).map(x => x.id === item.id ? { ...x, name: v } : x))} />
+                    <Text label="Versículo / referencia" value={item.verse || ''} onChange={v => updateCol('items', (col.items||[]).map(x => x.id === item.id ? { ...x, verse: v } : x))} placeholder="MATEO 8:28-32" />
+                  </div>
+                  <ImgPicker label="Foto de la polera (3:4)" ratio="3 / 4" value={item.img || ''} onChange={v => updateCol('items', (col.items||[]).map(x => x.id === item.id ? { ...x, img: v } : x))} />
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '12px 0 8px' }}>
+                    <span style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.1em', color: 'var(--gray-soft)' }}>Secciones — {(item.sections || []).length}</span>
+                    <button className="abtn sm" onClick={() => updateCol('items', (col.items||[]).map(x => x.id !== item.id ? x : { ...x, sections: [...(x.sections||[]), { id: 'sms' + Date.now(), title: 'Nueva sección', body: '', pdfUrl: '' }] }))}>+ Sección</button>
+                  </div>
+                  {(item.sections || []).map((sec, si) => (
+                    <div key={sec.id} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, alignItems: 'start', marginBottom: 8 }}>
+                      <div>
+                        <Text label={'Título sección ' + (si + 1)} value={sec.title} onChange={v => updateCol('items', (col.items||[]).map(x => x.id !== item.id ? x : { ...x, sections: x.sections.map(s => s.id === sec.id ? { ...s, title: v } : s) }))} />
+                        <Text label="Contenido (usa doble salto de línea para separar párrafos)" value={sec.body} onChange={v => updateCol('items', (col.items||[]).map(x => x.id !== item.id ? x : { ...x, sections: x.sections.map(s => s.id === sec.id ? { ...s, body: v } : s) }))} multiline rows={4} />
+                        <div style={{ marginTop: 6 }}>
+                          <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--gray-soft)', display: 'block', marginBottom: 4 }}>PDF (opcional — reemplaza el texto)</span>
+                          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                            {sec.pdfUrl && <a href={sec.pdfUrl} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: 'var(--amber)', fontFamily: 'var(--mono)' }}>Ver PDF ↗</a>}
+                            <label className="abtn sm" style={{ cursor: 'pointer' }}>
+                              {sec.pdfUrl ? 'Cambiar PDF' : '↑ Subir PDF'}
+                              <input type="file" accept="application/pdf" style={{ display: 'none' }} onChange={async e => {
+                                var f = e.target.files && e.target.files[0]; if (!f) return;
+                                e.target.value = '';
+                                try {
+                                  var url = await uploadPdf(f);
+                                  var newItems = (col.items||[]).map(x => x.id !== item.id ? x : { ...x, sections: x.sections.map(s => s.id === sec.id ? { ...s, pdfUrl: url } : s) });
+                                  updateCol('items', newItems);
+                                  var newColls = (content.club.shirtMeanings.collections||[]).map(x => x.id !== col.id ? x : { ...x, items: newItems });
+                                  saveContent({ ...content, club: { ...content.club, shirtMeanings: { ...content.club.shirtMeanings, collections: newColls } } });
+                                } catch(err) {
+                                  alert('Error subiendo PDF: ' + err.message);
+                                }
+                              }} />
+                            </label>
+                            {sec.pdfUrl && <button className="abtn danger sm" onClick={() => updateCol('items', (col.items||[]).map(x => x.id !== item.id ? x : { ...x, sections: x.sections.map(s => s.id === sec.id ? { ...s, pdfUrl: '' } : s) }))}>Quitar PDF</button>}
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ paddingTop: 28 }}>
+                        <button className="abtn danger sm" onClick={() => updateCol('items', (col.items||[]).map(x => x.id !== item.id ? x : { ...x, sections: x.sections.filter(s => s.id !== sec.id) }))}>×</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="card">
+        <div className="card__head">
+          <h3>Banner de imágenes (reparto)</h3>
+          <button className="abtn amber sm" onClick={() => updateList('club.bannerImages', l => [...(l || []), { id: 'bi' + Date.now(), img: '', caption: '' }])}>+ Imagen</button>
         </div>
-        <div className="divider">Fotos — {(c.photos || []).length}</div>
-        {(c.photos || []).map((p, i) => (
-          <div className="prod-edit" key={p.id} style={{ gridTemplateColumns: '120px 1fr auto' }}>
-            <label className="prod-edit__media" style={{ aspectRatio: '1 / 1', height: 'auto' }}>
-              {p.img
-                ? <img src={p.img} alt={p.caption} />
-                : <span>Subir<br/>foto</span>}
-              <input
-                type="file" accept="image/*"
-                onChange={async e => {
-                  const f = e.target.files && e.target.files[0]; if (!f) return;
-                  const url = await uploadToCloudinary(f);
-                  updateList('club.photos', l => l.map(x => x.id === p.id ? { ...x, img: url } : x));
-                }}
-              />
+        <p style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--gray)', marginBottom: 16, lineHeight: 1.55 }}>
+          Estas imágenes giran automáticamente en el banner debajo del hero del club. Sube fotos de las jornadas de reparto.
+        </p>
+        {(c.bannerImages || []).map((b, i) => (
+          <div className="prod-edit" key={b.id} style={{ gridTemplateColumns: '100px 1fr auto' }}>
+            <label className="prod-edit__media" style={{ aspectRatio: '1/1', height: 'auto' }}>
+              {b.img ? <img src={b.img} alt="" /> : <span>Subir</span>}
+              <input type="file" accept="image/*" onChange={async e => {
+                const f = e.target.files && e.target.files[0]; if (!f) return;
+                const url = await uploadToCloudinary(f);
+                updateList('club.bannerImages', l => l.map(x => x.id === b.id ? { ...x, img: url } : x));
+              }} />
             </label>
             <div className="prod-edit__fields">
-              <Text label="Caption / descripción" value={p.caption} onChange={v => updateList('club.photos', l => l.map(x => x.id === p.id ? { ...x, caption: v } : x))} />
-              {p.img && <button type="button" className="abtn danger sm" style={{ alignSelf: 'flex-start', marginTop: 6 }} onClick={() => updateList('club.photos', l => l.map(x => x.id === p.id ? { ...x, img: '' } : x))}>Quitar foto</button>}
+              <Text label="Caption (opcional)" value={b.caption || ''} onChange={v => updateList('club.bannerImages', l => l.map(x => x.id === b.id ? { ...x, caption: v } : x))} />
+              {b.img && <button type="button" className="abtn danger sm" style={{ alignSelf: 'flex-start', marginTop: 6 }} onClick={() => updateList('club.bannerImages', l => l.map(x => x.id === b.id ? { ...x, img: '' } : x))}>Quitar foto</button>}
             </div>
             <div className="prod-edit__actions">
-              <button className="abtn ghost sm" disabled={i === 0} onClick={() => updateList('club.photos', l => { const a = [...l]; [a[i-1], a[i]] = [a[i], a[i-1]]; return a; })}>↑</button>
-              <button className="abtn ghost sm" disabled={i === (c.photos || []).length - 1} onClick={() => updateList('club.photos', l => { const a = [...l]; [a[i+1], a[i]] = [a[i], a[i+1]]; return a; })}>↓</button>
-              <button className="abtn danger sm" onClick={() => updateList('club.photos', l => l.filter(x => x.id !== p.id))}>×</button>
+              <button className="abtn ghost sm" disabled={i === 0} onClick={() => updateList('club.bannerImages', l => { const a = [...l]; [a[i-1], a[i]] = [a[i], a[i-1]]; return a; })}>↑</button>
+              <button className="abtn ghost sm" disabled={i === (c.bannerImages || []).length - 1} onClick={() => updateList('club.bannerImages', l => { const a = [...l]; [a[i+1], a[i]] = [a[i], a[i+1]]; return a; })}>↓</button>
+              <button className="abtn danger sm" onClick={() => updateList('club.bannerImages', l => l.filter(x => x.id !== b.id))}>×</button>
             </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="card">
+        <div className="card__head">
+          <h3>Registro Fotográfico — álbumes por categoría</h3>
+          <button className="abtn amber sm" onClick={() => updateList('club.photoItems', l => [...(l || []), { id: 'pcat' + Date.now(), name: 'NUEVA CATEGORÍA', coverImg: '', albums: [] }])}>+ Categoría</button>
+        </div>
+        <p style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--gray)', marginBottom: 16, lineHeight: 1.55 }}>
+          Cada categoría tiene su portada y álbumes internos organizados por fecha. Los miembros pueden navegar carpeta por carpeta.
+        </p>
+        {(c.photoItems || []).map((item, ii) => (
+          <div key={item.id} className="card" style={{ margin: '12px 0', padding: '18px', background: 'rgba(245,241,232,0.02)', border: '1px solid rgba(245,241,232,0.1)' }}>
+            <div className="card__head" style={{ marginBottom: 14 }}>
+              <h4 style={{ margin: 0, fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{item.name}</h4>
+              <button className="abtn danger sm" onClick={() => { if (confirm('¿Eliminar categoría y todos sus álbumes?')) updateList('club.photoItems', l => l.filter(x => x.id !== item.id)); }}>× Eliminar</button>
+            </div>
+            <Text label="Nombre de la categoría" value={item.name} onChange={v => updateList('club.photoItems', l => l.map(x => x.id === item.id ? { ...x, name: v } : x))} />
+            <div style={{ marginTop: 12, marginBottom: 16 }}>
+              <ImgPicker label="Imagen de portada (4:3)" ratio="4 / 3" value={item.coverImg || ''} onChange={v => updateList('club.photoItems', l => l.map(x => x.id === item.id ? { ...x, coverImg: v } : x))} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--gray-soft)' }}>Álbumes — {(item.albums || []).length}</span>
+              <button className="abtn sm amber" onClick={() => updateList('club.photoItems', l => l.map(x => x.id !== item.id ? x : { ...x, albums: [...(x.albums || []), { id: 'alb' + Date.now(), name: 'Nombre del álbum', date: '', photos: [] }] }))}>+ Álbum</button>
+            </div>
+            {(item.albums || []).map((alb, ai) => (
+              <div key={alb.id} style={{ border: '1px solid rgba(245,241,232,0.1)', padding: '14px', marginBottom: 10, borderRadius: 4, background: 'rgba(0,0,0,0.2)' }}>
+                <div className="row" style={{ marginBottom: 10, alignItems: 'flex-end' }}>
+                  <Text label="Nombre del álbum" value={alb.name} onChange={v => updateList('club.photoItems', l => l.map(x => x.id !== item.id ? x : { ...x, albums: x.albums.map(a => a.id !== alb.id ? a : { ...a, name: v }) }))} />
+                  <Text label="Fecha (ej: 12 JUN 2026)" value={alb.date || ''} onChange={v => updateList('club.photoItems', l => l.map(x => x.id !== item.id ? x : { ...x, albums: x.albums.map(a => a.id !== alb.id ? a : { ...a, date: v }) }))} />
+                  <div style={{ paddingBottom: 14 }}>
+                    <button className="abtn danger sm" onClick={() => updateList('club.photoItems', l => l.map(x => x.id !== item.id ? x : { ...x, albums: x.albums.filter(a => a.id !== alb.id) }))}>×</button>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {(alb.photos || []).map((ph, pi) => (
+                    <div key={pi} style={{ position: 'relative', width: 72, flexShrink: 0 }}>
+                      <img src={ph} alt="" style={{ width: 72, height: 72, objectFit: 'cover', display: 'block', borderRadius: 2 }} />
+                      <button onClick={() => updateList('club.photoItems', l => l.map(x => x.id !== item.id ? x : { ...x, albums: x.albums.map(a => a.id !== alb.id ? a : { ...a, photos: a.photos.filter((_, j) => j !== pi) }) }))} style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.8)', color: '#fff', border: 'none', width: 18, height: 18, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                    </div>
+                  ))}
+                  <label style={{ width: 72, height: 72, border: '1px dashed rgba(245,241,232,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 22, color: 'var(--gray)', borderRadius: 2, flexShrink: 0 }}>
+                    +
+                    <input type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={async e => {
+                      const files = Array.from(e.target.files || []);
+                      for (const f of files) {
+                        const url = await uploadToCloudinary(f);
+                        updateList('club.photoItems', l => l.map(x => x.id !== item.id ? x : { ...x, albums: x.albums.map(a => a.id !== alb.id ? a : { ...a, photos: [...(a.photos || []), url] }) }));
+                      }
+                    }} />
+                  </label>
+                </div>
+              </div>
+            ))}
           </div>
         ))}
       </div>
@@ -2941,6 +3107,356 @@ function ViewDesign({ content, store }) {
   );
 }
 
+// ═══════════════════════════════════════════════════════════
+// ViewBlog — Panel de administración del Blog
+// ═══════════════════════════════════════════════════════════
+function ViewBlog() {
+  var API     = (window.RUAH_API || '') + '/api/admin/blog';
+  var imgAPI  = (window.RUAH_API || '') + '/api/admin/blog/images';
+
+  var [tab,         setTab]         = React.useState('posts');  // 'posts' | 'cats'
+  var [posts,       setPosts]       = React.useState([]);
+  var [cats,        setCats]        = React.useState([]);
+  var [editing,     setEditing]     = React.useState(null);     // null | {} | post-obj
+  var [loading,     setLoading]     = React.useState(true);
+  var [saving,      setSaving]      = React.useState(false);
+  var [catNew,      setCatNew]      = React.useState('');
+  var [pendingImgs, setPendingImgs] = React.useState([]);       // { file, preview }[]
+  var [existImgs,   setExistImgs]   = React.useState([]);       // already-saved images
+
+  async function getToken() {
+    try {
+      var SB_URL  = 'https://txrpxzsqqomdlnxmyvxn.supabase.co';
+      var SB_ANON = 'sb_publishable_ZLrj11-7GjIE8gEiwybtvQ_6e4NZ07p';
+      var cl = window._ruahSbClient || (window.supabase && window.supabase.createClient(SB_URL, SB_ANON));
+      var s = cl && (await cl.auth.getSession());
+      return (s && s.data && s.data.session && s.data.session.access_token) || sessionStorage.getItem('ruah-admin-session') || '';
+    } catch(_) {
+      return sessionStorage.getItem('ruah-admin-session') || '';
+    }
+  }
+  async function apiFetch(url, opts) {
+    var tok = await getToken();
+    var res = await fetch(url, Object.assign({ headers: { 'Content-Type': 'application/json', 'x-admin-key': tok } }, opts || {}));
+    return res.json();
+  }
+
+  function loadData() {
+    setLoading(true);
+    Promise.all([
+      apiFetch(API + '/posts'),
+      apiFetch(API + '/categories'),
+    ]).then(function(r) {
+      setPosts(r[0] || []);
+      setCats(r[1] || []);
+      setLoading(false);
+    }).catch(function() { setLoading(false); });
+  }
+  React.useEffect(function() { loadData(); }, []);
+
+  // ── Subir imagen a Cloudinary ──────────────────────────────
+  async function uploadImg(file) {
+    var params = await apiFetch(imgAPI, { method: 'POST' });
+    if (!params || !params.url) throw new Error('No se obtuvieron parámetros de Cloudinary');
+    var fd = new FormData();
+    fd.append('file',      file);
+    fd.append('api_key',   params.api_key);
+    fd.append('timestamp', params.timestamp);
+    fd.append('signature', params.signature);
+    fd.append('folder',    params.folder);
+    var r = await fetch(params.url, { method: 'POST', body: fd });
+    var d = await r.json();
+    if (!d.secure_url) throw new Error(d.error && d.error.message || 'Upload fallido');
+    return d.secure_url;
+  }
+
+  // ── Guardar post ───────────────────────────────────────────
+  async function savePost(e) {
+    e.preventDefault();
+    if (!editing) return;
+    setSaving(true);
+    try {
+      // Subir imágenes pendientes a Cloudinary
+      var uploaded = [];
+      for (var i = 0; i < pendingImgs.length; i++) {
+        var url = await uploadImg(pendingImgs[i].file);
+        uploaded.push({ url: url, alt: pendingImgs[i].alt || '', sort_order: existImgs.length + i });
+      }
+      var allImages = existImgs.map(function(img, idx) { return { url: img.url, alt: img.alt || '', sort_order: idx }; })
+        .concat(uploaded);
+
+      var payload = {
+        title:          editing.title   || '',
+        subtitle:       editing.subtitle || '',
+        slug:           editing.slug    || '',
+        featured_image: editing.featured_image || '',
+        content:        editing.content || '',
+        category_id:    editing.category_id || null,
+        author:         editing.author  || 'RUAH LABS',
+        status:         editing.status  || 'draft',
+        seo_title:      editing.seo_title || '',
+        seo_desc:       editing.seo_desc  || '',
+        images:         allImages,
+      };
+
+      if (editing.id) {
+        await apiFetch(API + '/posts/' + editing.id, { method: 'PUT', body: JSON.stringify(payload) });
+      } else {
+        await apiFetch(API + '/posts', { method: 'POST', body: JSON.stringify(payload) });
+      }
+      setPendingImgs([]);
+      setExistImgs([]);
+      setEditing(null);
+      loadData();
+    } catch(err) {
+      alert('Error al guardar: ' + err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function deletePost(id) {
+    if (!confirm('¿Eliminar este artículo? Esta acción no se puede deshacer.')) return;
+    await apiFetch(API + '/posts/' + id, { method: 'DELETE' });
+    loadData();
+  }
+
+  async function addCat(e) {
+    e.preventDefault();
+    if (!catNew.trim()) return;
+    var slug = catNew.trim().toLowerCase()
+      .replace(/[áä]/g, 'a').replace(/[éë]/g, 'e').replace(/[íï]/g, 'i')
+      .replace(/[óö]/g, 'o').replace(/[úü]/g, 'u').replace(/ñ/g, 'n')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    await apiFetch(API + '/categories', { method: 'POST', body: JSON.stringify({ name: catNew.trim(), slug: slug }) });
+    setCatNew('');
+    loadData();
+  }
+
+  async function deleteCat(id) {
+    if (!confirm('¿Eliminar esta categoría?')) return;
+    await apiFetch(API + '/categories/' + id, { method: 'DELETE' });
+    loadData();
+  }
+
+  function newPost() {
+    setEditing({ title: '', subtitle: '', slug: '', featured_image: '', content: '', category_id: '', author: 'RUAH LABS', status: 'draft', seo_title: '', seo_desc: '' });
+    setPendingImgs([]);
+    setExistImgs([]);
+  }
+
+  function editPost(p) {
+    setEditing({ ...p });
+    setPendingImgs([]);
+    setExistImgs(p.images || []);
+  }
+
+  function set(key, val) {
+    setEditing(function(prev) { return { ...prev, [key]: val }; });
+  }
+
+  function autoSlug(title) {
+    return title.toLowerCase()
+      .replace(/[áä]/g, 'a').replace(/[éë]/g, 'e').replace(/[íï]/g, 'i')
+      .replace(/[óö]/g, 'o').replace(/[úü]/g, 'u').replace(/ñ/g, 'n')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+
+  function handleFilesPick(e) {
+    var files = Array.from(e.target.files || []);
+    e.target.value = '';
+    var news = files.map(function(f) { return { file: f, preview: URL.createObjectURL(f), alt: '' }; });
+    setPendingImgs(function(prev) { return prev.concat(news); });
+  }
+
+  function catName(id) {
+    var c = cats.find(function(x) { return x.id === id; });
+    return c ? c.name : '';
+  }
+  function fmtDate(d) {
+    if (!d) return '—';
+    return new Date(d).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  // ── Editor de post ─────────────────────────────────────────
+  if (editing !== null) {
+    return (
+      <div className="ab__wrap">
+        <div className="ab__toolbar">
+          <h3>{editing.id ? 'EDITAR ARTÍCULO' : 'NUEVO ARTÍCULO'}</h3>
+          <button className="ab__btn" onClick={function() { setEditing(null); setPendingImgs([]); setExistImgs([]); }}>← VOLVER</button>
+        </div>
+        <form className="ab__form" onSubmit={savePost}>
+          <div className="ab__field">
+            <label className="ab__label">TÍTULO *</label>
+            <input className="ab__input" value={editing.title || ''} required
+              onChange={function(e) { set('title', e.target.value); if (!editing.id) set('slug', autoSlug(e.target.value)); }}
+            />
+          </div>
+          <div className="ab__field">
+            <label className="ab__label">SUBTÍTULO</label>
+            <input className="ab__input" value={editing.subtitle || ''} onChange={function(e) { set('subtitle', e.target.value); }} />
+          </div>
+          <div className="ab__row2">
+            <div className="ab__field">
+              <label className="ab__label">SLUG (URL) *</label>
+              <input className="ab__input" value={editing.slug || ''} required onChange={function(e) { set('slug', e.target.value); }} />
+            </div>
+            <div className="ab__field">
+              <label className="ab__label">CATEGORÍA</label>
+              <select className="ab__select" value={editing.category_id || ''} onChange={function(e) { set('category_id', e.target.value || null); }}>
+                <option value="">Sin categoría</option>
+                {cats.map(function(c) { return <option key={c.id} value={c.id}>{c.name}</option>; })}
+              </select>
+            </div>
+          </div>
+          <div className="ab__row2">
+            <div className="ab__field">
+              <label className="ab__label">AUTOR</label>
+              <input className="ab__input" value={editing.author || 'RUAH LABS'} onChange={function(e) { set('author', e.target.value); }} />
+            </div>
+            <div className="ab__field">
+              <label className="ab__label">ESTADO</label>
+              <select className="ab__select" value={editing.status || 'draft'} onChange={function(e) { set('status', e.target.value); }}>
+                <option value="draft">Borrador</option>
+                <option value="published">Publicado</option>
+                <option value="archived">Archivado</option>
+              </select>
+            </div>
+          </div>
+          <div className="ab__field">
+            <label className="ab__label">IMAGEN DESTACADA (URL)</label>
+            <input className="ab__input" value={editing.featured_image || ''} placeholder="https://..." onChange={function(e) { set('featured_image', e.target.value); }} />
+          </div>
+          <div className="ab__field">
+            <label className="ab__label">CONTENIDO</label>
+            <textarea className="ab__textarea" value={editing.content || ''} onChange={function(e) { set('content', e.target.value); }} placeholder="Escribe el artículo aquí. Puedes usar HTML básico: <h2>, <p>, <strong>, <blockquote>, <a>..." />
+          </div>
+          <div className="ab__field">
+            <label className="ab__label">GALERÍA DE IMÁGENES</label>
+            {(existImgs.length > 0 || pendingImgs.length > 0) && (
+              <div className="ab__imgs">
+                {existImgs.map(function(img, i) {
+                  return (
+                    <div key={i} className="ab__img-thumb">
+                      <img src={img.url} alt={img.alt} />
+                      <button type="button" className="ab__img-rm" onClick={function() { setExistImgs(function(prev) { return prev.filter(function(_, idx) { return idx !== i; }); }); }}>✕</button>
+                    </div>
+                  );
+                })}
+                {pendingImgs.map(function(img, i) {
+                  return (
+                    <div key={'p' + i} className="ab__img-thumb" style={{ border: '1px solid rgba(236,161,12,.4)' }}>
+                      <img src={img.preview} alt="nueva" />
+                      <button type="button" className="ab__img-rm" onClick={function() { setPendingImgs(function(prev) { return prev.filter(function(_, idx) { return idx !== i; }); }); }}>✕</button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            <input type="file" accept="image/*" multiple style={{ marginTop: 8, color: 'rgba(245,241,232,.5)', fontSize: 13 }} onChange={handleFilesPick} />
+          </div>
+          <div className="ab__field">
+            <label className="ab__label">SEO — TÍTULO META</label>
+            <input className="ab__input" value={editing.seo_title || ''} onChange={function(e) { set('seo_title', e.target.value); }} />
+          </div>
+          <div className="ab__field">
+            <label className="ab__label">SEO — DESCRIPCIÓN META</label>
+            <input className="ab__input" value={editing.seo_desc || ''} onChange={function(e) { set('seo_desc', e.target.value); }} />
+          </div>
+          <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+            <button type="submit" className="ab__btn ab__btn--primary" disabled={saving}>{saving ? 'GUARDANDO...' : 'GUARDAR'}</button>
+            <button type="button" className="ab__btn" onClick={function() { setEditing(null); setPendingImgs([]); setExistImgs([]); }}>CANCELAR</button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
+  // ── Vista principal ────────────────────────────────────────
+  return (
+    <div className="ab__wrap">
+      <div className="ab__tabs">
+        <button className={'ab__tab' + (tab === 'posts' ? ' active' : '')} onClick={function() { setTab('posts'); }}>ARTÍCULOS</button>
+        <button className={'ab__tab' + (tab === 'cats'  ? ' active' : '')} onClick={function() { setTab('cats');  }}>CATEGORÍAS</button>
+      </div>
+
+      {tab === 'posts' && (
+        <div>
+          <div className="ab__toolbar">
+            <h3>ARTÍCULOS DEL BLOG</h3>
+            <button className="ab__btn ab__btn--primary" onClick={newPost}>+ NUEVO ARTÍCULO</button>
+          </div>
+          {loading
+            ? <p style={{ color: 'rgba(245,241,232,.4)', fontFamily: 'Bebas Neue', letterSpacing: 2 }}>CARGANDO...</p>
+            : posts.length === 0
+              ? <p style={{ color: 'rgba(245,241,232,.4)', fontFamily: 'Bebas Neue', letterSpacing: 2 }}>NO HAY ARTÍCULOS AÚN</p>
+              : (
+                <table className="ab__table">
+                  <thead>
+                    <tr>
+                      <th>TÍTULO</th>
+                      <th>CATEGORÍA</th>
+                      <th>ESTADO</th>
+                      <th>FECHA</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {posts.map(function(p) {
+                      return (
+                        <tr key={p.id}>
+                          <td style={{ fontFamily: 'Bebas Neue', fontSize: 15, color: '#f5f1e8' }}>{p.title}</td>
+                          <td style={{ fontSize: 12, color: 'rgba(245,241,232,.45)' }}>{catName(p.category_id) || '—'}</td>
+                          <td><span className={'ab__status ab__status--' + p.status}>{p.status}</span></td>
+                          <td style={{ fontSize: 12 }}>{fmtDate(p.published_at)}</td>
+                          <td>
+                            <div style={{ display: 'flex', gap: 6 }}>
+                              <button className="ab__btn ab__btn--sm" onClick={function() { editPost(p); }}>EDITAR</button>
+                              <button className="ab__btn ab__btn--sm ab__btn--danger" onClick={function() { deletePost(p.id); }}>✕</button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )
+          }
+        </div>
+      )}
+
+      {tab === 'cats' && (
+        <div>
+          <div className="ab__toolbar">
+            <h3>CATEGORÍAS</h3>
+          </div>
+          <div className="ab__cats-list">
+            {cats.map(function(c) {
+              return (
+                <div key={c.id} className="ab__cat-chip">
+                  {c.name}
+                  <button onClick={function() { deleteCat(c.id); }}>✕</button>
+                </div>
+              );
+            })}
+          </div>
+          <form onSubmit={addCat} style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 8 }}>
+            <input
+              className="ab__input"
+              style={{ maxWidth: 260 }}
+              value={catNew}
+              placeholder="Nueva categoría..."
+              onChange={function(e) { setCatNew(e.target.value); }}
+            />
+            <button type="submit" className="ab__btn ab__btn--primary">AGREGAR</button>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ----- Admin shell -----
 function ViewLaunch({ content, store }) {
   const L = content.launch || {};
@@ -3022,8 +3538,8 @@ const ADMIN_VIEWS = [
   { id: 'categories',   label: 'Categorías',    comp: ViewCategories },
   { id: 'products',     label: 'Productos',     comp: ViewProducts },
   { id: 'cuadros',      label: 'Cuadros',       comp: ViewCuadros },
-  { id: 'iglesias',     label: 'Iglesias',      comp: ViewIglesias },
   { id: 'eventos',      label: 'Evento',        comp: ViewEventos },
+  { id: 'blog',         label: 'Blog',          comp: ViewBlog },
   { id: 'manifesto',    label: 'Manifiesto',    comp: ViewManifesto },
   { id: 'testimonials', label: 'Testimonios',   comp: ViewTestimonials },
   { id: 'cta',          label: 'CTA Final',     comp: ViewCTA },
