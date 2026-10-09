@@ -420,7 +420,7 @@ section { padding-block: var(--section-pad-y); position: relative; }
 /* ── Menú móvil fullscreen (estilo limpio) ── */
 .mobile-menu {
   position: fixed; inset: 0;
-  z-index: 55;
+  z-index: 70;
   background: #E6E6E6;
   opacity: 0;
   pointer-events: none;
@@ -440,22 +440,23 @@ section { padding-block: var(--section-pad-y); position: relative; }
 /* Cabecera con logo + × */
 .mobile-menu__head {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 28px;
+  padding: 12px 16px;
   border-bottom: 1px solid rgba(10,10,10,0.1);
   flex-shrink: 0;
+  min-height: 60px;
 }
-.mobile-menu__logo {
-  font-family: var(--serif);
-  font-size: 15px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--ink);
+.mobile-menu__brand {
+  background: #0e0e0c;
+  padding: 7px 20px;
+  display: flex; align-items: center;
 }
+.mobile-menu__brand-img { height: 22px; filter: brightness(0) invert(1); display: block; }
+.mobile-menu__head-spacer { width: 40px; }
 .mobile-menu__x {
-  width: 36px; height: 36px;
+  width: 40px; height: 40px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 20px; line-height: 1;
-  color: rgba(10,10,10,0.5);
+  font-size: 22px; line-height: 1;
+  color: rgba(10,10,10,0.6);
   background: transparent; border: none; cursor: pointer;
   transition: color .2s;
 }
@@ -1669,13 +1670,14 @@ section { padding-block: var(--section-pad-y); position: relative; }
 }
 .footer__wordmark {
   font-family: var(--serif);
-  font-size: clamp(72px, 11vw, 160px);
+  font-size: clamp(32px, 11vw, 160px);
   line-height: 0.84;
   letter-spacing: -0.02em;
   text-transform: uppercase;
   margin-bottom: 48px;
-  overflow: hidden;
+  overflow: visible;
   padding-bottom: 0.18em;
+  padding-top: 0.1em;
   color: var(--c-footerWordmark, inherit);
 }
 .footer__wordmark .static {
@@ -1868,7 +1870,7 @@ section { padding-block: var(--section-pad-y); position: relative; }
   .hero__title { font-size: clamp(28px, 9vw, 64px); }
 
   /* 2. Mobile menu items uniform size */
-  .mobile-menu { padding-top: 80px; overflow-y: auto; }
+  .mobile-menu { overflow-y: auto; }
   .mobile-menu .m-link { font-size: 16px; padding: 18px 28px; }
 
   .hero__bottom { grid-template-columns: 1fr; gap: 24px; }

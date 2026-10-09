@@ -234,7 +234,11 @@ function Nav({ content, onOpenProduct, cartCount = 0, onOpenCheckout, activePage
 
       <div className={'mobile-menu' + (mobileOpen ? ' open' : '')}>
         <div className="mobile-menu__inner">
-          <div className="mobile-menu__head" style={{justifyContent:'flex-end'}}>
+          <div className="mobile-menu__head">
+            <div className="mobile-menu__head-spacer"></div>
+            <div className="mobile-menu__brand">
+              <img src={(window.__resources && window.__resources.logoWordmark) || 'https://res.cloudinary.com/dschjfuwz/image/upload/v1783626385/ruahlabs/rehdonkp0hmenayjmomx.png'} alt="RUAH LABS" className="mobile-menu__brand-img" />
+            </div>
             <button className="mobile-menu__x" onClick={() => setMobileOpen(false)} aria-label="Cerrar menú">×</button>
           </div>
           <nav className="mobile-menu__nav">
